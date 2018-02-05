@@ -36,6 +36,14 @@ property wfxLabel.TextAlign( byval nValue as LabelAlignment )
    _TextAlign = nValue
 end property
 
+property wfxLabel.FlatStyle() as boolean
+   property = _FlatStyle
+end property
+
+property wfxLabel.FlatStyle( byval nValue as boolean )
+   _FlatStyle = nValue
+end property
+
 function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
 
    ' If the parent form has not been created yet then simply exit. We will
@@ -51,6 +59,7 @@ function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
    dim as long dwExStyle = 0
    dim as long dwStyle = WS_GROUP OR SS_NOTIFY or _TextAlign
 
+   if this.FlatStyle = false then dwStyle = dwStyle OR SS_SUNKEN
    if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
    this.hWindow = this.Parent->pWindow->AddControl ( _

@@ -237,6 +237,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
     
    ' Send to AllEvents handler should it be active
    if pForm andalso pForm->OnAllEvents then pForm->OnAllEvents(*pForm, e)
+   if pLabel andalso pLabel->OnAllEvents then pLabel->OnAllEvents(*pLabel, e)
 
    ' If the event was handled in the OnAllEvents then return true
    if e.Handled THEN return true
@@ -274,8 +275,12 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pForm then 
             if pForm->IsMainForm THEN 
                PostQuitMessage(0)
-               ? "postquitmessage"
-            end if   
+            end if
+         else
+            ' This was a subclassed control so return to the subclass procedure
+            ' and remove the subclass because now the final Destroy event handlers
+            ' have been processed.
+            return true      
          END IF
   
       case WM_COMMAND
@@ -297,12 +302,19 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          END SELECT
  
       case WM_CTLCOLORSTATIC, WM_CTLCOLOREDIT 
-         if pCtrl THEN 
-            SetTextColor(cast(HDC, wParam), pCtrl->Foreground)
-            SetBkColor(cast(HDC, wParam), pCtrl->Background)
-            Return Cast(LRESULT, pCtrl->hBackBrush)
-         end if   
-
+         ' wParam: HDC of the control. 
+         ' lParam: Handle to the control.
+         ' Need to determine the child control handle that is sending the request to be painted.
+         pNode = Application.GetControlByHandle( cast(hwnd, lParam) )
+         if pNode then 
+            pCtrl = cast(wfxControl ptr, pNode->pData)
+            if pCtrl THEN 
+               SetTextColor(cast(HDC, wParam), pCtrl->Foreground)
+               SetBkColor(cast(HDC, wParam), pCtrl->Background)
+               Return Cast(LRESULT, pCtrl->hBackBrush)
+            end if   
+         end if
+         
       case WM_ERASEBKGND
          if pForm then 
             dim as Rect rc
@@ -311,14 +323,44 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             return true
          end if   
           
+      case WM_MOUSEMOVE
+         if pForm andalso pForm->OnMouseMove then pForm->OnMouseMove(*pForm, e)
+         if pLabel andalso pLabel->OnMouseMove then pLabel->OnMouseMove(*pLabel, e)
+         ' There is no such thing as a WM_MOUSEENTER lessage so we need to simulate it
+         ' here by using a tracking variable and TRACKMOUSEEVENT.
+         if pCtrl then
+            if pCtrl->IsTracking = false then
+               pCtrl->IsTracking = true
+               dim tme as TrackMouseEvent
+               tme.cbSize = sizeof(TrackMouseEvent)
+               tme.dwFlags = TME_HOVER or TME_LEAVE
+               tme.hwndTrack = hWin
+               TrackMouseEvent(@tme) 
+               if pForm andalso pForm->OnMouseEnter then pForm->OnMouseEnter(*pForm, e)
+               if pLabel andalso pLabel->OnMouseEnter then pLabel->OnMouseEnter(*pLabel, e)
+            END IF
+         END IF
+          
+      case WM_MOUSELEAVE
+         if pCtrl then pCtrl->IsTracking = false 
+         if pForm andalso pForm->OnMouseLeave then pForm->OnMouseLeave(*pForm, e)
+         if pLabel andalso pLabel->OnMouseLeave then pLabel->OnMouseLeave(*pLabel, e)
+      
+      case WM_MOUSEHOVER
+         if pForm andalso pForm->OnMouseHover then pForm->OnMouseHover(*pForm, e)
+         if pLabel andalso pLabel->OnMouseHover then pLabel->OnMouseHover(*pLabel, e)
+            
       case WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
          if pForm andalso pForm->OnMouseDoubleClick then pForm->OnMouseDoubleClick(*pForm, e)
+         if pLabel andalso pLabel->OnMouseDoubleClick then pLabel->OnMouseDoubleClick(*pLabel, e)
 
       case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN
          if pForm andalso pForm->OnMouseDown then pForm->OnMouseDown(*pForm, e)
+         if pLabel andalso pLabel->OnMouseDown then pLabel->OnMouseDown(*pLabel, e)
 
       case WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP
          if pForm andalso pForm->OnMouseUp then pForm->OnMouseUp(*pForm, e)
+         if pLabel andalso pLabel->OnMouseUp then pLabel->OnMouseUp(*pLabel, e)
          ' Forms convert LBUTTONUP to simulate OnClick()
          if uMsg = WM_LBUTTONUP then
             if pForm andalso pForm->OnClick then pForm->OnClick(*pForm, e)
@@ -339,10 +381,6 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
       case WM_CHAR
          if pForm andalso pForm->OnKeyPress then pForm->OnKeyPress(*pForm, e)
          
-      case WM_MOUSEMOVE
-         if pForm andalso pForm->OnMouseMove then pForm->OnMouseMove(*pForm, e)
-         if pLabel andalso pLabel->OnMouseMove then pLabel->OnMouseMove(*pLabel, e)
-          
       Case WM_MOVE
          if pForm andalso pForm->OnMove then pForm->OnMove(*pForm, e)
 
@@ -384,13 +422,24 @@ static Function wfxApplication.SubclassProc ( _
          ' All keyboard input
          Function = DLGC_WANTALLKEYS
 
+      case WM_MOUSEMOVE, _
+           WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, _
+           WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, _
+           WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, _
+           WM_SETFOCUS, WM_KILLFOCUS, _
+           WM_KEYDOWN, WM_KEYUP, WM_CHAR, _
+           WM_MOUSELEAVE, WM_MOUSEHOVER
+         wfxApplication.WndProc( hWin, uMsg, wParam, lParam )
+         return true
+         
       Case WM_DESTROY
+         ' Handle any final Destroy messages for the control and then return
+         ' here to remove the subclassing.
+         wfxApplication.WndProc( hWin, uMsg, wParam, lParam )
          ' REQUIRED: Remove control subclassing
          RemoveWindowSubclass( hWin, @wfxApplication.SubclassProc, uIdSubclass )
 
       case else
-         wfxApplication.WndProc( hWin, uMsg, wParam, lParam )
-         return true
 
    End Select
     

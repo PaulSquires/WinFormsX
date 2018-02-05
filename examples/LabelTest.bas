@@ -10,12 +10,13 @@
 ' Use the following include if we are simply testing code via the GitHub ownload.
 #include once "..\src\WinFormsX.bi"
 
-' When compiling, be sure to incclude the file "resource.rc". In WinFBE, this can be done
+' When compiling, be sure to include the file "resource.rc". In WinFBE, this can be done
 ' via the Compiler Setup / Additional Compiler Settings
 
 
 '#CONSOLE ON
 
+declare function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_Label1_AllEvents( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
 declare function Form1_Label1_Destroy( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
 declare function Form1_Label1_Click( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
@@ -55,11 +56,13 @@ constructor TFORMMAIN
       .Text          = "Form1"
       .Name          = "Form1"
       .Background    = Colors.SystemButtonFace
+      .OnClick       = @Form1_Click
    end with
    with this.Label1
       .Parent = @this
       .Text = "This is a Label"
       .SetBounds(5, 5, 150, 30)
+      .TextAlign     = LabelAlignment.MiddleCenter
       .Foreground    = Colors.Yellow
       .Background    = Colors.Blue
       .OnAllEvents   = @Form1_Label1_AllEvents
@@ -85,6 +88,12 @@ dim shared Form1 as TFORMMAIN
 ''  Define the various methods that the application will respond to.
 ''  User code will go into these methods in order to make the application work.
 ''
+function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+   ' Change the text for the label
+   Form1.Label1.Text = "New Text"
+   function = 0
+end function
+
 function Form1_Label1_AllEvents( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
    ' All events flow through here so basically you can capture and respond to
    ' any Windows message through this handler. If you handle the message here then
@@ -93,17 +102,17 @@ function Form1_Label1_AllEvents( byref sender as wfxLabel, byref e as EventArgs 
 end function
 
 function Form1_Label1_Destroy( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label1 Destroy"
+   ? "Label1 Destroy"
    function = 0
 end function
 
 function Form1_Label1_MouseMove( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label1 MouseMove (x,y) = (" & e.x & "," & e.y & ")"
+   Form1.Text = "Label1 MouseMove (x,y) = (" & e.x & "," & e.y & ")"
    function = 0
 end function
 
 function Form1_Label1_MouseDown( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label MouseDown (x,y) = (" & e.x & "," & e.y & ")"
+   Form1.Text = "Label MouseDown (x,y) = (" & e.x & "," & e.y & ")"
    ? "MouseDown"
    ? "Ctrl: "; e.Ctrl
    ? "Shift: "; e.Shift
@@ -116,7 +125,7 @@ function Form1_Label1_MouseDown( byref sender as wfxLabel, byref e as EventArgs 
 end function
 
 function Form1_Label1_MouseUp( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label MouseUp (x,y) = (" & e.x & "," & e.y & ")"
+   Form1.Text = "Label MouseUp (x,y) = (" & e.x & "," & e.y & ")"
    ? "MouseUp"
    ? "Ctrl: "; e.Ctrl
    ? "Shift: "; e.Shift
@@ -142,17 +151,17 @@ function Form1_Label1_MouseDoubleClick( byref sender as wfxLabel, byref e as Eve
 end function
 
 function Form1_Label1_MouseEnter( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label MouseEnter (x,y) = (" & e.x & "," & e.y & ")"
+   sender.Text = "Label MouseEnter"
    function = 0
 end function
 
 function Form1_Label1_MouseHover( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label MouseHover (x,y) = (" & e.x & "," & e.y & ")"
+   sender.Text = "Label MouseHover"
    function = 0
 end function
 
 function Form1_Label1_MouseLeave( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label MouseLeave (x,y) = (" & e.x & "," & e.y & ")"
+   sender.Text = "Label MouseLeave"
    function = 0
 end function
 

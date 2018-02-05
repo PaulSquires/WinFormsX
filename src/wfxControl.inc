@@ -87,6 +87,14 @@ property wfxControl.Selected( byval nValue as Boolean )
    _Selected = nValue
 end property
 
+property wfxControl.IsTracking() as Boolean
+   property = _bIsTracking
+end property
+
+property wfxControl.IsTracking( byval nValue as Boolean )
+   _bIsTracking = nValue
+end property
+
 property wfxControl.Enabled() as Boolean
    if this.hWindow then 
       _Enabled = IsWindowEnabled(this.hWindow)

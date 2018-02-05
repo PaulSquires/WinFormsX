@@ -73,6 +73,9 @@ Type wfxForm Extends wfxControl
       OnMouseDown        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnMouseUp          as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnMouseDoubleClick as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+      OnMouseEnter       as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+      OnMouseHover       as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+      OnMouseLeave       as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnKeyDown          as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnKeyPress         as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT

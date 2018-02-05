@@ -19,12 +19,16 @@
 
 
 Type wfxLabel Extends wfxControl
+   private:
       _TextAlign      as LabelAlignment = LabelAlignment.MiddleLeft
+      _FlatStyle      as Boolean = true    ' if false then use SS_SUNKEN style
 
    Public:
       Declare Constructor( byref wszName as wstring = "" )
       declare property TextAlign() as LabelAlignment
       declare property TextAlign( byval nValue as LabelAlignment )
+      declare property FlatStyle() as boolean
+      declare property FlatStyle( byval nValue as boolean )
       declare function Show(byval hWndParent as hwnd = 0) as long override
 
       OnAllEvents        as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT

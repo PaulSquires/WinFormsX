@@ -10,7 +10,7 @@
 ' Use the following include if we are simply testing code via the GitHub ownload.
 #include once "..\src\WinFormsX.bi"
 
-' When compiling, be sure to incclude the file "resource.rc". In WinFBE, this can be done
+' When compiling, be sure to include the file "resource.rc". In WinFBE, this can be done
 ' via the Compiler Setup / Additional Compiler Settings
 
 

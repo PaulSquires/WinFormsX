@@ -16,21 +16,22 @@ type wfxForm_ as wfxForm    ' forward reference
 
 Type wfxControl Extends Object
    private:
-      _CtrlType   As Long
-      _CtrlName   As CWSTR
-      _CtrlID     As Long
-      _Text       as CWSTR
-      _Size       as wfxSize 
-      _Position   as wfxPoint
-      _Parent     as wfxForm_ ptr
-      _hWindow    as hwnd
-      _Selected   as Boolean = False
-      _Enabled    as Boolean = True
-      _Visible    as Boolean = True
-      _TabStop    as boolean = true
-      _Background as COLORREF = Colors.SystemButtonFace
-      _hBackBrush as HBRUSH = CreateSolidBrush(Colors.SystemButtonFace)
-      _Foreground as COLORREF = Colors.SystemWindowText
+      _CtrlType    As Long
+      _CtrlName    As CWSTR
+      _CtrlID      As Long
+      _Text        as CWSTR
+      _Size        as wfxSize 
+      _Position    as wfxPoint
+      _Parent      as wfxForm_ ptr
+      _hWindow     as hwnd
+      _Selected    as Boolean = False
+      _Enabled     as Boolean = True
+      _Visible     as Boolean = True
+      _TabStop     as boolean = true
+      _Background  as COLORREF = Colors.SystemButtonFace
+      _hBackBrush  as HBRUSH = CreateSolidBrush(Colors.SystemButtonFace)
+      _Foreground  as COLORREF = Colors.SystemWindowText
+      _bIsTracking as Boolean = false    ' mouse tracking for Enter/Leave
       
    Public:
       Declare Property hWindow() As hwnd
@@ -48,6 +49,8 @@ Type wfxControl Extends Object
       Declare Property Background( ByVal nValue As COLORREF )
       Declare Property Foreground() As COLORREF
       Declare Property Foreground( ByVal nValue As COLORREF )
+      Declare Property IsTracking() As boolean
+      Declare Property IsTracking( ByVal nValue As Boolean)
       Declare Property Enabled() As boolean
       Declare Property Enabled( ByVal nValue As Boolean)
       Declare Property Visible() As boolean
