@@ -13,7 +13,7 @@ WinFormsX is a forms building library for the FreeBASIC programming language. It
 Before you can use WinFormsX, there are a few tools and libraries that you should have installed on your system. 
 
 - The WinFormsX Library itself needs to be copied to the *WinFormsX* folder in your *\inc* folder for your FreeBASIC installation.
-  For example, if you installed the FreeBASIC compiler to a folder called C:\FB\FreeBASIC-1.05.0-win32\* then you should copy the *WinFormsX* folder to this location: *C:\FB\FreeBASIC-1.05.0-win32\inc* Do the same for the location where you installed the 64 bit version of the compiler (eg. *X:\FB\FreeBASIC-1.05.0-win64\inc*).
+  For example, if you installed the FreeBASIC compiler to a folder called C:\FB\FreeBASIC-1.05.0-win32\ then you should create a folder called *C:\FB\FreeBASIC-1.05.0-win32\inc\WinFormsX* and copy the contents of the *\src* folder to this location:  Do the same for the location where you installed the 64 bit version of the compiler (eg. *C:\FB\FreeBASIC-1.05.0-win64\inc*).
 
 - FreeBASIC Compiler. Version 1.05 is the latest version and can be found at [https://sourceforge.net/projects/fbc/files/](https://sourceforge.net/projects/fbc/files/). Recommend downloading and installing both the 32-bit and 64-bit versions of the compiler. If you wish, you can also install the very latest builds for the yet unreleased version 1.06 from this link [http://users.freebasic-portal.de/stw/builds/](http://users.freebasic-portal.de/stw/builds/) .
 
