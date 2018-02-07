@@ -28,6 +28,8 @@ declare function Form1_Button1_MouseDoubleClick( byref sender as wfxButton, byre
 declare function Form1_Button1_MouseEnter( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
 declare function Form1_Button1_MouseHover( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
 declare function Form1_Button1_MouseLeave( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+declare function Form1_Button2_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+declare function Form1_Button3_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
 
 ''          
 ''  Define the form (no child controls for this test)
@@ -38,6 +40,8 @@ type TFORMMAIN extends wfxForm
    public:
       ' Controls
       Button1 as wfxButton
+      Button2 as wfxButton
+      Button3 as wfxButton
       
       declare constructor   
 END TYPE
@@ -47,9 +51,6 @@ END TYPE
 ''  to the form and child controls.
 ''
 constructor TFORMMAIN
-   ' Add the form to the global application collection
-   Application.Forms.Add(ControlType.Form, @this)
-   
    ' Set the properties of the form 
    with this
       .Size          = 600, 400
@@ -59,10 +60,14 @@ constructor TFORMMAIN
       .Background    = Colors.SystemButtonFace
       .OnClick       = @Form1_Click
    end with
+   ' Add the form to the global application collection
+   Application.Forms.Add(ControlType.Form, @this)
+   
    with this.Button1
       .Parent = @this
-      .Text = "This is a Button"
-      .SetBounds(5, 5, 150, 30)
+      .Name = "Button1"
+      .Text = "Button1"
+      .SetBounds(10, 25, 70, 30)
       .TextAlign     = ButtonAlignment.MiddleCenter
       .OnAllEvents   = @Form1_Button1_AllEvents
       .OnDestroy     = @Form1_Button1_Destroy
@@ -76,6 +81,24 @@ constructor TFORMMAIN
       .OnMouseLeave  = @Form1_Button1_MouseLeave
    end with
    this.Controls.add(controltype.Button, @this.Button1)
+   
+   with this.Button2
+      .Parent = @this
+      .Name = "Button2"
+      .Text = "Button2"
+      .SetBounds(90, 25, 70, 30)
+      .OnClick = @Form1_Button2_Click
+   end with
+   this.Controls.add(controltype.Button, @this.Button2)
+   
+   with this.Button3
+      .Parent = @this
+      .Name = "Button3"
+      .Text = "Button3"
+      .SetBounds(170, 25, 70, 30)
+      .OnClick = @Form1_Button3_Click
+   end with
+   this.Controls.add(controltype.Button, @this.Button3)
 
 END CONSTRUCTOR
 
@@ -171,7 +194,7 @@ function Form1_Button1_Click( byref sender as wfxButton, byref e as EventArgs ) 
    dim pt as wfxPoint = sender.Position
    dim size as wfxSize = sender.Size
    
-   ? "Name: "; sender.Name
+   ? "Button Click: "; sender.Name
    ? "Text: "; sender.Text
    ? "Parent: "; sender.Parent
    ? "Background: "; sender.Background
@@ -187,6 +210,15 @@ function Form1_Button1_Click( byref sender as wfxButton, byref e as EventArgs ) 
    function = 0
 end function
 
+function Form1_Button2_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+   ? "Button Click: "; sender.Name
+   function = 0
+end function
+
+function Form1_Button3_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+   ? "Button Click: "; sender.Name
+   function = 0
+end function
 
 
 ''

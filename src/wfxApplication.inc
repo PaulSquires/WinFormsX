@@ -443,7 +443,6 @@ static Function wfxApplication.SubclassProc ( _
            WM_KEYDOWN, WM_KEYUP, WM_CHAR, _
            WM_MOUSELEAVE, WM_MOUSEHOVER
          wfxApplication.WndProc( hWin, uMsg, wParam, lParam )
-         return true
          
       Case WM_DESTROY
          ' Handle any final Destroy messages for the control and then return
