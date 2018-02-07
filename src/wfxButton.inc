@@ -35,8 +35,8 @@ function wfxButton.Show(byval hWndParent as hwnd = 0) as long
 
    dim as long dwExStyle = 0
    dim as long dwStyle = BS_PUSHBUTTON or _TextAlign 
-   if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
-   if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
+   if this.TabStop then dwStyle = dwStyle OR WS_TABSTOP 
+   if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
    this.hWindow = this.Parent->pWindow->AddControl ( _
          "BUTTON", _                       ' // Class name
@@ -55,12 +55,16 @@ function wfxButton.Show(byval hWndParent as hwnd = 0) as long
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
 
-   this.Enabled  = _Enabled
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.
    ' Refer to wfxForm.CreateFormInternal for the setting of the focus/selected
    ' control once events have fired correctly.
+
+   ' Store the hWindow in the form's linked list in order to allow
+   ' for fast lookups via GetControlByHandle.
+   dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
+   if pNode then pNode->hWindow = this.hWindow
       
    function = 0
 END FUNCTION

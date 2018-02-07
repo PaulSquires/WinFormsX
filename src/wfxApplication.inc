@@ -220,16 +220,18 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    dim pNode as wfxLListNode ptr
    dim e     as wfxEventArgs 
    
-   dim pCtrl  as wfxControl ptr
-   dim pForm  as wfxForm ptr
-   dim pLabel as wfxLabel ptr
+   dim pCtrl   as wfxControl ptr
+   dim pForm   as wfxForm ptr
+   dim pLabel  as wfxLabel ptr
+   dim pButton as wfxButton ptr
    
    pNode = Application.GetControlByHandle(hWin)
    if pNode then 
       pCtrl = cast(wfxControl ptr, pNode->pData)
       select case pNode->CtrlType 
-         CASE ControlType.Form:   pForm  = cast(wfxForm ptr, pNode->pData)
-         CASE ControlType.Label:  pLabel = cast(wfxLabel ptr, pNode->pData)
+         CASE ControlType.Form:    pForm  = cast(wfxForm ptr, pNode->pData)
+         CASE ControlType.Label:   pLabel = cast(wfxLabel ptr, pNode->pData)
+         CASE ControlType.Button:  pButton = cast(wfxButton ptr, pNode->pData)
       END SELECT
    end if   
 
@@ -238,6 +240,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    ' Send to AllEvents handler should it be active
    if pForm andalso pForm->OnAllEvents then pForm->OnAllEvents(*pForm, e)
    if pLabel andalso pLabel->OnAllEvents then pLabel->OnAllEvents(*pLabel, e)
+   if pButton andalso pButton->OnAllEvents then pButton->OnAllEvents(*pButton, e)
 
    ' If the event was handled in the OnAllEvents then return true
    if e.Handled THEN return true
@@ -271,6 +274,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
       Case WM_DESTROY
          if pForm andalso pForm->OnFormClosed then pForm->OnFormClosed(*pForm, e)
          if pLabel andalso pLabel->OnDestroy then pLabel->OnDestroy(*pLabel, e)
+         if pButton andalso pButton->OnDestroy then pButton->OnDestroy(*pButton, e)
          ' If this is the main form then post a quit message
          if pForm then 
             if pForm->IsMainForm THEN 
@@ -297,6 +301,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      CASE ControlType.Label
                         pLabel = cast(wfxLabel ptr, pNode->pData)
                         if pLabel andalso pLabel->OnClick then pLabel->OnClick(*pLabel, e)
+                     CASE ControlType.Button
+                        pButton = cast(wfxButton ptr, pNode->pData)
+                        if pButton andalso pButton->OnClick then pButton->OnClick(*pButton, e)
                   END SELECT
                end if   
          END SELECT
@@ -338,6 +345,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                TrackMouseEvent(@tme) 
                if pForm andalso pForm->OnMouseEnter then pForm->OnMouseEnter(*pForm, e)
                if pLabel andalso pLabel->OnMouseEnter then pLabel->OnMouseEnter(*pLabel, e)
+               if pButton andalso pButton->OnMouseEnter then pButton->OnMouseEnter(*pButton, e)
             END IF
          END IF
           
@@ -345,22 +353,27 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pCtrl then pCtrl->IsTracking = false 
          if pForm andalso pForm->OnMouseLeave then pForm->OnMouseLeave(*pForm, e)
          if pLabel andalso pLabel->OnMouseLeave then pLabel->OnMouseLeave(*pLabel, e)
+         if pButton andalso pButton->OnMouseLeave then pButton->OnMouseLeave(*pButton, e)
       
       case WM_MOUSEHOVER
          if pForm andalso pForm->OnMouseHover then pForm->OnMouseHover(*pForm, e)
          if pLabel andalso pLabel->OnMouseHover then pLabel->OnMouseHover(*pLabel, e)
+         if pButton andalso pButton->OnMouseHover then pButton->OnMouseHover(*pButton, e)
             
       case WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
          if pForm andalso pForm->OnMouseDoubleClick then pForm->OnMouseDoubleClick(*pForm, e)
          if pLabel andalso pLabel->OnMouseDoubleClick then pLabel->OnMouseDoubleClick(*pLabel, e)
+         if pButton andalso pButton->OnMouseDoubleClick then pButton->OnMouseDoubleClick(*pButton, e)
 
       case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN
          if pForm andalso pForm->OnMouseDown then pForm->OnMouseDown(*pForm, e)
          if pLabel andalso pLabel->OnMouseDown then pLabel->OnMouseDown(*pLabel, e)
+         if pButton andalso pButton->OnMouseDown then pButton->OnMouseDown(*pButton, e)
 
       case WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP
          if pForm andalso pForm->OnMouseUp then pForm->OnMouseUp(*pForm, e)
          if pLabel andalso pLabel->OnMouseUp then pLabel->OnMouseUp(*pLabel, e)
+         if pButton andalso pButton->OnMouseUp then pButton->OnMouseUp(*pButton, e)
          ' Forms convert LBUTTONUP to simulate OnClick()
          if uMsg = WM_LBUTTONUP then
             if pForm andalso pForm->OnClick then pForm->OnClick(*pForm, e)

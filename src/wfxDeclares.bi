@@ -98,16 +98,6 @@ Type wfxEventArgs Extends Object
 end type
 
 
-'Type wfxButton Extends wfxControl
-'      _TextAlign as ButtonAlignment = ButtonAlignment.MiddleCenter
-    
-'   Public:
-'      Declare Property TextAlign() As ButtonAlignment
-'      Declare Property TextAlign( ByVal nValue As ButtonAlignment )
-'      Declare Constructor( byref wszName as wstring = "" )
-'      declare function Show(byval hWndParent as hwnd = 0) as long override
-'End Type
-
 'Type wfxCheckBox Extends wfxControl
 '      _TextAlign as ButtonAlignment = ButtonAlignment.MiddleLeft
 '      _Checked   as Boolean

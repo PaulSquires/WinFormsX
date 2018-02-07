@@ -95,6 +95,14 @@ property wfxControl.IsTracking( byval nValue as Boolean )
    _bIsTracking = nValue
 end property
 
+property wfxControl.TabStop() as Boolean
+   property = _TabStop
+end property
+
+property wfxControl.TabStop( byval nValue as Boolean )
+   _TabStop = nValue
+end property
+
 property wfxControl.Enabled() as Boolean
    if this.hWindow then 
       _Enabled = IsWindowEnabled(this.hWindow)
