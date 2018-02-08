@@ -18,7 +18,8 @@
 '#CONSOLE ON
 '#RESOURCE "resource.rc"
 
-'declare function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+declare function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+declare function Form1_StatusBar_Click( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
 
 ''          
 ''  Define the form and StatusBar
@@ -47,6 +48,7 @@ constructor TFORMMAIN
       .StartPosition = FormStartPosition.CenterScreen
       .Text          = "Form1"
       .Name          = "Form1"
+      .OnClick       = @Form1_Click
    end with
 
    with this.StatusBar
@@ -62,6 +64,7 @@ constructor TFORMMAIN
       .Panel(1).Width = 200
       .Panel(2).Text = "Panel3"
       .Panel(2).AutoSize = StatusBarPanelAutoSize.Spring
+      .OnClick = @Form1_StatusBar_Click
    END WITH    
    this.Controls.add(controltype.StatusBar, @this.StatusBar)
 
@@ -71,9 +74,24 @@ END CONSTRUCTOR
 dim shared Form1 as TFORMMAIN
 
 
-'function StatusBar_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-'   function = 0
-'end function
+function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+   ' An area of the form was clicked on. Display the text of the existing panels.
+   for i as long = 0 to Form1.StatusBar.Panels.Count - 1
+      ? "Index:"; i, Form1.StatusBar.Panel(i).Text
+   NEXT
+   ?
+   ' Change the text on Panel2 to a random number between 1 and 100.
+   Form1.StatusBar.Panel(1).Text = "Text " & (Rnd * (100 - 1) + 1)
+   
+   function = 0
+end function
+
+
+function Form1_StatusBar_Click( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+   ' Display what statusbar panel was clicked.
+   ? "Statusbar Panel: " & e.PanelClickIndex & " Clicked"
+   function = 0
+end function
 
 
 

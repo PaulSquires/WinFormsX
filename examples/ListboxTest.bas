@@ -193,36 +193,32 @@ function Form1_Button1_Click( byref sender as wfxButton, byref e as EventArgs ) 
    ' Print the properties of the label to the console window
    ' In addition to using the "sender" object we could also have referred to the 
    ' label properties through use of the global shared Form1 variable (Form1.Label1).
+   dim pt as wfxPoint = sender.Position
+   dim size as wfxSize = sender.Size
+   
    ? "Button Click: "; sender.Name
-
-'   dim pt as wfxPoint = sender.Position
-'   dim size as wfxSize = sender.Size
-'   ? "Text: "; sender.Text
-'   ? "Parent: "; sender.Parent
-'   ? "Background: "; sender.Background
-'   ? "Enabled: "; sender.Enabled
-'   ? "Visible: "; sender.Visible
-'   ? "Left: "; sender.Left
-'   ? "Top: "; sender.Top
-'   ? "Width: "; sender.Width
-'   ? "Height: "; sender.Height
-'   ? "Size: "; size.Width; " x "; size.Height
-'   ? "Position: "; pt.x; ", "; pt.y
-'   ?
+   ? "Text: "; sender.Text
+   ? "Parent: "; sender.Parent
+   ? "Background: "; sender.Background
+   ? "Enabled: "; sender.Enabled
+   ? "Visible: "; sender.Visible
+   ? "Left: "; sender.Left
+   ? "Top: "; sender.Top
+   ? "Width: "; sender.Width
+   ? "Height: "; sender.Height
+   ? "Size: "; size.Width; " x "; size.Height
+   ? "Position: "; pt.x; ", "; pt.y
+   ?
    function = 0
 end function
 
 function Form1_Button2_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
    ? "Button Click: "; sender.Name
-   ? "Hide Button1"
-   Form1.Button1.Hide
    function = 0
 end function
 
 function Form1_Button3_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
    ? "Button Click: "; sender.Name
-   ? "Show Button1"
-   Form1.Button1.Show
    function = 0
 end function
 

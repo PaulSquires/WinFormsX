@@ -83,6 +83,19 @@ end function
 
 ''
 ''
+function wfxLList.search_controltype( byval nCtrlType as ControlType) as wfxLListNode ptr
+   ' Search the ControlType element for a match on incoming nCtrlType and
+   ' return the linked list list node.
+   dim pNode as wfxLListNode ptr = this.pNodeFirst
+   do until pNode = 0
+      if pNode->CtrlType = nCtrlType then return pNode
+      pNode = pNode->pNodeNext
+   LOOP
+   function = 0
+end function
+
+''
+''
 function wfxLList.remove( byval pNodeDelete as wfxLListNode ptr ) as wfxLListNode ptr
    ' Remove the specified node and return the node that follows this node.
    if pNodeDelete = 0 then exit function

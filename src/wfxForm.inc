@@ -32,6 +32,14 @@ destructor wfxForm
    ' Destroy the Window and delete the CWindow class
    DestroyWindow(this.pWindow->hWindow)
    Delete this.pWindow
+
+   ' Deallocate elements in the Controls collection.
+   dim pNode as wfxLListNode ptr = this.Controls.get_first
+   do until pNode = 0
+      Delete cast(wfxControl ptr, pNode->pData)
+      pNode = this.Controls.remove(pNode)
+   LOOP
+   
    ' Remove it from the Application form collection
    Application.Forms.remove_bydata(@this)
 end destructor 

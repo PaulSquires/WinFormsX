@@ -12,7 +12,7 @@
 '    GNU General Public License for more details.
 
 
-Type wfxButton Extends wfxControl
+Type wfxListBox Extends wfxControl
    private:
       _TextAlign as ButtonAlignment = ButtonAlignment.MiddleCenter
     
@@ -22,11 +22,27 @@ Type wfxButton Extends wfxControl
       Declare Constructor( byref wszName as wstring = "" )
       declare function Show(byval hWndParent as hwnd = 0) as long override
 
+      ' Items collection
+      '    .Clear
+      '    .Add
+      '    .Insert(Int32)
+      '    .Remove(Int32)
+      '    .Count
+      '    
+      
+      ' FindString
+      ' FindStringExact
+      ' BeginUpdate
+      ' EndUpdate
+      ' GetSelected(int32)
+      ' SetSelected(Int32, Boolean)
+      ' ItemHeight
+      ' MultiColumn
+      ' SelectionMode   listBox1.SelectionMode = SelectionMode.MultiExtended
+      
       OnAllEvents        as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnClick            as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-      OnGotFocus         as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-      OnLostFocus        as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnMouseMove        as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnMouseDown        as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnMouseUp          as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
@@ -34,8 +50,5 @@ Type wfxButton Extends wfxControl
       OnMouseEnter       as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnMouseHover       as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnMouseLeave       as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-      OnKeyDown          as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-      OnKeyPress         as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-      OnKeyUp            as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
 End Type
 

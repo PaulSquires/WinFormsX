@@ -77,7 +77,9 @@ type wfxStatusBarPanelsCollection
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Count() as long 
       declare function Add() byref as wfxStatusBarPanel 
-      declare function ByIndex( byval nIndex as long ) byref as wfxStatusBarPanel 
+      declare function ByIndex( byval nIndex as long ) byref as wfxStatusBarPanel
+      Declare Constructor
+      declare destructor 
 END TYPE
 
 type wfxStatusBar extends wfxControl
@@ -96,6 +98,18 @@ type wfxStatusBar extends wfxControl
       Declare Property SizingGrip( ByVal nValue As Boolean)
       declare function Show(byval hWndParent as hwnd = 0) as long override
       Declare Constructor
+      declare destructor 
+
+      OnAllEvents        as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnDestroy          as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnClick            as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnMouseMove        as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnMouseDown        as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnMouseUp          as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnMouseDoubleClick as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnMouseEnter       as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnMouseHover       as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnMouseLeave       as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
    
 END TYPE
 

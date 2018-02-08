@@ -173,6 +173,27 @@ function wfxApplication.GetControlByHandle( byval hWindow as hwnd ) as wfxLListN
    function = 0
 end function
 
+''    
+''  Generic function to retrieve control object via ControlType
+''
+function wfxApplication.GetControlByType( byval nCtrlType as ControlType ) as wfxLListNode ptr
+   dim pNodeCtrl as wfxLListNode ptr
+   dim pNode as wfxLListNode ptr
+   dim pForm as wfxForm ptr
+   
+   ' Search all Forms and each control in each Form.
+   pNode = this.Forms.get_first
+   do until pNode = 0
+      if pNode->CtrlType = nCtrlType then return pNode
+      ' Search all the controls on the form for a match
+      pForm = cast(wfxForm ptr, pNode->pData)
+      pNodeCtrl = pForm->Controls.search_controltype(nCtrlType)
+      if pNodeCtrl then return pNodeCtrl
+      ' Get the form in the application   
+      pNode = this.Forms.get_next(pNode)
+   LOOP
+   function = 0
+end function
 
 ''
 ''  Internal function to set the elements of the various EventArg types.
@@ -224,14 +245,16 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    dim pForm   as wfxForm ptr
    dim pLabel  as wfxLabel ptr
    dim pButton as wfxButton ptr
+   dim pStatusBar as wfxStatusBar ptr
    
    pNode = Application.GetControlByHandle(hWin)
    if pNode then 
       pCtrl = cast(wfxControl ptr, pNode->pData)
       select case pNode->CtrlType 
-         CASE ControlType.Form:    pForm  = cast(wfxForm ptr, pNode->pData)
-         CASE ControlType.Label:   pLabel = cast(wfxLabel ptr, pNode->pData)
-         CASE ControlType.Button:  pButton = cast(wfxButton ptr, pNode->pData)
+         CASE ControlType.Form:       pForm  = cast(wfxForm ptr, pNode->pData)
+         CASE ControlType.Label:      pLabel = cast(wfxLabel ptr, pNode->pData)
+         CASE ControlType.Button:     pButton = cast(wfxButton ptr, pNode->pData)
+         CASE ControlType.StatusBar:  pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
       END SELECT
    end if   
 
@@ -241,6 +264,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    if pForm andalso pForm->OnAllEvents then pForm->OnAllEvents(*pForm, e)
    if pLabel andalso pLabel->OnAllEvents then pLabel->OnAllEvents(*pLabel, e)
    if pButton andalso pButton->OnAllEvents then pButton->OnAllEvents(*pButton, e)
+   if pStatusBar andalso pStatusBar->OnAllEvents then pStatusBar->OnAllEvents(*pStatusBar, e)
 
    ' If the event was handled in the OnAllEvents then return true
    if e.Handled THEN return true
@@ -275,6 +299,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pForm andalso pForm->OnFormClosed then pForm->OnFormClosed(*pForm, e)
          if pLabel andalso pLabel->OnDestroy then pLabel->OnDestroy(*pLabel, e)
          if pButton andalso pButton->OnDestroy then pButton->OnDestroy(*pButton, e)
+         if pStatusBar andalso pStatusBar->OnDestroy then pStatusBar->OnDestroy(*pStatusBar, e)
          ' If this is the main form then post a quit message
          if pForm then 
             if pForm->IsMainForm THEN 
@@ -308,6 +333,24 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                end if   
          END SELECT
  
+      case WM_NOTIFY
+         dim pNMHDR as NMHDR ptr = cast(NMHDR ptr, lParam)
+         Select Case pNMHDR->code 
+            Case NM_CLICK
+               ' Process clicking on the panels in the statusbar
+               pNode = Application.GetControlByType( ControlType.StatusBar )
+               if pNode then 
+                  pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
+                  if pStatusBar then
+                     Dim lpnm As NMMOUSE Ptr = Cast(NMMOUSE Ptr, pNMHDR)
+                     e.PanelClickIndex = lpnm->dwItemSpec  
+                     e.x = lpnm->pt.x: e.y = lpnm->pt.y
+                     if pStatusBar andalso pStatusBar->OnClick then pStatusBar->OnClick(*pStatusBar, e)
+                  end if
+               end if
+         end select
+               
+      
       case WM_CTLCOLORSTATIC, WM_CTLCOLOREDIT 
          ' wParam: HDC of the control. 
          ' lParam: Handle to the control.
@@ -333,6 +376,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
       case WM_MOUSEMOVE
          if pForm andalso pForm->OnMouseMove then pForm->OnMouseMove(*pForm, e)
          if pLabel andalso pLabel->OnMouseMove then pLabel->OnMouseMove(*pLabel, e)
+         if pButton andalso pButton->OnMouseMove then pButton->OnMouseMove(*pButton, e)
+         if pStatusBar andalso pStatusBar->OnMouseMove then pStatusBar->OnMouseMove(*pStatusBar, e)
          ' There is no such thing as a WM_MOUSEENTER lessage so we need to simulate it
          ' here by using a tracking variable and TRACKMOUSEEVENT.
          if pCtrl then
@@ -346,6 +391,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                if pForm andalso pForm->OnMouseEnter then pForm->OnMouseEnter(*pForm, e)
                if pLabel andalso pLabel->OnMouseEnter then pLabel->OnMouseEnter(*pLabel, e)
                if pButton andalso pButton->OnMouseEnter then pButton->OnMouseEnter(*pButton, e)
+               if pStatusBar andalso pStatusBar->OnMouseEnter then pStatusBar->OnMouseEnter(*pStatusBar, e)
             END IF
          END IF
           
@@ -354,26 +400,31 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pForm andalso pForm->OnMouseLeave then pForm->OnMouseLeave(*pForm, e)
          if pLabel andalso pLabel->OnMouseLeave then pLabel->OnMouseLeave(*pLabel, e)
          if pButton andalso pButton->OnMouseLeave then pButton->OnMouseLeave(*pButton, e)
+         if pStatusBar andalso pStatusBar->OnMouseLeave then pStatusBar->OnMouseLeave(*pStatusBar, e)
       
       case WM_MOUSEHOVER
          if pForm andalso pForm->OnMouseHover then pForm->OnMouseHover(*pForm, e)
          if pLabel andalso pLabel->OnMouseHover then pLabel->OnMouseHover(*pLabel, e)
          if pButton andalso pButton->OnMouseHover then pButton->OnMouseHover(*pButton, e)
+         if pStatusBar andalso pStatusBar->OnMouseHover then pStatusBar->OnMouseHover(*pStatusBar, e)
             
       case WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
          if pForm andalso pForm->OnMouseDoubleClick then pForm->OnMouseDoubleClick(*pForm, e)
          if pLabel andalso pLabel->OnMouseDoubleClick then pLabel->OnMouseDoubleClick(*pLabel, e)
          if pButton andalso pButton->OnMouseDoubleClick then pButton->OnMouseDoubleClick(*pButton, e)
+         if pStatusBar andalso pStatusBar->OnMouseDoubleClick then pStatusBar->OnMouseDoubleClick(*pStatusBar, e)
 
       case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN
          if pForm andalso pForm->OnMouseDown then pForm->OnMouseDown(*pForm, e)
          if pLabel andalso pLabel->OnMouseDown then pLabel->OnMouseDown(*pLabel, e)
          if pButton andalso pButton->OnMouseDown then pButton->OnMouseDown(*pButton, e)
+         if pStatusBar andalso pStatusBar->OnMouseDown then pStatusBar->OnMouseDown(*pStatusBar, e)
 
       case WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP
          if pForm andalso pForm->OnMouseUp then pForm->OnMouseUp(*pForm, e)
          if pLabel andalso pLabel->OnMouseUp then pLabel->OnMouseUp(*pLabel, e)
          if pButton andalso pButton->OnMouseUp then pButton->OnMouseUp(*pButton, e)
+         if pStatusBar andalso pStatusBar->OnMouseUp then pStatusBar->OnMouseUp(*pStatusBar, e)
          ' Forms convert LBUTTONUP to simulate OnClick()
          if uMsg = WM_LBUTTONUP then
             if pForm andalso pForm->OnClick then pForm->OnClick(*pForm, e)
@@ -381,18 +432,23 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          
       case WM_SETFOCUS
          if pForm andalso pForm->OnGotFocus then pForm->OnGotFocus(*pForm, e)
+         if pButton andalso pButton->OnGotFocus then pButton->OnGotFocus(*pButton, e)
 
       case WM_KILLFOCUS
          if pForm andalso pForm->OnLostFocus then pForm->OnLostFocus(*pForm, e)
+         if pButton andalso pButton->OnLostFocus then pButton->OnLostFocus(*pButton, e)
 
       case WM_KEYDOWN
          if pForm andalso pForm->OnKeyDown then pForm->OnKeyDown(*pForm, e)
+         if pButton andalso pButton->OnKeyDown then pButton->OnKeyDown(*pButton, e)
 
       case WM_KEYUP
          if pForm andalso pForm->OnKeyUp then pForm->OnKeyUp(*pForm, e)
+         if pButton andalso pButton->OnKeyUp then pButton->OnKeyUp(*pButton, e)
 
       case WM_CHAR
          if pForm andalso pForm->OnKeyPress then pForm->OnKeyPress(*pForm, e)
+         if pButton andalso pButton->OnKeyPress then pButton->OnKeyPress(*pButton, e)
          
       Case WM_MOVE
          if pForm andalso pForm->OnMove then pForm->OnMove(*pForm, e)

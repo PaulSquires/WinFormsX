@@ -23,16 +23,16 @@ end property
 
 function wfxButton.Show(byval hWndParent as hwnd = 0) as long
 
-   ' If the parent form has not been created yet then simply exit. We will
-   ' create this control when the form is created.
-   if hWndParent = 0 THEN exit function
-      
    ' If the control is created but simply hidden, then show it.
    if this.hWindow THEN
       ShowWindow(this.hWindow, SW_SHOW)
       exit function
    END IF
 
+   ' If the parent form has not been created yet then simply exit. We will
+   ' create this control when the form is created.
+   if hWndParent = 0 THEN exit function
+      
    dim as long dwExStyle = 0
    dim as long dwStyle = BS_PUSHBUTTON or _TextAlign 
    if this.TabStop then dwStyle = dwStyle OR WS_TABSTOP 

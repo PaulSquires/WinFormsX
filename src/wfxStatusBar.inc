@@ -27,6 +27,10 @@ constructor wfxStatusBar
    this.Name = "StatusBar"
 end constructor
 
+destructor wfxStatusBar
+   '
+END DESTRUCTOR
+
 function wfxStatusBar.Panel( ByVal nIndex As long ) byref As wfxStatusBarPanel
    return this.Panels.ByIndex(nIndex)
 END function
@@ -59,16 +63,16 @@ end property
 
 function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
 
-   ' If the parent form has not been created yet then simply exit. We will
-   ' create this control when the form is created.
-   if hWndParent = 0 THEN exit function
-      
    ' If the control is created but simply hidden, then show it.
    if this.hWindow THEN
       ShowWindow(this.hWindow, SW_SHOW)
       exit function
    END IF
 
+   ' If the parent form has not been created yet then simply exit. We will
+   ' create this control when the form is created.
+   if hWndParent = 0 THEN exit function
+      
    dim as long dwExStyle = 0
    dim as long dwStyle = WS_CLIPCHILDREN OR WS_CLIPSIBLINGS OR CCS_BOTTOM 
 
@@ -121,9 +125,6 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
       ' Get the panel text prior to assigning the statusbar handle otherwise the
       ' library will try to retrieve the text from the actual window control and
       ' that text hasn't even been assigned yet.
-      'dim byref Panel as wfxStatusBarPanel = this.Panels.ByIndex(i)
-      'dim as CWSTR wszPanelText = Panel.Text
-      'Panel.hWindow = this.hWindow
       dim as CWSTR wszPanelText = this.Panel(i).Text
       this.Panel(i).hWindow = this.hWindow
       StatusBar_SetText(this.hWindow, i, wszPanelText, this.Panel(i).BorderStyle) 
@@ -197,6 +198,20 @@ property wfxStatusBarPanel.Width( byVal nValue as long)
 end property
 
 '' STATUSBARCOLLECTION
+constructor wfxStatusBarPanelsCollection
+   '
+END CONSTRUCTOR
+
+destructor wfxStatusBarPanelsCollection
+   ' Deallocate elements in the Panels collection.
+   dim pNode as wfxLListNode ptr = _Collection.get_first
+   do until pNode = 0
+'TODO: Delete wfxStatusBarPanelsCollection in destructor causes "destructor has no public access"
+      'Delete cast(wfxControl ptr, pNode->pData)
+      pNode = _Collection.remove(pNode)
+   LOOP
+end destructor
+
 property wfxStatusBarPanelsCollection.hWindow() as hwnd
    property = _hWindow
 end property

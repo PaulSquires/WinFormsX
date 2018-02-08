@@ -33,6 +33,7 @@ Type wfxApplication
       Declare Function Run() As LRESULT
       declare Function Run( Byref pForm As wfxForm ) As LRESULT
       declare function GetControlByHandle( byval hWindow as hwnd ) as wfxLListNode ptr
+      declare function GetControlByType( byval nCtrlType as ControlType ) as wfxLListNode ptr
       declare Function SetEventArgs( byval uMsg as UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM, byref e as wfxEventArgs) as Long
       declare static Function WndProc( ByVal HWnd As HWnd, ByVal uMsg As UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM) As LRESULT
       declare static Function SubclassProc( ByVal HWnd As HWnd, ByVal uMsg As UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM, ByVal uIdSubclass As UINT_PTR, ByVal dwRefData As DWORD_PTR ) As LRESULT
