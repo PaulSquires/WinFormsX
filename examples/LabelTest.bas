@@ -11,10 +11,11 @@
 #include once "..\src\WinFormsX.bi"
 
 ' When compiling, be sure to include the file "resource.rc". In WinFBE, this can be done
-' via the Compiler Setup / Additional Compiler Settings
-
+' via the Compiler Setup / Additional Compiler Settings, or using the #RESOURCE code
+' directive as shown below.
 
 '#CONSOLE ON
+'#RESOURCE "resource.rc"
 
 declare function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_Label1_AllEvents( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
@@ -172,6 +173,7 @@ function Form1_Label1_Click( byref sender as wfxLabel, byref e as EventArgs ) as
    dim pt as wfxPoint = sender.Position
    dim size as wfxSize = sender.Size
    
+   ? "Label Click"
    ? "Name: "; sender.Name
    ? "Text: "; sender.Text
    ? "Parent: "; sender.Parent

@@ -87,8 +87,8 @@ type wfxStatusBar extends wfxControl
       _PanelsCollection as wfxStatusBarPanelsCollection
       
    public:
-      Declare function Panels overload (byval nIndex as long) byref as wfxStatusBarPanel 
-      declare function Panels overload(byval st as string = "") byref As wfxStatusBarPanelsCollection
+      Declare function Panel( byval nIndex as long) byref as wfxStatusBarPanel 
+      declare function Panels byref As wfxStatusBarPanelsCollection
       
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)

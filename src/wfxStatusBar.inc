@@ -27,11 +27,11 @@ constructor wfxStatusBar
    this.Name = "StatusBar"
 end constructor
 
-function wfxStatusBar.Panels overload (ByVal nIndex As long ) byref As wfxStatusBarPanel
+function wfxStatusBar.Panel( ByVal nIndex As long ) byref As wfxStatusBarPanel
    return this.Panels.ByIndex(nIndex)
 END function
 
-function wfxStatusBar.Panels overload(byval st as string = "") byref As wfxStatusBarPanelsCollection
+function wfxStatusBar.Panels byref As wfxStatusBarPanelsCollection
    return this._PanelsCollection
 END function
 
@@ -99,7 +99,7 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
    if pNode then pNode->hWindow = this.hWindow
 
    ' Make sure the Panels collection also knows the window handle of the parent statusbar
-'   this.Panels.hWindow = this.hWindow
+   this.Panels.hWindow = this.hWindow
 
    dim as single cx = this.Parent->pWindow->rxRatio
    
@@ -107,16 +107,10 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
    if this.Panels.Count then
       dim as long nWidths(0 to this.Panels.Count - 1)
       for i as long = 0 to this.Panels.Count - 1
-'         dim byref Panel as wfxStatusBarPanel = this.Panels.ByIndex(i)
-'         if Panel.AutoSize = StatusBarPanelAutoSize.Spring then  
-'            nWidths(i) = -1
-'         else   
-'            nWidths(i) = iif(i, nWidths(i-1), 0) + (Panel.Width * cx)
-'         end if
-         if this.Panels(i).AutoSize = StatusBarPanelAutoSize.Spring then  
+         if this.Panel(i).AutoSize = StatusBarPanelAutoSize.Spring then  
             nWidths(i) = -1
          else   
-            nWidths(i) = iif(i, nWidths(i-1), 0) + (this.Panels(i).Width * cx)
+            nWidths(i) = iif(i, nWidths(i-1), 0) + (this.Panel(i).Width * cx)
          end if
       NEXT
       StatusBar_SetParts( this.hWindow, this.Panels.Count, @nWidths(0))
@@ -130,9 +124,9 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
       'dim byref Panel as wfxStatusBarPanel = this.Panels.ByIndex(i)
       'dim as CWSTR wszPanelText = Panel.Text
       'Panel.hWindow = this.hWindow
-      dim as CWSTR wszPanelText = this.Panels(i).Text
-      this.Panels(i).hWindow = this.hWindow
-      StatusBar_SetText(this.hWindow, i, wszPanelText, this.Panels(i).BorderStyle) 
+      dim as CWSTR wszPanelText = this.Panel(i).Text
+      this.Panel(i).hWindow = this.hWindow
+      StatusBar_SetText(this.hWindow, i, wszPanelText, this.Panel(i).BorderStyle) 
    next
    
    function = 0

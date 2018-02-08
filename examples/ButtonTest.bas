@@ -11,7 +11,8 @@
 #include once "..\src\WinFormsX.bi"
 
 ' When compiling, be sure to include the file "resource.rc". In WinFBE, this can be done
-' via the Compiler Setup / Additional Compiler Settings
+' via the Compiler Setup / Additional Compiler Settings, or using the #RESOURCE code
+' directive as shown below.
 
 
 '#CONSOLE ON
@@ -68,6 +69,7 @@ constructor TFORMMAIN
       .Name = "Button1"
       .Text = "Button1"
       .SetBounds(10, 25, 70, 30)
+      .Selected      = true   ' set initial focus to this control
       .TextAlign     = ButtonAlignment.MiddleCenter
       .OnAllEvents   = @Form1_Button1_AllEvents
       .OnDestroy     = @Form1_Button1_Destroy

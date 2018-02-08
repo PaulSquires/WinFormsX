@@ -11,10 +11,12 @@
 #include once "..\src\WinFormsX.bi"
 
 ' When compiling, be sure to include the file "resource.rc". In WinFBE, this can be done
-' via the Compiler Setup / Additional Compiler Settings
+' via the Compiler Setup / Additional Compiler Settings, or using the #RESOURCE code
+' directive as shown below.
 
 
 '#CONSOLE ON
+'#RESOURCE "resource.rc"
 
 'declare function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 
@@ -54,14 +56,13 @@ constructor TFORMMAIN
       for i as long = 0 to 2
          .Panels.Add
       NEXT
-      .Panels(0).Text = "Panel1"
-      .Panels(0).Width = 120
-      .Panels(1).Text = "Panel2"
-      .Panels(1).Width = 200
-      .Panels(2).Text = "Panel3"
-      .Panels(2).AutoSize = StatusBarPanelAutoSize.Spring
-   END WITH
-   
+      .Panel(0).Text = "Panel1"
+      .Panel(0).Width = 120
+      .Panel(1).Text = "Panel2"
+      .Panel(1).Width = 200
+      .Panel(2).Text = "Panel3"
+      .Panel(2).AutoSize = StatusBarPanelAutoSize.Spring
+   END WITH    
    this.Controls.add(controltype.StatusBar, @this.StatusBar)
 
 END CONSTRUCTOR
