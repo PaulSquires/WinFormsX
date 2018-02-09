@@ -33,7 +33,7 @@ declare function Form1_Button2_Click( byref sender as wfxButton, byref e as Even
 declare function Form1_Button3_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
 
 ''          
-''  Define the form (no child controls for this test)
+''  Define the form and the child button controls
 ''
 type TFORMMAIN extends wfxForm
    private:
