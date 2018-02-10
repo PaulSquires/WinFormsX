@@ -57,7 +57,6 @@ Type wfxForm Extends wfxControl
       declare function ShowDialog(byref frmParent as wfxForm) as Long
       declare function ShowDialog(byval frmParent as wfxForm ptr) as Long
       declare function CreateFormInternal( byval hWndParent as hwnd, byval IsModal as boolean ) as long   
-      declare function GetControlByName( ByRef cwzName As wstring) as wfxControl ptr
       
       OnAllEvents        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnLoad             as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT

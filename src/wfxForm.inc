@@ -166,26 +166,6 @@ function wfxForm.Close() as Long
    function = 0
 end function
 
-
-''
-''
-function wfxForm.GetControlByName( ByRef wszName As wstring) as wfxControl ptr
-   ' Return a reference to the control pointer based on the control's name.
-   ' Create and show all of the child controls. Also track what control is being
-   dim as CWSTR wszLookFor = ucase(wszName)
-   dim pCtrl as wfxControl ptr
-   dim pNode as wfxLListNode ptr
-   pNode = this.Controls.get_first
-   do until pNode = 0
-      pCtrl = cast(wfxControl ptr, pNode->pData)
-      if pCtrl then
-         if ucase(pCtrl->Name) = wszLookFor then return pCtrl
-      END IF
-      pNode = this.Controls.get_next(pNode)
-   LOOP
-   return 0
-END FUNCTION
-
 ''
 ''
 function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal as boolean ) as long   

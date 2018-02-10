@@ -173,28 +173,6 @@ function wfxApplication.GetControlByHandle( byval hWindow as hwnd ) as wfxLListN
    function = 0
 end function
 
-''    
-''  Generic function to retrieve control object via ControlType
-''
-function wfxApplication.GetControlByType( byval nCtrlType as ControlType ) as wfxLListNode ptr
-   dim pNodeCtrl as wfxLListNode ptr
-   dim pNode as wfxLListNode ptr
-   dim pForm as wfxForm ptr
-   
-   ' Search all Forms and each control in each Form.
-   pNode = this.Forms.get_first
-   do until pNode = 0
-      if pNode->CtrlType = nCtrlType then return pNode
-      ' Search all the controls on the form for a match
-      pForm = cast(wfxForm ptr, pNode->pData)
-      pNodeCtrl = pForm->Controls.search_controltype(nCtrlType)
-      if pNodeCtrl then return pNodeCtrl
-      ' Get the form in the application   
-      pNode = this.Forms.get_next(pNode)
-   LOOP
-   function = 0
-end function
-
 ''
 ''  Internal function to set the elements of the various EventArg types.
 ''
@@ -343,18 +321,30 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          Select Case pNMHDR->code 
             Case NM_CLICK
                ' Process clicking on the panels in the statusbar
-               pNode = Application.GetControlByType( ControlType.StatusBar )
-               if pNode then 
-                  pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
-                  if pStatusBar then
-                     Dim lpnm As NMMOUSE Ptr = Cast(NMMOUSE Ptr, pNMHDR)
-                     e.PanelClickIndex = lpnm->dwItemSpec  
-                     e.x = lpnm->pt.x: e.y = lpnm->pt.y
-                     if pStatusBar andalso pStatusBar->OnClick then pStatusBar->OnClick(*pStatusBar, e)
+               if pForm then
+                  pNode = pForm->Controls.search_controltype(ControlType.StatusBar)
+                  if pNode then 
+                     pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
+                     if pStatusBar then
+                        Dim lpnm As NMMOUSE Ptr = Cast(NMMOUSE Ptr, pNMHDR)
+                        e.PanelClickIndex = lpnm->dwItemSpec  
+                        e.x = lpnm->pt.x: e.y = lpnm->pt.y
+                        if pStatusBar andalso pStatusBar->OnClick then pStatusBar->OnClick(*pStatusBar, e)
+                     end if
                   end if
                end if
          end select
                
+      Case WM_SIZE
+         if pForm then 
+            if pForm->OnResize then pForm->OnResize(*pForm, e)
+            ' If a StatusBar exists on this form then resize it.
+            pNode = pForm->Controls.search_controltype(ControlType.StatusBar)
+            if pNode then
+               pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
+               SendMessage(pStatusBar->hWindow, uMsg, wParam, lParam)
+            END IF
+         END IF
       
       case WM_CTLCOLORSTATIC, WM_CTLCOLOREDIT 
          ' wParam: HDC of the control. 
@@ -455,19 +445,6 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          
       Case WM_MOVE
          if pForm andalso pForm->OnMove then pForm->OnMove(*pForm, e)
-
-      Case WM_SIZE
-         if pForm then 
-            if pForm->OnResize then pForm->OnResize(*pForm, e)
-            
-            ' If a StatusBar exists on this form then resize it.
-            pCtrl = pForm->GetControlByName("StatusBar")
-            if pCtrl then
-               dim pStatusBar as wfxStatusBar ptr = cast(wfxStatusBar ptr, pCtrl)
-               SendMessage(pStatusBar->hWindow, uMsg, wParam, lParam)
-            END IF
-         
-         END IF
 
    End Select
    
