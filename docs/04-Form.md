@@ -9,7 +9,7 @@
 | CtrlType      | Gets or sets the control type value. Always ControlType.Form and used when adding form to the Application form collection. |
 | ClientSize    | Gets or sets the client area of the form.  The client area of the form is the size of the form excluding the borders and the title bar.<br />Get: returns wfxSize object.<br />Set: (width, height) |
 | ControlBox    | Gets or sets value (true/false) indicating whether a control box is displayed in the caption bar of the form. |
-| Enabled       | Gets or sets a value (true/false) indicating whether the control can respond to user interaction. |
+| Enabled       | Gets or sets a value (true/false) indicating whether the form can respond to user interaction. |
 | Height        | Gets or sets the height of the form. |
 | hWindow       | Gets the Windows handle (hwnd) of the form. |
 | IsMainForm    | Gets or sets a value (true/false) indicating the form is main and will display when application starts. When the form is closed the application also ends. |
@@ -35,7 +35,7 @@
 | Close      | Closes the form.                                             |
 | Hide       | Conceals the form from the user.                             |
 | Refresh    | Forces the form to invalidate its client area and immediately redraw itself and any child controls |
-| SetBounds  | Sets the bounds of the control to the specified location and size. (left, top, width, height) |
+| SetBounds  | Sets the bounds of the form to the specified location and size. (left, top, width, height) |
 | Show       | Displays the form to the user.                               |
 | ShowDialog | Shows the form as a modal dialog box.                        |
 
