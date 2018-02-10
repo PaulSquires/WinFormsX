@@ -78,6 +78,8 @@ Type wfxEventArgs Extends Object
    private:
    public:
       Message         As UINT        ' Windows value of message being sent (WM_COMMAND, WM_NOTIFY, etc)
+      wParam          as WPARAM      ' the wParam of the raw message
+      lParam          as LPARAM      ' the lParam of the raw message
       Handled         as Boolean     ' indicates whether the event is handled by the user
       Cancel          as boolean     ' set to True to cancel closing of Form
       Ctrl            as Boolean     ' the CTRL key is pressed
@@ -85,14 +87,9 @@ Type wfxEventArgs Extends Object
       Shift           as Boolean     ' the SHIFT key is pressed
       KeyChar         as long        ' stores the character corresponding to the key pressed
       KeyCode         as long        ' stores the keyboard code for the event
-      KeyData         as long        ' stores the keyboard data for the event
-      KeyValue        as long        ' stores the keyboard value for the event
-      Modifiers       as long        ' indicates which modifier keys (Ctrl, Shift, Alt) are pressed
       LButton         as boolean     ' the left mouse button pressed
       MButton         as boolean     ' the middle mouse button pressed
       RButton         as boolean     ' the right mouse button pressed
-      Clicks          as long        ' the number of clicks
-      Delta           as long        ' the number of detents the mouse wheel rotated
       x               as long        ' the x-coordinate of the mouse click
       y               as long        ' the y-coordinate of the mouse click
       PanelClickIndex as long        ' the zero-based index of clicked statusbar panel 

@@ -79,8 +79,6 @@ Type wfxForm Extends wfxControl
       OnKeyDown          as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnKeyPress         as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-      OnGotFocus         as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-      OnLostFocus        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 
       Declare Constructor( byref wszName as wstring = "" )
       Declare Destructor

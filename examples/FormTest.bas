@@ -32,8 +32,6 @@ declare function Form1_FormClosing( byref sender as wfxForm, byref e as EventArg
 declare function Form1_FormClosed( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_Move( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_Resize( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-declare function Form1_GotFocus( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-declare function Form1_LostFocus( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_KeyDown( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_KeyPress( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_KeyUp( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
@@ -84,8 +82,6 @@ constructor TFORMMAIN
       .OnFormClosing = @Form1_FormClosing
       .OnFormClosed  = @Form1_FormClosed
       .OnMove        = @Form1_Move
-      .OnGotFocus    = @Form1_GotFocus
-      .OnLostFocus   = @Form1_LostFocus
       .OnKeyDown     = @Form1_KeyDown
       .OnKeyUp       = @Form1_KeyUp
       .OnKeyPress    = @Form1_KeyPress
@@ -137,19 +133,9 @@ function Form1_FormClosed( byref sender as wfxForm, byref e as EventArgs ) as LR
    function = 0
 end function
 
-function Form1_GotFocus( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-   ? "Form GotFocus"
-   function = 0
-end function
-
-function Form1_LostFocus( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-   ? "Form LostFocus"
-   function = 0
-end function
-
 function Form1_Move( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
    dim pt as wfxPoint = sender.Position
-   sender.Text = "Form Move (x,y) = (" & pt.x & ", " & pt.y & ")"
+   ? "Form Move (x,y) = (" & pt.x & ", " & pt.y & ")"
    function = 0
 end function
 

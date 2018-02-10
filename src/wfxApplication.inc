@@ -204,6 +204,8 @@ Function wfxApplication.SetEventArgs( byval uMsg   as UINT, _
                                       byref e      as wfxEventArgs _ 
                                       ) as Long
    e.Message = uMsg
+   e.wParam  = wParam
+   e.lParam  = lParam
    e.Handled = false
    e.Cancel  = false    ' cancel a form close
    e.Ctrl    = (GetKeyState(VK_CONTROL) and &H8000)
@@ -221,7 +223,10 @@ Function wfxApplication.SetEventArgs( byval uMsg   as UINT, _
          e.MButton = (wParam and MK_MBUTTON)
          e.RButton = (wParam and MK_RBUTTON)
 
-      case WM_KEYDOWN, WM_KEYUP, WM_CHAR
+      case WM_KEYDOWN, WM_KEYUP
+         e.KeyCode = wParam
+
+      case WM_CHAR   
          e.KeyChar = wParam
    END SELECT
          
@@ -431,11 +436,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          end if
          
       case WM_SETFOCUS
-         if pForm andalso pForm->OnGotFocus then pForm->OnGotFocus(*pForm, e)
          if pButton andalso pButton->OnGotFocus then pButton->OnGotFocus(*pButton, e)
 
       case WM_KILLFOCUS
-         if pForm andalso pForm->OnLostFocus then pForm->OnLostFocus(*pForm, e)
          if pButton andalso pButton->OnLostFocus then pButton->OnLostFocus(*pButton, e)
 
       case WM_KEYDOWN
