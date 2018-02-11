@@ -104,7 +104,7 @@ constructor TFORMMAIN
       .StartPosition = FormStartPosition.CenterScreen
       .Text          = "CryptoX - Password Manager"
       .Name          = "frmMain"
-      .Background    = Colors.SystemButtonFace
+      .BackColor     = Colors.SystemButtonFace
       .OnClick       = @frmMain_Click
    end with
    ' Add the form to the global application collection
@@ -195,15 +195,19 @@ Every Event Handler has the exact same format and is comprised of two parameters
 
 frmMain_Click: The portion before the underscore is the form name and the portion afterwards is the name of the event being responded to. In this case, the function is in response to someone clicking on an area of the form. The first parameter, *sender*, is a variable representing the form where the click occurred (eg. frmMain and is of the wfxForm class). You can interact with that variable and manipulate properties of the form:
 
+```
 sender.Text = "My new caption for the form's title bar!"
+```
 
 This is actually equivalent to using the form's explicitly defined shared variable and both are acceptable.
 
+```
 frmMain.Text = "My new caption for the form's title bar!"
+```
 
 When dealing with controls on a form, the syntax is only slightly different and pretty self-explanatory.
 
-````declare function frmMain_cmdOK_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT````
+```` declare function frmMain_cmdOK_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT````
 
 Of note is that *sender* is now of type *wfxButton* rather than *wfxForm*. This is because the function is in response to the user clicking on the OK button rather than the form itself.
 

@@ -118,8 +118,8 @@ constructor TFORMMAIN
       .Name = "Text3"
       .Text = "Text3"
       .TextAlign = TextBoxAlignment.Right
-      .Background = Colors.Yellow
-      .Foreground = Colors.Red
+      .BackColor = Colors.Yellow
+      .ForeColor = Colors.Red
       .SetBounds(270, 25, 120, 24)
       .OnDestroy    = @Form1_Text3_Destroy
       .OnMouseEnter = @Form1_Text3_MouseEnter

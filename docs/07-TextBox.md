@@ -4,12 +4,12 @@
 
 | Name       | Description |
 | ---------- | ----------- |
-| Background | Gets or sets the background color of the control.|
+| BackColor | Gets or sets the background color of the control.|
 | BorderStyle | Gets or sets the border type of the text box control. Refer to the TextBoxBorderStyle enum. |
 | CtrlType      | Gets or sets the control type value. Always ControlType.TextBox and used when adding control to its form's controls collection. |
 | Enabled       | Gets or sets a value (true/false) indicating whether the control can respond to user interaction. |
 | Focused | Gets a value (true/false) indicating whether the control has input focus.|
-| Foreground | Gets or sets the foreground color of the control.|
+| ForeColor | Gets or sets the foreground color of the control.|
 | Height        | Gets or sets the height of the control. |
 | hWindow       | Gets the Windows handle (hwnd) of the control. |
 | Left          | Gets or sets the distance, in pixels, between the left edge of the control and the left edge of its container's client area (normally the form). |

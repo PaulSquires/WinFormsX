@@ -7,8 +7,8 @@
 constructor wfxButton( byref wszName as wstring = "" )
    this.CtrlType = ControlType.Button
    this.Name = wszName
-   this.Background = Colors.SystemButtonFace
-   this.Foreground = Colors.SystemButtonText
+   this.BackColor = Colors.SystemButtonFace
+   this.ForeColor = Colors.SystemButtonText
 end constructor
 
 property wfxButton.TextAlign() as ButtonAlignment

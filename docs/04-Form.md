@@ -4,7 +4,7 @@
 
 | Name       | Description |
 | ---------- | ----------- |
-| Background    | Gets or sets the background color of the form. Refer to the Colors object. |
+| BackColor | Gets or sets the background color of the form. Refer to the Colors object. |
 | BorderStyle   | Gets or sets the border style of the form. Refer to the FormBorderStyle enum. |
 | CtrlType      | Gets or sets the control type value. Always ControlType.Form and used when adding form to the Application form collection. |
 | ClientSize    | Gets or sets the client area of the form.  The client area of the form is the size of the form excluding the borders and the title bar.<br />Get: returns wfxSize object.<br />Set: (width, height) |

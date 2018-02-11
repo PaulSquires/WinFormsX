@@ -56,7 +56,7 @@ constructor TFORMMAIN
       .StartPosition = FormStartPosition.CenterScreen
       .Text          = "Form1"
       .Name          = "Form1"
-      .Background    = Colors.SystemButtonFace
+      .BackColor     = Colors.SystemButtonFace
       .OnClick       = @Form1_Click
    end with
    with this.Label1
@@ -64,8 +64,8 @@ constructor TFORMMAIN
       .Text = "This is a Label"
       .SetBounds(5, 5, 150, 30)
       .TextAlign     = LabelAlignment.MiddleCenter
-      .Foreground    = Colors.Yellow
-      .Background    = Colors.Blue
+      .BackColor     = Colors.Blue
+      .ForeColor     = Colors.Yellow
       .OnAllEvents   = @Form1_Label1_AllEvents
       .OnDestroy     = @Form1_Label1_Destroy
       .OnClick       = @Form1_Label1_Click
@@ -177,7 +177,8 @@ function Form1_Label1_Click( byref sender as wfxLabel, byref e as EventArgs ) as
    ? "Name: "; sender.Name
    ? "Text: "; sender.Text
    ? "Parent: "; sender.Parent
-   ? "Background: "; sender.Background
+   ? "BackColor: "; sender.BackColor
+   ? "ForeColor: "; sender.ForeColor
    ? "Enabled: "; sender.Enabled
    ? "Visible: "; sender.Visible
    ? "Left: "; sender.Left

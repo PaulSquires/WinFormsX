@@ -1,15 +1,14 @@
-# WinFormsX - Label
+# WinFormsX - CheckBox
 
 ### Properties
 
 | Name       | Description |
 | ---------- | ----------- |
-| BackColor | Gets or sets the background color of the control. Refer to the Colors object. |
-| CtrlType      | Gets or sets the control type value. Always ControlType.Label and used when adding control to its form's controls collection. |
-| TextAlign | Gets or sets a value indicating the alignment of the text on a control. Refer to LabelAlignment enum. |
+| BackColor | Gets or sets the background color of the control.|
+| Checked | Gets or set a value (true/false) indicating whether the CheckBox is in the checked state. |
+| CtrlType      | Gets or sets the control type value. Always ControlType.CheckBox and used when adding control to its form's controls collection. |
 | Enabled       | Gets or sets a value (true/false) indicating whether the control can respond to user interaction. |
-| FlatStyle | Gets or sets a value (true/false) indicating whether the control has a flat style (true) or a sunken (false) appearance. |
-| ForeColor | Gets or sets the foreground color of the control. Refer to the Colors object. |
+| Focused | Gets a value (true/false) indicating whether the control has input focus.|
 | Height        | Gets or sets the height of the control. |
 | hWindow       | Gets the Windows handle (hwnd) of the control. |
 | Left          | Gets or sets the distance, in pixels, between the left edge of the control and the left edge of its container's client area (normally the form). |
@@ -17,6 +16,7 @@
 | Parent        | Gets or sets the parent container of the control. |
 | Position      | Gets or sets the top and left position of the control relative to the form.<br />Get: returns wfxPoint object <br />Set: (left, top) |
 | Size          | Gets or sets the size of the control.<br />Get: returns wfxSize object.<br />Set: (width, height) |
+| TabStop | Gets or sets a value (true/false) indicating whether the user can give the focus to this control using the TAB key|
 | Text          | Gets or sets the text (caption) associated with this control. |
 | Top           | Gets or sets the distance, in pixels, between the top edge of the control and the top edge of its container's client area (normally the form). |
 | Visible       | Gets or sets a value (true/false) indicating whether the control is displayed. |
@@ -38,6 +38,11 @@
 | OnAllEvents     | Special handler where **all** events are routed through. Use this handler if you prefer to use the Win32 api style messages and wParam and lParam parameters. Set the *Handled* element of *EventArgs* to **true** if you handle a message and do not want Windows to perform any further processing on the message. |
 | OnClick     | Occurs when the client area of the control is clicked. |
 | OnDestroy | Occurs immediately before the control is about to be destroyed and all resources associated with it released. |
+| OnGotFocus     | Occurs when the control gains input focus. |
+| OnLostFocus    | Occurs when the control loses input focus. |
+| OnKeyDown | Occurs when a key is pressed while the control has focus. |
+| OnKeyPress | Occurs when a character, space or backspace key is pressed while the control has focus. |
+| OnKeyUp | Occurs when a key is released while the control has focus. |
 | OnMouseDoubleClick     | Occurs when the control is double clicked by the mouse. |
 | OnMouseDown     | Occurs when the mouse pointer is over the control and a mouse button is pressed. |
 | OnMouseEnter   | Occurs when the mouse pointer enters the control. |
@@ -45,15 +50,3 @@
 | OnMouseLeave  | Occurs when the mouse pointer leaves the control. |
 | OnMouseMove     | Occurs when the mouse pointer is moved over the control. |
 | OnMouseUp     | Occurs when the mouse pointer is over the control and a mouse button is released. |
-
-### Label Alignment Enum
-````
-enum LabelAlignment
-   MiddleCenter = SS_CENTER OR SS_CENTERIMAGE
-   MiddleLeft   = SS_LEFT   or SS_CENTERIMAGE
-   MiddleRight  = SS_RIGHT  or SS_CENTERIMAGE
-   TopCenter    = SS_CENTER
-   TopLeft      = SS_LEFT  
-   TopRight     = SS_RIGHT 
-end enum
-````

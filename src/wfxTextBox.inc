@@ -23,8 +23,8 @@
 constructor wfxTextBox( byref wszName as wstring = "" )
    this.CtrlType = ControlType.TextBox
    this.Name = wszName
-   this.Background = Colors.SystemWindowFace
-   this.Foreground = Colors.SystemWindowText
+   this.BackColor = Colors.SystemWindowFace
+   this.ForeColor = Colors.SystemWindowText
 end constructor
 
 property wfxTextBox.TextAlign() as TextBoxAlignment

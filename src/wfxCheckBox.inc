@@ -1,27 +1,29 @@
+'    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
+'    Copyright (C) 2018 Paul Squires, PlanetSquires Software
+'
+'    This program is free software: you can redistribute it and/or modify
+'    it under the terms of the GNU General Public License as published by
+'    the Free Software Foundation, either version 3 of the License, or
+'    (at your option) any later version.
+'
+'    This program is distributed in the hope that it will be useful,
+'    but WITHOUT any WARRANTY; without even the implied warranty of
+'    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
+'    GNU General Public License for more details.
+
 ''
 ''  CheckBox Class
 ''
 ''  https://msdn.microsoft.com/en-us/library/system.windows.forms.checkbox(v=vs.110).aspx
 ''
 
+#include once "wfxCheckBox.bi"
+
 constructor wfxCheckBox( byref wszName as wstring = "" )
    this.CtrlType = ControlType.CheckBox
    this.Name = wszName
+   this.BackColor = Colors.SystemButtonFace
 end constructor
-
-property wfxCheckBox.TextAlign() as ButtonAlignment
-   property = _TextAlign
-end property
-
-property wfxCheckBox.TextAlign( byval nValue as ButtonAlignment )
-   if this.hWindow then 
-      ' Remove the current alignment and set the new style
-      AfxRemoveWindowStyle(this.hWindow, _TextAlign)
-      AfxAddWindowStyle(this.hWindow, nValue)
-      this.Refresh
-   end if
-   _TextAlign = nValue
-end property
 
 property wfxCheckBox.Checked() as boolean
    if this.hWindow then 
@@ -50,7 +52,7 @@ function wfxCheckBox.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    dim as long dwExStyle = 0
-   dim as long dwStyle = BS_AUTOCHECKBOX or _TextAlign
+   dim as long dwStyle = BS_AUTOCHECKBOX 
    if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
 
@@ -71,14 +73,20 @@ function wfxCheckBox.Show(byval hWndParent as hwnd = 0) as long
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
 
-   this.Enabled = _Enabled
-   this.Checked = _Checked
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.
    ' Refer to wfxForm.CreateFormInternal for the setting of the focus/selected
    ' control once events have fired correctly.
       
+   ' Store the hWindow in the form's linked list in order to allow
+   ' for fast lookups via GetControlByHandle.
+   dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
+   if pNode then pNode->hWindow = this.hWindow
+      
+   this.Enabled = _Enabled
+   this.Checked = _Checked
+
    function = 0
 END FUNCTION
 

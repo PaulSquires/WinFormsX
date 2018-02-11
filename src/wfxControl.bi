@@ -28,9 +28,9 @@ Type wfxControl Extends Object
       _Enabled     as Boolean = True
       _Visible     as Boolean = True
       _TabStop     as boolean = true
-      _Background  as COLORREF = Colors.SystemButtonFace
+      _BackColor   as COLORREF = Colors.SystemButtonFace
       _hBackBrush  as HBRUSH = CreateSolidBrush(Colors.SystemButtonFace)
-      _Foreground  as COLORREF = Colors.SystemButtonText
+      _ForeColor   as COLORREF = Colors.SystemButtonText
       _bIsTracking as Boolean = false    ' mouse tracking for Enter/Leave
       
    Public:
@@ -45,10 +45,10 @@ Type wfxControl Extends Object
       Declare Property CtrlID() As Long
       Declare Property CtrlID( ByVal nValue As Long )
       Declare Property hBackBrush() As HBRUSH   ' internal get
-      Declare Property Background() As COLORREF
-      Declare Property Background( ByVal nValue As COLORREF )
-      Declare Property Foreground() As COLORREF
-      Declare Property Foreground( ByVal nValue As COLORREF )
+      Declare Property BackColor() As COLORREF
+      Declare Property BackColor( ByVal nValue As COLORREF )
+      Declare Property ForeColor() As COLORREF
+      Declare Property ForeColor( ByVal nValue As COLORREF )
       Declare Property IsTracking() As boolean
       Declare Property IsTracking( ByVal nValue As Boolean)
       Declare Property Enabled() As boolean

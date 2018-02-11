@@ -102,19 +102,6 @@ Type wfxEventArgs Extends Object
 end type
 
 
-'Type wfxCheckBox Extends wfxControl
-'      _TextAlign as ButtonAlignment = ButtonAlignment.MiddleLeft
-'      _Checked   as Boolean
-          
-'   Public:
-'      Declare Property TextAlign() As ButtonAlignment
-'      Declare Property TextAlign( ByVal nValue As ButtonAlignment )
-'      declare property Checked() as boolean
-'      declare property Checked( byval nValue as boolean )
-'      Declare Constructor( byref wszName as wstring = "" )
-'      declare function Show(byval hWndParent as hwnd = 0) as long override
-'End Type
-
 'Type wfxRadioButton Extends wfxControl
 '      _TextAlign  as ButtonAlignment = ButtonAlignment.MiddleLeft
 '      _Checked    as Boolean

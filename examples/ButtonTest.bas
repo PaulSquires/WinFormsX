@@ -58,7 +58,7 @@ constructor TFORMMAIN
       .StartPosition = FormStartPosition.CenterScreen
       .Text          = "Form1"
       .Name          = "Form1"
-      .Background    = Colors.SystemButtonFace
+      .BackColor     = Colors.SystemButtonFace
       .OnClick       = @Form1_Click
    end with
    ' Add the form to the global application collection

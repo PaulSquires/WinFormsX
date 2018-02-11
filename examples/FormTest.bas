@@ -67,7 +67,7 @@ constructor TFORMMAIN
       .StartPosition = FormStartPosition.CenterScreen
       .Text          = "Form1"
       .Name          = "Form1"
-      .Background    = Colors.SystemButtonFace
+      .BackColor     = Colors.SystemButtonFace
       .OnAllEvents   = @Form1_AllEvents
       .OnClick       = @Form1_Click
       .OnResize      = @Form1_Resize
@@ -215,7 +215,7 @@ function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
    ? "Name: "; sender.Name
    ? "Text: "; sender.Text
    ? "Parent: "; sender.Parent
-   ? "Background: "; sender.Background
+   ? "BackColor: "; sender.BackColor
    ? "Enabled: "; sender.Enabled
    ? "Visible: "; sender.Visible
    ? "Left: "; sender.Left

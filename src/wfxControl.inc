@@ -46,26 +46,26 @@ property wfxControl.hBackBrush() as HBRUSH
    property = _hBackBrush
 end property
 
-property wfxControl.Background() as COLORREF
-   property = _Background
+property wfxControl.BackColor() as COLORREF
+   property = _BackColor
 end property
 
-property wfxControl.Background( byval nValue as COLORREF )
+property wfxControl.BackColor( byval nValue as COLORREF )
    ' Create new back brush of the color has changed
-   if nValue <> _Background THEN
+   if nValue <> _BackColor THEN
       DeleteObject(_hBackBrush)
       _hBackBrush = CreateSolidBrush(nValue)
    END IF
-   _Background = nValue
+   _BackColor = nValue
    if this.hWindow THEN AfxRedrawWindow(this.hWindow)
 end property
 
-property wfxControl.Foreground() as COLORREF
-   property = _Foreground
+property wfxControl.ForeColor() as COLORREF
+   property = _ForeColor
 end property
 
-property wfxControl.Foreground( byval nValue as COLORREF )
-   _Foreground = nValue
+property wfxControl.ForeColor( byval nValue as COLORREF )
+   _ForeColor = nValue
    if this.hWindow THEN AfxRedrawWindow(this.hWindow)
    ' You can not change the Foreground color of the following controls:
    ' - Button
