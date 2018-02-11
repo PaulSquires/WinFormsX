@@ -72,6 +72,12 @@ enum TextBoxAlignment
    Center = ES_CENTER
 end enum
 
+enum TextBoxBorderStyle
+   None	= 0
+   Fixed3D = WS_EX_CLIENTEDGE	
+   FixedSingle	= WS_EX_WINDOWEDGE	
+   FixedDialog	= WS_EX_DLGMODALFRAME
+end enum
 
 type EventArgs as wfxEventArgs    ' forward reference
 Type wfxEventArgs Extends Object
@@ -121,25 +127,6 @@ end type
 '      declare property Checked( byval nValue as boolean )
 '      declare property StartGroup() as boolean
 '      declare property StartGroup( byval nValue as boolean )
-'      Declare Constructor( byref wszName as wstring = "" )
-'      declare function Show(byval hWndParent as hwnd = 0) as long override
-'End Type
-
-'Type wfxTextBox Extends wfxControl
-'      _TextAlign   as TextBoxAlignment = TextBoxAlignment.Left
-'      _BorderStyle as FormBorderStyle = FormBorderStyle.Fixed3D
-'      _Multiline   as Boolean = false
-'      _WordWrap    as Boolean = false
-       
-'   Public:
-'      Declare Property TextAlign() As TextBoxAlignment
-'      Declare Property TextAlign( ByVal nValue As TextBoxAlignment)
-'      Declare Property BorderStyle() As FormBorderStyle
-'      Declare Property BorderStyle( ByVal nValue As FormBorderStyle )
-'      declare property Multiline() as boolean
-'      declare property Multiline( byval nValue as boolean )
-'      declare property WordWrap() as boolean
-'      declare property WordWrap( byval nValue as boolean )
 '      Declare Constructor( byref wszName as wstring = "" )
 '      declare function Show(byval hWndParent as hwnd = 0) as long override
 'End Type

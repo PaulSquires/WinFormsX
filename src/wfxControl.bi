@@ -15,7 +15,7 @@
 type wfxForm_ as wfxForm    ' forward reference
 
 Type wfxControl Extends Object
-   private:
+   protected:
       _CtrlType    As Long
       _CtrlName    As CWSTR
       _CtrlID      As Long
@@ -24,13 +24,13 @@ Type wfxControl Extends Object
       _Position    as wfxPoint
       _Parent      as wfxForm_ ptr
       _hWindow     as hwnd
-      _Selected    as Boolean = False
+      _Focused     as Boolean = False
       _Enabled     as Boolean = True
       _Visible     as Boolean = True
       _TabStop     as boolean = true
       _Background  as COLORREF = Colors.SystemButtonFace
       _hBackBrush  as HBRUSH = CreateSolidBrush(Colors.SystemButtonFace)
-      _Foreground  as COLORREF = Colors.SystemWindowText
+      _Foreground  as COLORREF = Colors.SystemButtonText
       _bIsTracking as Boolean = false    ' mouse tracking for Enter/Leave
       
    Public:
@@ -40,8 +40,8 @@ Type wfxControl Extends Object
       Declare Property CtrlType( ByVal nValue As Long )
       Declare Property Name() As CWSTR 
       Declare Property Name( ByRef cwzValue As wstring )
-      Declare Property Selected() As boolean
-      Declare Property Selected( ByVal nValue As Boolean)
+      Declare Property Focused() As boolean
+      Declare Property Focused( ByVal nValue As Boolean)
       Declare Property CtrlID() As Long
       Declare Property CtrlID( ByVal nValue As Long )
       Declare Property hBackBrush() As HBRUSH   ' internal get

@@ -1,12 +1,30 @@
+'    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
+'    Copyright (C) 2018 Paul Squires, PlanetSquires Software
+'
+'    This program is free software: you can redistribute it and/or modify
+'    it under the terms of the GNU General Public License as published by
+'    the Free Software Foundation, either version 3 of the License, or
+'    (at your option) any later version.
+'
+'    This program is distributed in the hope that it will be useful,
+'    but WITHOUT any WARRANTY; without even the implied warranty of
+'    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
+'    GNU General Public License for more details.
+
 ''
 ''  TextBox Class
 ''
 ''  https://msdn.microsoft.com/en-us/library/system.windows.forms.textbox(v=vs.110).aspx
 ''
 
+#include once "wfxTextBox.bi"
+
+
 constructor wfxTextBox( byref wszName as wstring = "" )
    this.CtrlType = ControlType.TextBox
    this.Name = wszName
+   this.Background = Colors.SystemWindowFace
+   this.Foreground = Colors.SystemWindowText
 end constructor
 
 property wfxTextBox.TextAlign() as TextBoxAlignment
@@ -23,11 +41,11 @@ property wfxTextBox.TextAlign( byval nValue as TextBoxAlignment )
    _TextAlign = nValue
 end property
 
-property wfxTextBox.BorderStyle() as FormBorderStyle
+property wfxTextBox.BorderStyle() as TextBoxBorderStyle
    property = _BorderStyle
 end property
 
-property wfxTextBox.BorderStyle( byval nValue as FormBorderStyle )
+property wfxTextBox.BorderStyle( byval nValue as TextBoxBorderStyle )
    _BorderStyle = nValue
 end property
 
@@ -117,13 +135,19 @@ function wfxTextBox.Show(byval hWndParent as hwnd = 0) as long
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
 
-   this.Enabled = _Enabled
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.
    ' Refer to wfxForm.CreateFormInternal for the setting of the focus/selected
    ' control once events have fired correctly.
       
+   ' Store the hWindow in the form's linked list in order to allow
+   ' for fast lookups via GetControlByHandle.
+   dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
+   if pNode then pNode->hWindow = this.hWindow
+      
+   this.Enabled = _Enabled
+
    function = 0
 END FUNCTION
 

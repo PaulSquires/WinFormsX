@@ -73,18 +73,18 @@ property wfxControl.Foreground( byval nValue as COLORREF )
    ' - RadioButton
 end property
 
-property wfxControl.Selected() as Boolean
+property wfxControl.Focused() as Boolean
    if this.hWindow then 
-      _Selected = iif( GetFocus() = this.hWindow, true, false)
+      _Focused = iif( GetFocus() = this.hWindow, true, false)
    end if
-   property = _Selected 
+   property = _Focused 
 end property
 
-property wfxControl.Selected( byval nValue as Boolean )
+property wfxControl.Focused( byval nValue as Boolean )
    if this.hWindow then 
       if nValue then SetFocus(this.hWindow)
    end if
-   _Selected = nValue
+   _Focused = nValue
 end property
 
 property wfxControl.IsTracking() as Boolean

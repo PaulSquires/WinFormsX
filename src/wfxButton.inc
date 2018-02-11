@@ -2,9 +2,13 @@
 ''  Button Class
 ''
 
+#include once "wfxButton.bi"
+
 constructor wfxButton( byref wszName as wstring = "" )
    this.CtrlType = ControlType.Button
    this.Name = wszName
+   this.Background = Colors.SystemButtonFace
+   this.Foreground = Colors.SystemButtonText
 end constructor
 
 property wfxButton.TextAlign() as ButtonAlignment
@@ -66,6 +70,8 @@ function wfxButton.Show(byval hWndParent as hwnd = 0) as long
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
       
+   this.Enabled = _Enabled
+
    function = 0
 END FUNCTION
 

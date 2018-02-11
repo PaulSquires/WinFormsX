@@ -224,10 +224,11 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    dim pNode as wfxLListNode ptr
    dim e     as wfxEventArgs 
    
-   dim pCtrl   as wfxControl ptr
-   dim pForm   as wfxForm ptr
-   dim pLabel  as wfxLabel ptr
-   dim pButton as wfxButton ptr
+   dim pCtrl      as wfxControl ptr
+   dim pForm      as wfxForm ptr
+   dim pLabel     as wfxLabel ptr
+   dim pButton    as wfxButton ptr
+   dim pTextBox   as wfxTextBox ptr
    dim pStatusBar as wfxStatusBar ptr
    
    pNode = Application.GetControlByHandle(hWin)
@@ -237,6 +238,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          CASE ControlType.Form:       pForm  = cast(wfxForm ptr, pNode->pData)
          CASE ControlType.Label:      pLabel = cast(wfxLabel ptr, pNode->pData)
          CASE ControlType.Button:     pButton = cast(wfxButton ptr, pNode->pData)
+         CASE ControlType.TextBox:    pTextBox = cast(wfxTextBox ptr, pNode->pData)
          CASE ControlType.StatusBar:  pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
       END SELECT
    end if   
@@ -247,6 +249,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    if pForm andalso pForm->OnAllEvents then pForm->OnAllEvents(*pForm, e)
    if pLabel andalso pLabel->OnAllEvents then pLabel->OnAllEvents(*pLabel, e)
    if pButton andalso pButton->OnAllEvents then pButton->OnAllEvents(*pButton, e)
+   if pTextBox andalso pTextBox->OnAllEvents then pTextBox->OnAllEvents(*pTextBox, e)
    if pStatusBar andalso pStatusBar->OnAllEvents then pStatusBar->OnAllEvents(*pStatusBar, e)
 
    ' If the event was handled in the OnAllEvents then return true
@@ -282,6 +285,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pForm andalso pForm->OnFormClosed then pForm->OnFormClosed(*pForm, e)
          if pLabel andalso pLabel->OnDestroy then pLabel->OnDestroy(*pLabel, e)
          if pButton andalso pButton->OnDestroy then pButton->OnDestroy(*pButton, e)
+         if pTextBox andalso pTextBox->OnDestroy then pTextBox->OnDestroy(*pTextBox, e)
          if pStatusBar andalso pStatusBar->OnDestroy then pStatusBar->OnDestroy(*pStatusBar, e)
          ' If this is the main form then post a quit message
          if pForm then 
@@ -372,8 +376,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pForm andalso pForm->OnMouseMove then pForm->OnMouseMove(*pForm, e)
          if pLabel andalso pLabel->OnMouseMove then pLabel->OnMouseMove(*pLabel, e)
          if pButton andalso pButton->OnMouseMove then pButton->OnMouseMove(*pButton, e)
+         if pTextBox andalso pTextBox->OnMouseMove then pTextBox->OnMouseMove(*pTextBox, e)
          if pStatusBar andalso pStatusBar->OnMouseMove then pStatusBar->OnMouseMove(*pStatusBar, e)
-         ' There is no such thing as a WM_MOUSEENTER lessage so we need to simulate it
+         ' There is no such thing as a WM_MOUSEENTER message so we need to simulate it
          ' here by using a tracking variable and TRACKMOUSEEVENT.
          if pCtrl then
             if pCtrl->IsTracking = false then
@@ -386,6 +391,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                if pForm andalso pForm->OnMouseEnter then pForm->OnMouseEnter(*pForm, e)
                if pLabel andalso pLabel->OnMouseEnter then pLabel->OnMouseEnter(*pLabel, e)
                if pButton andalso pButton->OnMouseEnter then pButton->OnMouseEnter(*pButton, e)
+               if pTextBox andalso pTextBox->OnMouseEnter then pTextBox->OnMouseEnter(*pTextBox, e)
                if pStatusBar andalso pStatusBar->OnMouseEnter then pStatusBar->OnMouseEnter(*pStatusBar, e)
             END IF
          END IF
@@ -395,53 +401,64 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pForm andalso pForm->OnMouseLeave then pForm->OnMouseLeave(*pForm, e)
          if pLabel andalso pLabel->OnMouseLeave then pLabel->OnMouseLeave(*pLabel, e)
          if pButton andalso pButton->OnMouseLeave then pButton->OnMouseLeave(*pButton, e)
+         if pTextBox andalso pTextBox->OnMouseLeave then pTextBox->OnMouseLeave(*pTextBox, e)
          if pStatusBar andalso pStatusBar->OnMouseLeave then pStatusBar->OnMouseLeave(*pStatusBar, e)
       
       case WM_MOUSEHOVER
          if pForm andalso pForm->OnMouseHover then pForm->OnMouseHover(*pForm, e)
          if pLabel andalso pLabel->OnMouseHover then pLabel->OnMouseHover(*pLabel, e)
          if pButton andalso pButton->OnMouseHover then pButton->OnMouseHover(*pButton, e)
+         if pTextBox andalso pTextBox->OnMouseHover then pTextBox->OnMouseHover(*pTextBox, e)
          if pStatusBar andalso pStatusBar->OnMouseHover then pStatusBar->OnMouseHover(*pStatusBar, e)
             
       case WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
          if pForm andalso pForm->OnMouseDoubleClick then pForm->OnMouseDoubleClick(*pForm, e)
          if pLabel andalso pLabel->OnMouseDoubleClick then pLabel->OnMouseDoubleClick(*pLabel, e)
          if pButton andalso pButton->OnMouseDoubleClick then pButton->OnMouseDoubleClick(*pButton, e)
+         if pTextBox andalso pTextBox->OnMouseDoubleClick then pTextBox->OnMouseDoubleClick(*pTextBox, e)
          if pStatusBar andalso pStatusBar->OnMouseDoubleClick then pStatusBar->OnMouseDoubleClick(*pStatusBar, e)
 
       case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN
          if pForm andalso pForm->OnMouseDown then pForm->OnMouseDown(*pForm, e)
          if pLabel andalso pLabel->OnMouseDown then pLabel->OnMouseDown(*pLabel, e)
          if pButton andalso pButton->OnMouseDown then pButton->OnMouseDown(*pButton, e)
+         if pTextBox andalso pTextBox->OnMouseDown then pTextBox->OnMouseDown(*pTextBox, e)
          if pStatusBar andalso pStatusBar->OnMouseDown then pStatusBar->OnMouseDown(*pStatusBar, e)
 
       case WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP
          if pForm andalso pForm->OnMouseUp then pForm->OnMouseUp(*pForm, e)
          if pLabel andalso pLabel->OnMouseUp then pLabel->OnMouseUp(*pLabel, e)
          if pButton andalso pButton->OnMouseUp then pButton->OnMouseUp(*pButton, e)
+         if pTextBox andalso pTextBox->OnMouseUp then pTextBox->OnMouseUp(*pTextBox, e)
          if pStatusBar andalso pStatusBar->OnMouseUp then pStatusBar->OnMouseUp(*pStatusBar, e)
          ' Forms convert LBUTTONUP to simulate OnClick()
          if uMsg = WM_LBUTTONUP then
             if pForm andalso pForm->OnClick then pForm->OnClick(*pForm, e)
+            if pTextBox andalso pTextBox->OnClick then pTextBox->OnClick(*pTextBox, e)
          end if
          
       case WM_SETFOCUS
          if pButton andalso pButton->OnGotFocus then pButton->OnGotFocus(*pButton, e)
+         if pTextBox andalso pTextBox->OnGotFocus then pTextBox->OnGotFocus(*pTextBox, e)
 
       case WM_KILLFOCUS
          if pButton andalso pButton->OnLostFocus then pButton->OnLostFocus(*pButton, e)
+         if pTextBox andalso pTextBox->OnLostFocus then pTextBox->OnLostFocus(*pTextBox, e)
 
       case WM_KEYDOWN
          if pForm andalso pForm->OnKeyDown then pForm->OnKeyDown(*pForm, e)
          if pButton andalso pButton->OnKeyDown then pButton->OnKeyDown(*pButton, e)
+         if pTextBox andalso pTextBox->OnKeyDown then pTextBox->OnKeyDown(*pTextBox, e)
 
       case WM_KEYUP
          if pForm andalso pForm->OnKeyUp then pForm->OnKeyUp(*pForm, e)
          if pButton andalso pButton->OnKeyUp then pButton->OnKeyUp(*pButton, e)
+         if pTextBox andalso pTextBox->OnKeyUp then pTextBox->OnKeyUp(*pTextBox, e)
 
       case WM_CHAR
          if pForm andalso pForm->OnKeyPress then pForm->OnKeyPress(*pForm, e)
          if pButton andalso pButton->OnKeyPress then pButton->OnKeyPress(*pButton, e)
+         if pTextBox andalso pTextBox->OnKeyPress then pTextBox->OnKeyPress(*pTextBox, e)
          
       Case WM_MOVE
          if pForm andalso pForm->OnMove then pForm->OnMove(*pForm, e)

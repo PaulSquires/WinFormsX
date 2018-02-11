@@ -17,6 +17,8 @@
 ''  https://msdn.microsoft.com/en-us/library/system.windows.forms.label(v=vs.110).aspx
 ''
 
+#include once "wfxLabel.bi"
+
 constructor wfxLabel( byref wszName as wstring = "" )
    this.CtrlType = ControlType.Label
    this.Name = wszName
@@ -83,6 +85,8 @@ function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
+
+   this.Enabled = _Enabled
 
    function = 0
 END FUNCTION

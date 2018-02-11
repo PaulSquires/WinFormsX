@@ -14,6 +14,8 @@
 
 TYPE wfxColors
    SystemButtonFace     as COLORREF = GetSysColor(COLOR_BTNFACE)
+   SystemButtonText     as COLORREF = GetSysColor(COLOR_BTNTEXT)
+   SystemWindowFace     as COLORREF = GetSysColor(COLOR_WINDOW)
    SystemWindowText     as COLORREF = GetSysColor(COLOR_WINDOWTEXT)
    AliceBlue            as COLORREF = BGR(240,248,255)
    AntiqueWhite         as COLORREF = BGR(250,235,215)

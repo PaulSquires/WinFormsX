@@ -248,7 +248,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    do until pNode = 0
       pCtrl = cast(wfxControl ptr, pNode->pData)
       if pCtrl then
-         if pCtrl->Selected then pCtrlFocus = pCtrl
+         if pCtrl->Focused then pCtrlFocus = pCtrl
          pCtrl->Show(this.hWindow)
       END IF
       pNode = this.Controls.get_next(pNode)

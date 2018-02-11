@@ -69,7 +69,7 @@ constructor TFORMMAIN
       .Name = "Button1"
       .Text = "Button1"
       .SetBounds(10, 25, 70, 30)
-      .Selected      = true   ' set initial focus to this control
+      .Focused       = true   ' set initial focus to this control
       .TextAlign     = ButtonAlignment.MiddleCenter
       .OnAllEvents   = @Form1_Button1_AllEvents
       .OnDestroy     = @Form1_Button1_Destroy
