@@ -195,7 +195,7 @@ function Form1_Button1_Click( byref sender as wfxButton, byref e as EventArgs ) 
    ' label properties through use of the global shared Form1 variable (Form1.Label1).
    ? "Button Click: "; sender.Name
 
-'   dim pt as wfxPoint = sender.Position
+'   dim pt as wfxPoint = sender.Location
 '   dim size as wfxSize = sender.Size
 '   ? "Text: "; sender.Text
 '   ? "Parent: "; sender.Parent
@@ -207,7 +207,7 @@ function Form1_Button1_Click( byref sender as wfxButton, byref e as EventArgs ) 
 '   ? "Width: "; sender.Width
 '   ? "Height: "; sender.Height
 '   ? "Size: "; size.Width; " x "; size.Height
-'   ? "Position: "; pt.x; ", "; pt.y
+'   ? "Location: "; pt.x; ", "; pt.y
 '   ?
    function = 0
 end function

@@ -135,32 +135,32 @@ property wfxControl.Left() as LONG
    if this.hWindow then 
       dim as long nLeft, nTop
       AfxGetWindowLocation(this.hWindow, @nLeft, @nTop)
-      _Position.x = nLeft
+      _Location.x = nLeft
    end if
-   property = _Position.x
+   property = _Location.x
 end property
 
 property wfxControl.Left( byval nValue as long )
    if this.hWindow then 
       SetWindowPos(this.hWindow, 0, nValue, this.Top, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
    end if
-   _Position.x = nValue
+   _Location.x = nValue
 end property
 
 property wfxControl.Top() as LONG
    if this.hWindow then 
       dim as long nLeft, nTop
       AfxGetWindowLocation(this.hWindow, @nLeft, @nTop)
-      _Position.y = nTop
+      _Location.y = nTop
    end if
-   property = _Position.y
+   property = _Location.y
 end property
 
 property wfxControl.Top( byval nValue as long )
    if this.hWindow then 
       SetWindowPos(this.hWindow, 0, this.Left, nValue, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
    end if
-   _Position.y = nValue
+   _Location.y = nValue
 end property
 
 property wfxControl.Width() as LONG
@@ -207,28 +207,28 @@ property wfxControl.Size( byval nWidth as long, byval nHeight as long )
    _Size.Height = nHeight
 end property
 
-property wfxControl.Position() as wfxPoint
+property wfxControl.Location() as wfxPoint
    if this.hWindow then 
-      _Position.x = this.Left
-      _Position.y = this.Top
+      _Location.x = this.Left
+      _Location.y = this.Top
    end if
-   property = _Position
+   property = _Location
 end property
 
-property wfxControl.Position( byval xPos as long, byval yPos as long ) 
+property wfxControl.Location( byval xPos as long, byval yPos as long ) 
    if this.hWindow then 
       SetWindowPos(this.hWindow, 0, xPos, yPos, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
    end if
-   _Position.x = xPos
-   _Position.y = yPos
+   _Location.x = xPos
+   _Location.y = yPos
 end property
 
 function wfxControl.SetBounds( byval xPos as long, byval yPos as long, byval nWidth as long, byval nHeight as long ) as long
    if this.hWindow then 
       SetWindowPos(this.hWindow, 0, xPos, yPos, nWidth, nHeight, SWP_NOZORDER)
    end if
-   _Position.x  = xPos
-   _Position.y  = yPos
+   _Location.x  = xPos
+   _Location.y  = yPos
    _Size.Width  = nWidth
    _Size.Height = nHeight
    function = 0

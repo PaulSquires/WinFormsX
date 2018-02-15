@@ -134,7 +134,7 @@ function Form1_FormClosed( byref sender as wfxForm, byref e as EventArgs ) as LR
 end function
 
 function Form1_Move( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-   dim pt as wfxPoint = sender.Position
+   dim pt as wfxPoint = sender.Location
    ? "Form Move (x,y) = (" & pt.x & ", " & pt.y & ")"
    function = 0
 end function
@@ -208,7 +208,7 @@ function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
    ' Print the properties of the form to the console window
    ' In addition to using the "sender" object we could also have referred to the 
    ' form properties through use of the global shared Form1 variable.
-   dim pt as wfxPoint = sender.Position
+   dim pt as wfxPoint = sender.Location
    dim size as wfxSize = sender.Size
    dim clientsize as wfxSize = sender.ClientSize
    
@@ -224,7 +224,7 @@ function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
    ? "Height: "; sender.Height
    ? "Size: "; size.Width; " x "; size.Height
    ? "ClientSize: "; clientsize.Width; " x "; clientsize.Height
-   ? "Position: "; pt.x; ", "; pt.y
+   ? "Location: "; pt.x; ", "; pt.y
    ? "WindowState: "; sender.WindowState
    ? "StartPosition: "; sender.StartPosition
    ? "BorderStyle: "; sender.BorderStyle

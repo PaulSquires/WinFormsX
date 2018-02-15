@@ -1,30 +1,35 @@
-# WinFormsX - TextBox
+# WinFormsX - ListBox
 
 ### Properties
 
 | Name       | Description |
 | ---------- | ----------- |
-| Background | Gets or sets the background color of the control.|
-| BorderStyle | Gets or sets the border type of the text box control. Refer to the TextBoxBorderStyle enum. |
-| CtrlType      | Gets or sets the control type value. Always ControlType.TextBox and used when adding control to its form's controls collection. |
+| AllowSelection | Gets a value (true/false) indicating whether the ListBox currently enables selection of list items. |
+| BackColor | Gets or sets the background color of the control.|
+| BorderStyle | Gets or sets the type of border that is drawn around the ListBox. Refer to FormBorderStyle enum.|
+| ColumnWidth | Gets or sets the width of columns in a multicolumn ListBox.|
+| CtrlType      | Gets or sets the control type value. Always ControlType.ListBox and used when adding control to its form's controls collection. |
 | Enabled       | Gets or sets a value (true/false) indicating whether the control can respond to user interaction. |
 | Focused | Gets a value (true/false) indicating whether the control has input focus.|
-| Foreground | Gets or sets the foreground color of the control.|
+| ForeColor | Gets or sets the foreground color of the control.|
 | Height        | Gets or sets the height of the control. |
 | hWindow       | Gets the Windows handle (hwnd) of the control. |
+| IntegralHeight | Gets or sets a value (true/false) indicating whether the control should resize to avoid showing partial items.|
 | Left          | Gets or sets the distance, in pixels, between the left edge of the control and the left edge of its container's client area (normally the form). |
 | Location      | Gets or sets the top and left position of the control relative to the form.<br />Get: returns wfxPoint object <br />Set: (left, top) |
-| Multiline | Gets or sets a value (true/false) indicating whether this is a multiline TextBox control|
+| MultiColumn | Gets or sets a value indicating whether the ListBox supports multiple columns.|
 | Name          | Gets or sets the name of the control. |
 | Parent        | Gets or sets the parent container of the control. |
+| ScrollAlwaysVisible | Gets or sets a value (true/false) indicating whether the vertical scroll bar is shown at all times.|
+| SelectedItem | Gets or sets the zero-based index of the currently selected item in a ListBox.|
+| SelectionMode | Gets or sets the method in which items are selected in the ListBox. Refer to ListBoxSelectionMode enum.|
 | Size          | Gets or sets the size of the control.<br />Get: returns wfxSize object.<br />Set: (width, height) |
+| Sorted | Gets or sets a value (true/false) indicating whether the items in the ListBox are sorted alphabetically.|
 | TabStop | Gets or sets a value (true/false) indicating whether the user can give the focus to this control using the TAB key|
-| Text          | Gets or sets the text (caption) associated with this control. |
-| TextAlign | Gets or sets a value indicating the alignment of the text on a control. Refer to TextBoxAlignment enum. |
 | Top           | Gets or sets the distance, in pixels, between the top edge of the control and the top edge of its container's client area (normally the form). |
+| TopIndex | Gets or sets the index of the first visible item in the ListBox.|
 | Visible       | Gets or sets a value (true/false) indicating whether the control is displayed. |
 | Width         | Gets or sets the width of the control. |
-| WordWrap | Indicates (true/false) whether a multiline text box control automatically wraps words to the beginning of the next line when necessary.|
 
 ### Methods
 
@@ -55,20 +60,13 @@
 | OnMouseMove     | Occurs when the mouse pointer is moved over the control. |
 | OnMouseUp     | Occurs when the mouse pointer is over the control and a mouse button is released. |
 
-### TextBox Alignment Enum
+### ListBoxSelectionMode
+
+````Enum ListBoxSelectionMode
+   None = 0
+   One
+   MultiSimple
+   MultiExtended
+End Enum
 ````
-enum TextBoxAlignment
-   Left   = ES_LEFT 
-   Right  = ES_RIGHT
-   Center = ES_CENTER
-end enum
-````
-### TextBoxBorderStyle Enum
-````
-enum TextBoxBorderStyle
-   None	= 0
-   Fixed3D = WS_EX_CLIENTEDGE	
-   FixedSingle	= WS_EX_WINDOWEDGE	
-   FixedDialog	= WS_EX_DLGMODALFRAME
-end enum
-````
+### Multiple Selection ListBoxes

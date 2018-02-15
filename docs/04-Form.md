@@ -4,7 +4,7 @@
 
 | Name       | Description |
 | ---------- | ----------- |
-| BackColor | Gets or sets the background color of the form. Refer to the Colors object. |
+| Background    | Gets or sets the background color of the form. Refer to the Colors object. |
 | BorderStyle   | Gets or sets the border style of the form. Refer to the FormBorderStyle enum. |
 | CtrlType      | Gets or sets the control type value. Always ControlType.Form and used when adding form to the Application form collection. |
 | ClientSize    | Gets or sets the client area of the form.  The client area of the form is the size of the form excluding the borders and the title bar.<br />Get: returns wfxSize object.<br />Set: (width, height) |
@@ -15,11 +15,11 @@
 | IsMainForm    | Gets or sets a value (true/false) indicating the form is main and will display when application starts. When the form is closed the application also ends. |
 | IsModal       | Gets a value (true/false) indicating whether the form is displayed modally. |
 | Left          | Gets or sets the distance, in pixels, between the left edge of the form and the left edge of its container's client area (normally the screen). |
+| Location      | Gets or sets the top and left position of the form.<br />Get: returns wfxPoint object <br />Set: (left, top) |
 | MaximizeBox   | Gets or sets a value (true/false) indicating whether the maximize button is displayed in the caption bar of the form. |
 | MinimizeBox   | Gets or sets a value (true/false) indicating whether the minimize button is displayed in the caption bar of the form. |
 | Name          | Gets or sets the name of the form. |
 | Parent        | Gets or sets the parent container of the form. |
-| Position      | Gets or sets the top and left position of the form.<br />Get: returns wfxPoint object <br />Set: (left, top) |
 | Size          | Gets or sets the size of the form.<br />Get: returns wfxSize object.<br />Set: (width, height) |
 | StartPosition | Gets or sets the starting position of the form at run time. Refer to FormStartPosition enum. |
 | Text          | Gets or sets the text (caption) associated with this form. |

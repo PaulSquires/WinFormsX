@@ -23,7 +23,7 @@ namespace WinFormsX
 #include once "wfxButton.bi"
 #include once "wfxTextBox.bi"
 #include once "wfxCheckBox.bi"
-'#include once "wfxListbox.bi"
+#include once "wfxListbox.bi"
 #include once "wfxStatusBar.bi"
 #Include Once "wfxApplication.bi"
 
@@ -33,7 +33,7 @@ namespace WinFormsX
 #Include Once "wfxApplication.inc"
 #Include Once "wfxControl.inc"
 #include once "wfxButton.inc"
-'#include once "wfxListbox.inc"
+#include once "wfxListbox.inc"
 #include once "wfxCheckBox.inc"
 '#include once "wfxRadioButton.inc"
 #include once "wfxTextBox.inc"

@@ -11,9 +11,9 @@
 | Height        | Gets or sets the height of the control. |
 | hWindow       | Gets the Windows handle (hwnd) of the control. |
 | Left          | Gets or sets the distance, in pixels, between the left edge of the control and the left edge of its container's client area (normally the form). |
+| Location      | Gets or sets the top and left position of the control relative to the form.<br />Get: returns wfxPoint object <br />Set: (left, top) |
 | Name          | Gets or sets the name of the control. |
 | Parent        | Gets or sets the parent container of the control. |
-| Position      | Gets or sets the top and left position of the control relative to the form.<br />Get: returns wfxPoint object <br />Set: (left, top) |
 | Size          | Gets or sets the size of the control.<br />Get: returns wfxSize object.<br />Set: (width, height) |
 | TabStop | Gets or sets a value (true/false) indicating whether the user can give the focus to this control using the TAB key|
 | Text          | Gets or sets the text (caption) associated with this control. |

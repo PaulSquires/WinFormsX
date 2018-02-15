@@ -1,6 +1,6 @@
 ''
-''  BUTTONTEST
-''  Button test application. 
+''  LISTBOXTEST
+''  ListBox test application. 
 ''
 
 ' Use the following Include line if the library has already been copied
@@ -18,19 +18,18 @@
 '#CONSOLE ON
 '#RESOURCE "resource.rc"
 
-declare function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_AllEvents( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_Destroy( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_MouseMove( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_MouseDown( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_MouseUp( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_MouseDoubleClick( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_MouseEnter( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_MouseHover( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button1_MouseLeave( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button2_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-declare function Form1_Button3_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_AllEvents( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_Destroy( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_Click( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_MouseMove( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_MouseDown( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_MouseUp( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_MouseDoubleClick( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_MouseEnter( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_MouseHover( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_List1_MouseLeave( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+declare function Form1_cmdAdd_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+declare function Form1_cmdClear_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
 
 ''          
 ''  Define the form (no child controls for this test)
@@ -40,9 +39,9 @@ type TFORMMAIN extends wfxForm
    
    public:
       ' Controls
-      Button1 as wfxButton
-      Button2 as wfxButton
-      Button3 as wfxButton
+      List1    as wfxListBox
+      cmdAdd   as wfxButton
+      cmdClear as wfxButton
       
       declare constructor   
 END TYPE
@@ -58,49 +57,45 @@ constructor TFORMMAIN
       .StartPosition = FormStartPosition.CenterScreen
       .Text          = "Form1"
       .Name          = "Form1"
-      .Background    = Colors.SystemButtonFace
-      .OnClick       = @Form1_Click
    end with
    ' Add the form to the global application collection
    Application.Forms.Add(ControlType.Form, @this)
    
-   with this.Button1
+   with this.List1
       .Parent = @this
-      .Name = "Button1"
-      .Text = "Button1"
-      .SetBounds(10, 25, 70, 30)
-      .Selected      = true   ' set initial focus to this control
-      .TextAlign     = ButtonAlignment.MiddleCenter
-      .OnAllEvents   = @Form1_Button1_AllEvents
-      .OnDestroy     = @Form1_Button1_Destroy
-      .OnClick       = @Form1_Button1_Click
-      .OnMouseMove   = @Form1_Button1_MouseMove
-      .OnMouseDown   = @Form1_Button1_MouseDown
-      .OnMouseUp     = @Form1_Button1_MouseUp
-      .OnMouseDoubleClick = @Form1_Button1_MouseDoubleClick
-      .OnMouseEnter  = @Form1_Button1_MouseEnter
-      .OnMouseHover  = @Form1_Button1_MouseHover
-      .OnMouseLeave  = @Form1_Button1_MouseLeave
+      .Name = "List"
+      .SetBounds(10, 25, 200, 300)
+      .OnAllEvents   = @Form1_List1_AllEvents
+      .OnDestroy     = @Form1_List1_Destroy
+      .OnClick       = @Form1_List1_Click
+      .OnMouseMove   = @Form1_List1_MouseMove
+      .OnMouseDown   = @Form1_List1_MouseDown
+      .OnMouseUp     = @Form1_List1_MouseUp
+      .OnMouseDoubleClick = @Form1_List1_MouseDoubleClick
+      .OnMouseEnter  = @Form1_List1_MouseEnter
+      .OnMouseHover  = @Form1_List1_MouseHover
+      .OnMouseLeave  = @Form1_List1_MouseLeave
    end with
-   this.Controls.add(controltype.Button, @this.Button1)
+   this.Controls.add(controltype.ListBox, @this.List1)
    
-   with this.Button2
+   with this.cmdAdd
       .Parent = @this
-      .Name = "Button2"
-      .Text = "Button2"
-      .SetBounds(90, 25, 70, 30)
-      .OnClick = @Form1_Button2_Click
+      .Name = "cmdAdd"
+      .Text = "Add"
+      .SetBounds(220, 25, 70, 30)
+      .Focused = true   ' set initial focus to this control
+      .OnClick = @Form1_cmdAdd_Click
    end with
-   this.Controls.add(controltype.Button, @this.Button2)
+   this.Controls.add(controltype.Button, @this.cmdAdd)
    
-   with this.Button3
+   with this.cmdClear
       .Parent = @this
-      .Name = "Button3"
-      .Text = "Button3"
-      .SetBounds(170, 25, 70, 30)
-      .OnClick = @Form1_Button3_Click
+      .Name = "cmdClear"
+      .Text = "Clear"
+      .SetBounds(300, 25, 70, 30)
+      .OnClick = @Form1_cmdClear_Click
    end with
-   this.Controls.add(controltype.Button, @this.Button3)
+   this.Controls.add(controltype.Button, @this.cmdClear)
 
 END CONSTRUCTOR
 
@@ -112,113 +107,104 @@ dim shared Form1 as TFORMMAIN
 ''  Define the various methods that the application will respond to.
 ''  User code will go into these methods in order to make the application work.
 ''
-function Form1_Click( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-   ' Change the text for the label
-   Form1.Button1.Text = "New Text"
-   function = 0
-end function
 
-function Form1_Button1_AllEvents( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+function Form1_List1_AllEvents( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
    ' All events flow through here so basically you can capture and respond to
    ' any Windows message through this handler. If you handle the message here then
    ' you simply set e.Handled = True before returning.
    function = 0
 end function
 
-function Form1_Button1_Destroy( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   ? "Button Destroy"
+function Form1_List1_Destroy( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+   ? "List1 Destroy"
    function = 0
 end function
 
-function Form1_Button1_MouseMove( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   Form1.Text = "Button MouseMove (x,y) = (" & e.x & "," & e.y & ")"
+function Form1_List1_MouseMove( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+   Form1.Text = "List1 MouseMove (x,y) = (" & e.x & "," & e.y & ")"
    function = 0
 end function
 
-function Form1_Button1_MouseDown( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   Form1.Text = "Button MouseDown (x,y) = (" & e.x & "," & e.y & ")"
-   ? "MouseDown"
-   ? "Ctrl: "; e.Ctrl
-   ? "Shift: "; e.Shift
-   ? "Alt: "; e.Alt
-   ? "LButton: "; e.LButton
-   ? "MButton: "; e.MButton
-   ? "RButton: "; e.RButton
-   ?
+function Form1_List1_MouseDown( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+   Form1.Text = "List1 MouseDown (x,y) = (" & e.x & "," & e.y & ")"
+'   ? "MouseDown"
+'   ? "Ctrl: "; e.Ctrl
+'   ? "Shift: "; e.Shift
+'   ? "Alt: "; e.Alt
+'   ? "LButton: "; e.LButton
+'   ? "MButton: "; e.MButton
+'   ? "RButton: "; e.RButton
+'   ?
    function = 0
 end function
 
-function Form1_Button1_MouseUp( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   Form1.Text = "Button MouseUp (x,y) = (" & e.x & "," & e.y & ")"
-   ? "MouseUp"
-   ? "Ctrl: "; e.Ctrl
-   ? "Shift: "; e.Shift
-   ? "Alt: "; e.Alt
-   ? "LButton: "; e.LButton
-   ? "MButton: "; e.MButton
-   ? "RButton: "; e.RButton
-   ?
+function Form1_List1_MouseUp( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+   Form1.Text = "List1 MouseUp (x,y) = (" & e.x & "," & e.y & ")"
+'   ? "MouseUp"
+'   ? "Ctrl: "; e.Ctrl
+'   ? "Shift: "; e.Shift
+'   ? "Alt: "; e.Alt
+'   ? "LButton: "; e.LButton
+'   ? "MButton: "; e.MButton
+'   ? "RButton: "; e.RButton
+'   ?
    function = 0
 end function
 
-function Form1_Button1_MouseDoubleClick( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   sender.Text = "Button MouseDoubleClick (x,y) = (" & e.x & "," & e.y & ")"
-   ? "MouseDoubleClick"
-   ? "Ctrl: "; e.Ctrl
-   ? "Shift: "; e.Shift
-   ? "Alt: "; e.Alt
-   ? "LButton: "; e.LButton
-   ? "MButton: "; e.MButton
-   ? "RButton: "; e.RButton
-   ?
+function Form1_List1_MouseDoubleClick( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+   Form1.Text = "List1 MouseDoubleClick (x,y) = (" & e.x & "," & e.y & ")"
+'   ? "MouseDoubleClick"
+'   ? "Ctrl: "; e.Ctrl
+'   ? "Shift: "; e.Shift
+'   ? "Alt: "; e.Alt
+'   ? "LButton: "; e.LButton
+'   ? "MButton: "; e.MButton
+'   ? "RButton: "; e.RButton
+'   ?
    function = 0
 end function
 
-function Form1_Button1_MouseEnter( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   sender.Text = "Button MouseEnter"
+function Form1_List1_MouseEnter( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+   ? "List1 MouseEnter"
    function = 0
 end function
 
-function Form1_Button1_MouseHover( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   sender.Text = "Button MouseHover"
+function Form1_List1_MouseHover( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+   ? "List1 MouseHover"
    function = 0
 end function
 
-function Form1_Button1_MouseLeave( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   sender.Text = "Button MouseLeave"
+function Form1_List1_MouseLeave( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+   ? "List1 MouseLeave"
    function = 0
 end function
 
-function Form1_Button1_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+function Form1_List1_Click( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
    ' Print the properties of the label to the console window
    ' In addition to using the "sender" object we could also have referred to the 
    ' label properties through use of the global shared Form1 variable (Form1.Label1).
-   dim pt as wfxPoint = sender.Position
-   dim size as wfxSize = sender.Size
-   
-   ? "Button Click: "; sender.Name
-   ? "Text: "; sender.Text
-   ? "Parent: "; sender.Parent
-   ? "Background: "; sender.Background
-   ? "Enabled: "; sender.Enabled
-   ? "Visible: "; sender.Visible
-   ? "Left: "; sender.Left
-   ? "Top: "; sender.Top
-   ? "Width: "; sender.Width
-   ? "Height: "; sender.Height
-   ? "Size: "; size.Width; " x "; size.Height
-   ? "Position: "; pt.x; ", "; pt.y
-   ?
+   ? "List1 Click"
+   dim byref ListItem as wfxListBoxItem 
+   ListItem = Form1.List1.SelectedItem
+   ? ListItem.Text, ListItem.Data32
    function = 0
 end function
 
-function Form1_Button2_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+function Form1_cmdAdd_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
    ? "Button Click: "; sender.Name
+   ? "Add 100 lines to the Listbox"
+   for i as long = 0 to 99
+     Form1.List1.Items.Add( "Listbox line:" & i, i)
+   next
+   ? "List1 count: "; Form1.List1.Items.Count
    function = 0
 end function
 
-function Form1_Button3_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+function Form1_cmdClear_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
    ? "Button Click: "; sender.Name
+   ? "Clear List1"
+   Form1.List1.Items.Clear
+   ? "List1 count: "; Form1.List1.Items.Count
    function = 0
 end function
 

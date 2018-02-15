@@ -79,6 +79,14 @@ enum TextBoxBorderStyle
    FixedDialog	= WS_EX_DLGMODALFRAME
 end enum
 
+enum ListBoxSelectionMode
+   None = 0
+   One
+   MultiSimple
+   MultiExtended
+END ENUM
+
+
 type EventArgs as wfxEventArgs    ' forward reference
 Type wfxEventArgs Extends Object
    private:

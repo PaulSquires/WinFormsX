@@ -230,6 +230,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    dim pButton    as wfxButton ptr
    dim pTextBox   as wfxTextBox ptr
    dim pCheckBox  as wfxCheckBox ptr
+   dim pListBox   as wfxListBox ptr
    dim pStatusBar as wfxStatusBar ptr
    
    pNode = Application.GetControlByHandle(hWin)
@@ -241,6 +242,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          CASE ControlType.Button:     pButton = cast(wfxButton ptr, pNode->pData)
          CASE ControlType.TextBox:    pTextBox = cast(wfxTextBox ptr, pNode->pData)
          CASE ControlType.CheckBox:   pCheckBox = cast(wfxCheckBox ptr, pNode->pData)
+         CASE ControlType.ListBox:    pListBox = cast(wfxListBox ptr, pNode->pData)
          CASE ControlType.StatusBar:  pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
       END SELECT
    end if   
@@ -253,6 +255,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    if pButton andalso pButton->OnAllEvents then pButton->OnAllEvents(*pButton, e)
    if pTextBox andalso pTextBox->OnAllEvents then pTextBox->OnAllEvents(*pTextBox, e)
    if pCheckBox andalso pCheckBox->OnAllEvents then pCheckBox->OnAllEvents(*pCheckBox, e)
+   if pListBox andalso pListBox->OnAllEvents then pListBox->OnAllEvents(*pListBox, e)
    if pStatusBar andalso pStatusBar->OnAllEvents then pStatusBar->OnAllEvents(*pStatusBar, e)
 
    ' If the event was handled in the OnAllEvents then return true
@@ -290,6 +293,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pButton andalso pButton->OnDestroy then pButton->OnDestroy(*pButton, e)
          if pTextBox andalso pTextBox->OnDestroy then pTextBox->OnDestroy(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnDestroy then pCheckBox->OnDestroy(*pCheckBox, e)
+         if pListBox andalso pListBox->OnDestroy then pListBox->OnDestroy(*pListBox, e)
          if pStatusBar andalso pStatusBar->OnDestroy then pStatusBar->OnDestroy(*pStatusBar, e)
          ' If this is the main form then post a quit message
          if pForm then 
@@ -324,7 +328,29 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         pCheckBox = cast(wfxCheckBox ptr, pNode->pData)
                         if pCheckBox andalso pCheckBox->OnClick then pCheckBox->OnClick(*pCheckBox, e)
                   END SELECT
-               end if   
+               end if
+
+            case LBN_DBLCLK
+               ' wParam: LOWORD contains the button's control identifier. 
+               '         HIWORD specifies the notification code.
+               ' lParam: Handle to the button.
+               ' Determine the pointer based on the Window handle generating the notification.
+               pNode = Application.GetControlByHandle( cast(hwnd, lParam) )
+               if pNode then 
+                  pListBox = cast(wfxListBox ptr, pNode->pData)
+                  if pListBox andalso pListBox->OnMouseDoubleClick then pListBox->OnMouseDoubleClick(*pListBox, e)
+               end if
+                     
+            case LBN_SELCHANGE
+               ' wParam: LOWORD contains the button's control identifier. 
+               '         HIWORD specifies the notification code.
+               ' lParam: Handle to the button.
+               ' Determine the pointer based on the Window handle generating the notification.
+               pNode = Application.GetControlByHandle( cast(hwnd, lParam) )
+               if pNode then 
+                  pListBox = cast(wfxListBox ptr, pNode->pData)
+                  if pListBox andalso pListBox->OnClick then pListBox->OnClick(*pListBox, e)
+               end if
          END SELECT
  
       case WM_NOTIFY
@@ -385,6 +411,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pButton andalso pButton->OnMouseMove then pButton->OnMouseMove(*pButton, e)
          if pTextBox andalso pTextBox->OnMouseMove then pTextBox->OnMouseMove(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnMouseMove then pCheckBox->OnMouseMove(*pCheckBox, e)
+         if pListBox andalso pListBox->OnMouseMove then pListBox->OnMouseMove(*pListBox, e)
          if pStatusBar andalso pStatusBar->OnMouseMove then pStatusBar->OnMouseMove(*pStatusBar, e)
          ' There is no such thing as a WM_MOUSEENTER message so we need to simulate it
          ' here by using a tracking variable and TRACKMOUSEEVENT.
@@ -401,6 +428,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                if pButton andalso pButton->OnMouseEnter then pButton->OnMouseEnter(*pButton, e)
                if pTextBox andalso pTextBox->OnMouseEnter then pTextBox->OnMouseEnter(*pTextBox, e)
                if pCheckBox andalso pCheckBox->OnMouseEnter then pCheckBox->OnMouseEnter(*pCheckBox, e)
+               if pListBox andalso pListBox->OnMouseEnter then pListBox->OnMouseEnter(*pListBox, e)
                if pStatusBar andalso pStatusBar->OnMouseEnter then pStatusBar->OnMouseEnter(*pStatusBar, e)
             END IF
          END IF
@@ -412,6 +440,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pButton andalso pButton->OnMouseLeave then pButton->OnMouseLeave(*pButton, e)
          if pTextBox andalso pTextBox->OnMouseLeave then pTextBox->OnMouseLeave(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnMouseLeave then pCheckBox->OnMouseLeave(*pCheckBox, e)
+         if pListBox andalso pListBox->OnMouseLeave then pListBox->OnMouseLeave(*pListBox, e)
          if pStatusBar andalso pStatusBar->OnMouseLeave then pStatusBar->OnMouseLeave(*pStatusBar, e)
       
       case WM_MOUSEHOVER
@@ -420,6 +449,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pButton andalso pButton->OnMouseHover then pButton->OnMouseHover(*pButton, e)
          if pTextBox andalso pTextBox->OnMouseHover then pTextBox->OnMouseHover(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnMouseHover then pCheckBox->OnMouseHover(*pCheckBox, e)
+         if pListBox andalso pListBox->OnMouseHover then pListBox->OnMouseHover(*pListBox, e)
          if pStatusBar andalso pStatusBar->OnMouseHover then pStatusBar->OnMouseHover(*pStatusBar, e)
             
       case WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
@@ -429,13 +459,15 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pTextBox andalso pTextBox->OnMouseDoubleClick then pTextBox->OnMouseDoubleClick(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnMouseDoubleClick then pCheckBox->OnMouseDoubleClick(*pCheckBox, e)
          if pStatusBar andalso pStatusBar->OnMouseDoubleClick then pStatusBar->OnMouseDoubleClick(*pStatusBar, e)
-
+         ' For Listboxes, the doubleclick is handled through the LBN_DBLCLK notification.
+         
       case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN
          if pForm andalso pForm->OnMouseDown then pForm->OnMouseDown(*pForm, e)
          if pLabel andalso pLabel->OnMouseDown then pLabel->OnMouseDown(*pLabel, e)
          if pButton andalso pButton->OnMouseDown then pButton->OnMouseDown(*pButton, e)
          if pTextBox andalso pTextBox->OnMouseDown then pTextBox->OnMouseDown(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnMouseDown then pCheckBox->OnMouseDown(*pCheckBox, e)
+         if pListBox andalso pListBox->OnMouseDown then pListBox->OnMouseDown(*pListBox, e)
          if pStatusBar andalso pStatusBar->OnMouseDown then pStatusBar->OnMouseDown(*pStatusBar, e)
 
       case WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP
@@ -444,6 +476,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pButton andalso pButton->OnMouseUp then pButton->OnMouseUp(*pButton, e)
          if pTextBox andalso pTextBox->OnMouseUp then pTextBox->OnMouseUp(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnMouseUp then pCheckBox->OnMouseUp(*pCheckBox, e)
+         if pListBox andalso pListBox->OnMouseUp then pListBox->OnMouseUp(*pListBox, e)
          if pStatusBar andalso pStatusBar->OnMouseUp then pStatusBar->OnMouseUp(*pStatusBar, e)
          ' Forms convert LBUTTONUP to simulate OnClick()
          if uMsg = WM_LBUTTONUP then
@@ -455,29 +488,34 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pButton andalso pButton->OnGotFocus then pButton->OnGotFocus(*pButton, e)
          if pTextBox andalso pTextBox->OnGotFocus then pTextBox->OnGotFocus(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnGotFocus then pCheckBox->OnGotFocus(*pCheckBox, e)
+         if pListBox andalso pListBox->OnGotFocus then pListBox->OnGotFocus(*pListBox, e)
 
       case WM_KILLFOCUS
          if pButton andalso pButton->OnLostFocus then pButton->OnLostFocus(*pButton, e)
          if pTextBox andalso pTextBox->OnLostFocus then pTextBox->OnLostFocus(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnLostFocus then pCheckBox->OnLostFocus(*pCheckBox, e)
+         if pListBox andalso pListBox->OnLostFocus then pListBox->OnLostFocus(*pListBox, e)
 
       case WM_KEYDOWN
          if pForm andalso pForm->OnKeyDown then pForm->OnKeyDown(*pForm, e)
          if pButton andalso pButton->OnKeyDown then pButton->OnKeyDown(*pButton, e)
          if pTextBox andalso pTextBox->OnKeyDown then pTextBox->OnKeyDown(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnKeyDown then pCheckBox->OnKeyDown(*pCheckBox, e)
+         if pListBox andalso pListBox->OnKeyDown then pListBox->OnKeyDown(*pListBox, e)
 
       case WM_KEYUP
          if pForm andalso pForm->OnKeyUp then pForm->OnKeyUp(*pForm, e)
          if pButton andalso pButton->OnKeyUp then pButton->OnKeyUp(*pButton, e)
          if pTextBox andalso pTextBox->OnKeyUp then pTextBox->OnKeyUp(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnKeyUp then pCheckBox->OnKeyUp(*pCheckBox, e)
+         if pListBox andalso pListBox->OnKeyUp then pListBox->OnKeyUp(*pListBox, e)
 
       case WM_CHAR
          if pForm andalso pForm->OnKeyPress then pForm->OnKeyPress(*pForm, e)
          if pButton andalso pButton->OnKeyPress then pButton->OnKeyPress(*pButton, e)
          if pTextBox andalso pTextBox->OnKeyPress then pTextBox->OnKeyPress(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnKeyPress then pCheckBox->OnKeyPress(*pCheckBox, e)
+         if pListBox andalso pListBox->OnKeyPress then pListBox->OnKeyPress(*pListBox, e)
          
       Case WM_MOVE
          if pForm andalso pForm->OnMove then pForm->OnMove(*pForm, e)

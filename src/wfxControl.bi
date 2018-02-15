@@ -21,7 +21,7 @@ Type wfxControl Extends Object
       _CtrlID      As Long
       _Text        as CWSTR
       _Size        as wfxSize 
-      _Position    as wfxPoint
+      _Location    as wfxPoint
       _Parent      as wfxForm_ ptr
       _hWindow     as hwnd
       _Focused     as Boolean = False
@@ -69,8 +69,8 @@ Type wfxControl Extends Object
       Declare Property Height( ByVal nValue As Long )
       Declare Property Size() As wfxSize
       declare property Size( byval nWidth as long, byval nHeight as long )
-      Declare Property Position() As wfxPoint
-      declare property Position( byval xPos as long, byval yPos as long )
+      Declare Property Location() As wfxPoint
+      declare property Location( byval xPos as long, byval yPos as long )
       Declare Property Parent() As wfxForm_ ptr
       Declare Property Parent( ByVal pForm as wfxForm_ ptr )
       declare function Refresh() as long

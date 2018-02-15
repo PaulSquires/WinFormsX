@@ -170,7 +170,7 @@ function Form1_Label1_Click( byref sender as wfxLabel, byref e as EventArgs ) as
    ' Print the properties of the label to the console window
    ' In addition to using the "sender" object we could also have referred to the 
    ' label properties through use of the global shared Form1 variable (Form1.Label1).
-   dim pt as wfxPoint = sender.Position
+   dim pt as wfxPoint = sender.Location
    dim size as wfxSize = sender.Size
    
    ? "Label Click"
@@ -186,7 +186,7 @@ function Form1_Label1_Click( byref sender as wfxLabel, byref e as EventArgs ) as
    ? "Width: "; sender.Width
    ? "Height: "; sender.Height
    ? "Size: "; size.Width; " x "; size.Height
-   ? "Position: "; pt.x; ", "; pt.y
+   ? "Location: "; pt.x; ", "; pt.y
    ?
    function = 0
 end function

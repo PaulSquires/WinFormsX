@@ -141,7 +141,7 @@ function wfxTextBox.Show(byval hWndParent as hwnd = 0) as long
    ' Refer to wfxForm.CreateFormInternal for the setting of the focus/selected
    ' control once events have fired correctly.
       
-   ' Store the hWindow in the form's linked list in order to allow
+   ' Store the hWindow in the linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
