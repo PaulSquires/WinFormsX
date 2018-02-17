@@ -48,7 +48,6 @@ type wfxListBoxItemsCollection
       Declare function Count() as long 
       Declare function Remove( byval nIndex as long ) as long 
       declare function Add() as long
-      Declare function Count() as long 
       declare function ByIndex( byval nIndex as long ) byref as wfxListBoxItem
       Declare Constructor
       declare destructor 
