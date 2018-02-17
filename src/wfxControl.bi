@@ -78,7 +78,6 @@ Type wfxControl Extends Object
       declare function Hide() As long
       declare abstract function Show(byval hWndParent as hwnd = 0) as long
 
-   Protected:
       declare constructor ()
       Declare Constructor ( ByRef rhs As wfxControl ) '' to avoid user copy-construction from root
       declare destructor ()
