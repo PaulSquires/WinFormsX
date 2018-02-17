@@ -24,7 +24,6 @@ constructor wfxListBox( byref wszName as wstring = "" )
 end constructor
 
 function wfxListBox.Item( ByVal nIndex As long ) byref As wfxListBoxItem
-<<<<<<< HEAD
    if _IsLoading then
       return this.Items.ByIndex(nIndex)
    else
@@ -32,9 +31,7 @@ function wfxListBox.Item( ByVal nIndex As long ) byref As wfxListBoxItem
       this._TempItem.Index = nIndex
       return this._TempItem
    end if
-=======
    return this.Items.ByIndex(nIndex)
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
 END function
 
 function wfxListBox.Items byref As wfxListBoxItemsCollection
@@ -103,20 +100,13 @@ property wfxListBox.ScrollAlwaysVisible( byval nValue as boolean )
    _ScrollAlwaysVisible = nValue
 end property
 
-<<<<<<< HEAD
 property wfxListBox.SelectedItem() byref as wfxListBoxItem
    if this.hWindow then 
       _SelectedItem = this.Item(this.SelectedIndex)
-=======
-property wfxListBox.SelectedItem() as long
-   if this.hWindow then 
-      _SelectedItem = SendMessage( this.hWindow, LB_GETCURSEL, 0, 0)
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
    end if
    property = _SelectedItem
 end property
 
-<<<<<<< HEAD
 property wfxListBox.SelectedItem( byref lbItem as wfxListBoxItem )
    if this.hWindow then 
       SendMessage( this.hWindow, LB_SETCURSEL, lbItem.Index, 0)
@@ -136,13 +126,6 @@ property wfxListBox.SelectedIndex( byval nValue as long )
       SendMessage( this.hWindow, LB_SETCURSEL, nValue, 0)
    end if
    _SelectedIndex = nValue
-=======
-property wfxListBox.SelectedItem( byval nValue as long )
-   if this.hWindow then 
-      SendMessage( this.hWindow, LB_SETCURSEL, nValue, 0)
-   end if
-   _SelectedItem = nValue
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
 end property
 
 property wfxListBox.Sorted() as boolean
@@ -238,7 +221,6 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
       
    this.Enabled = _Enabled
    if _MultiColumn then this.ColumnWidth = _ColumnWidth 
-<<<<<<< HEAD
    
    ' Set the text for the Items.
    for i as long = 0 to this.Items.Count - 1
@@ -255,15 +237,12 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
    ' Set the hWindow for the collection
    this.Items.hWindow = this.hWindow
    _IsLoading = false
-=======
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
 
    function = 0
 END FUNCTION
 
 
 '' LISTBOX ITEM
-<<<<<<< HEAD
 property wfxListBoxItem.hWindow() as hwnd
    property = _hWindow
 END PROPERTY
@@ -309,14 +288,6 @@ property wfxListBoxItem.Text() as CWSTR
       IF cbLen THEN 
          _Text = space(cbLen * 2)
          SendMessage( this.hWindow, LB_GETTEXT, _Index, CAST(LPARAM, _Text.vptr))
-=======
-property wfxListBoxItem.Text() as CWSTR
-   if this.hWindow then 
-      DIM cbLen AS LONG = SendMessage(this.hWindow, LB_GETTEXTLEN, nIndex, 0)
-      IF cbLen THEN 
-         _Text = space(cbLen * 2)
-         SendMessage( this.hWindow, LB_GETTEXT, nIndex, CAST(LPARAM, wszText.vptr))
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
       end if   
    end if   
    property = _Text
@@ -324,15 +295,11 @@ end property
 
 property wfxListBoxItem.Text( byref wszValue as wstring )
    if this.hWindow then 
-<<<<<<< HEAD
       dim as long nCurSel = SendMessage( this.hWindow, LB_GETCURSEL, 0, 0)
       SendMessage( this.hWindow, LB_DELETESTRING, _Index, 0)
       dim as long nCount = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0)
       _Index = SendMessage( this.hWindow, LB_INSERTSTRING, iif(_Index > nCount - 1, -1, _Index), CAST(LPARAM, @wszValue))
       SendMessage( this.hWindow, LB_SETCURSEL, nCurSel, 0)
-=======
-      _Index = SendMessage( this.hWindow, LB_ADDSTRING, 0, CAST(LPARAM, @wszValue))   
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
    end if   
    _Text = wszValue
 end property
@@ -358,17 +325,7 @@ constructor wfxListBoxItemsCollection
 END CONSTRUCTOR
 
 destructor wfxListBoxItemsCollection
-<<<<<<< HEAD
    this.Clear
-=======
-   ' Deallocate elements in the Panels collection.
-   dim pNode as wfxLListNode ptr = _Collection.get_first
-   do until pNode = 0
-'TODO: Delete wfxStatusBarPanelsCollection in destructor causes "destructor has no public access"
-      'Delete cast(wfxControl ptr, pNode->pData)
-      pNode = _Collection.remove(pNode)
-   LOOP
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
 end destructor
 
 property wfxListBoxItemsCollection.hWindow() as hwnd
@@ -380,7 +337,6 @@ property wfxListBoxItemsCollection.hWindow( byVal nValue as hwnd)
 end property
 
 function wfxListBoxItemsCollection.Count() as Long
-<<<<<<< HEAD
    if this.hWindow then
       function = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0 )
    else
@@ -417,17 +373,7 @@ function wfxListBoxItemsCollection.Remove( byval nIndex as long ) as long
       LOOP
       function = 0
    END IF
-=======
    function = _Collection.Size
-end function
-
-function wfxListBoxItemsCollection.Add() byref as wfxListBoxItem
-   dim pData as wfxListBoxItem ptr = new wfxListBoxItem
-   pData->hWindow = this.hWindow
-   pData->Index = (this.Count - 1) + 1
-   _Collection.Add( ControlType.ListBox, pData ) 
-   return *pData
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
 end function
 
 function wfxListBoxItemsCollection.ByIndex( byval nIndex as long ) byref as wfxListBoxItem 
@@ -444,7 +390,6 @@ function wfxListBoxItemsCollection.ByIndex( byval nIndex as long ) byref as wfxL
    return *pItem
 end function
 
-<<<<<<< HEAD
 function wfxListBoxItemsCollection.Clear() as long
    if this.hWindow then
       SendMessage( this.hWindow, LB_RESETCONTENT, 0, 0)
@@ -458,7 +403,6 @@ function wfxListBoxItemsCollection.Clear() as long
    end if
    function = 0
 END FUNCTION
-=======
 
 'function wfxListBox.ClearItems() as long
 '   SendMessage( this.hWindow, LB_RESETCONTENT, 0, 0)
@@ -468,14 +412,11 @@ END FUNCTION
 'function wfxListBox.Count() as Long
 '   function = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0)
 'END FUNCTION
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
 
 'function wfxListBox.SelectedCount() as Long
 '   function = SendMessage( this.hWindow, LB_GETSELCOUNT, 0, 0)
 'END FUNCTION
 
-<<<<<<< HEAD
-=======
 'function wfxListBox.AddItem( byref wszName as wstring, byval nValue32 as long = 0 ) as Long
 '   dim as long nIndex
 '   nIndex = SendMessage( this.hWindow, LB_ADDSTRING, 0, CAST(LPARAM, @wszName))   
@@ -501,9 +442,3 @@ END FUNCTION
 'end function
 
 
-
-
-
-
-
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4

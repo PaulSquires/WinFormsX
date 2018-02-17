@@ -63,7 +63,6 @@
 | OnMouseMove     | Occurs when the mouse pointer is moved over the control. |
 | OnMouseUp     | Occurs when the mouse pointer is over the control and a mouse button is released. |
 
-<<<<<<< HEAD
 ### wfxListBoxItem
 
 | Name       | Description |
@@ -86,18 +85,12 @@
 
 ````
 Enum ListBoxSelectionMode
-=======
-### ListBoxSelectionMode
-
-​````Enum ListBoxSelectionMode
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
    None = 0
    One
    MultiSimple
    MultiExtended
 End Enum
 ````
-<<<<<<< HEAD
 
 ### Adding ListBox Items
 ````
@@ -134,6 +127,3 @@ Create ListBox using SelectionMode equal to either MultiSimple or MultiExtended.
    end if
 ````
 
-=======
-### Multiple Selection ListBoxes
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4

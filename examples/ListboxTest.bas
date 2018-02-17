@@ -29,10 +29,7 @@ declare function Form1_List1_MouseEnter( byref sender as wfxListBox, byref e as 
 declare function Form1_List1_MouseHover( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
 declare function Form1_List1_MouseLeave( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
 declare function Form1_cmdAdd_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-<<<<<<< HEAD
 declare function Form1_cmdDelete_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-=======
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
 declare function Form1_cmdClear_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
 
 ''          
@@ -43,16 +40,10 @@ type TFORMMAIN extends wfxForm
    
    public:
       ' Controls
-<<<<<<< HEAD
       List1     as wfxListBox
       cmdAdd    as wfxButton
       cmdDelete as wfxButton
       cmdClear  as wfxButton
-=======
-      List1    as wfxListBox
-      cmdAdd   as wfxButton
-      cmdClear as wfxButton
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
       
       declare constructor   
 END TYPE
@@ -76,10 +67,7 @@ constructor TFORMMAIN
       .Parent = @this
       .Name = "List"
       .SetBounds(10, 25, 200, 300)
-<<<<<<< HEAD
       .SelectionMode = ListBoxSelectionMode.MultiExtended
-=======
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
       .OnAllEvents   = @Form1_List1_AllEvents
       .OnDestroy     = @Form1_List1_Destroy
       .OnClick       = @Form1_List1_Click
@@ -93,7 +81,6 @@ constructor TFORMMAIN
    end with
    this.Controls.add(controltype.ListBox, @this.List1)
    
-<<<<<<< HEAD
    ' Load 10 items into the ListBox
    dim as Long idx
    for i as long = 0 to 9
@@ -103,8 +90,6 @@ constructor TFORMMAIN
    next
    this.List1.SelectedIndex = 0
    
-=======
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
    with this.cmdAdd
       .Parent = @this
       .Name = "cmdAdd"
@@ -115,7 +100,6 @@ constructor TFORMMAIN
    end with
    this.Controls.add(controltype.Button, @this.cmdAdd)
    
-<<<<<<< HEAD
    with this.cmdDelete
       .Parent = @this
       .Name = "cmdDelete"
@@ -132,15 +116,7 @@ constructor TFORMMAIN
       .SetBounds(380, 25, 70, 30)
       .OnClick = @Form1_cmdClear_Click
    end with
-=======
-   with this.cmdClear
-      .Parent = @this
-      .Name = "cmdClear"
-      .Text = "Clear"
-      .SetBounds(300, 25, 70, 30)
-      .OnClick = @Form1_cmdClear_Click
-   end with
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
+
    this.Controls.add(controltype.Button, @this.cmdClear)
 
 END CONSTRUCTOR
@@ -211,29 +187,17 @@ function Form1_List1_MouseDoubleClick( byref sender as wfxListBox, byref e as Ev
 end function
 
 function Form1_List1_MouseEnter( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
-<<<<<<< HEAD
    '? "List1 MouseEnter"
-=======
-   ? "List1 MouseEnter"
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
    function = 0
 end function
 
 function Form1_List1_MouseHover( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
-<<<<<<< HEAD
    '? "List1 MouseHover"
-=======
-   ? "List1 MouseHover"
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
    function = 0
 end function
 
 function Form1_List1_MouseLeave( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
-<<<<<<< HEAD
    '? "List1 MouseLeave"
-=======
-   ? "List1 MouseLeave"
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
    function = 0
 end function
 
@@ -242,7 +206,6 @@ function Form1_List1_Click( byref sender as wfxListBox, byref e as EventArgs ) a
    ' In addition to using the "sender" object we could also have referred to the 
    ' label properties through use of the global shared Form1 variable (Form1.Label1).
    ? "List1 Click"
-<<<<<<< HEAD
    
    if Form1.List1.SelectionMode = ListBoxSelectionMode.One then
       dim byref ListItem as wfxListBoxItem = Form1.List1.SelectedItem
@@ -276,21 +239,6 @@ function Form1_cmdDelete_Click( byref sender as wfxButton, byref e as EventArgs 
    ? "Button Click: "; sender.Name
    ? "Delete index: "; Form1.List1.SelectedIndex
    Form1.List1.Items.Remove(Form1.List1.SelectedIndex)
-=======
-   dim byref ListItem as wfxListBoxItem 
-   ListItem = Form1.List1.SelectedItem
-   ? ListItem.Text, ListItem.Data32
-   function = 0
-end function
-
-function Form1_cmdAdd_Click( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
-   ? "Button Click: "; sender.Name
-   ? "Add 100 lines to the Listbox"
-   for i as long = 0 to 99
-     Form1.List1.Items.Add( "Listbox line:" & i, i)
-   next
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
-   ? "List1 count: "; Form1.List1.Items.Count
    function = 0
 end function
 

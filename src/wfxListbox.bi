@@ -21,21 +21,15 @@ type wfxListBoxItem
       _Index       as Long
       _Text        as CWSTR
       _Data32      as Long 
-<<<<<<< HEAD
       _Selected    as boolean
-=======
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
      
    public:
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare Property Index() As long
       Declare Property Index( ByVal nValue As long)
-<<<<<<< HEAD
       Declare Property Selected() As boolean
       Declare Property Selected( ByVal nValue As boolean)
-=======
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
       declare property Text() as CWSTR
       declare property Text( byref wszValue as wstring )
       Declare Property Data32() As long
@@ -50,15 +44,11 @@ type wfxListBoxItemsCollection
    public:
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
-<<<<<<< HEAD
       Declare function Clear() as long 
       Declare function Count() as long 
       Declare function Remove( byval nIndex as long ) as long 
       declare function Add() as long
-=======
       Declare function Count() as long 
-      declare function Add() byref as wfxListBoxItem
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
       declare function ByIndex( byval nIndex as long ) byref as wfxListBoxItem
       Declare Constructor
       declare destructor 
@@ -66,10 +56,7 @@ END TYPE
 
 Type wfxListBox Extends wfxControl
    private:
-<<<<<<< HEAD
       _TempItem as wfxListBoxItem
-=======
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
       _AllowSelection as boolean = true
       _BorderStyle as FormBorderStyle = FormBorderStyle.Fixed3D
       _ColumnWidth as long
@@ -77,19 +64,12 @@ Type wfxListBox Extends wfxControl
       _MultiColumn as boolean
       _SelectionMode as ListBoxSelectionMode = ListBoxSelectionMode.One
       _ScrollAlwaysVisible as boolean
-<<<<<<< HEAD
       _SelectedItem as wfxListBoxItem
       _SelectedIndex as Long = -1
       _Sorted as boolean
       _TopIndex as Long
       _ItemsCollection as wfxListBoxItemsCollection
       _IsLoading as Boolean = true   ' internal
-=======
-      _SelectedItem as Long
-      _Sorted as boolean
-      _TopIndex as Long
-      _ItemsCollection as wfxListBoxItemsCollection
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
       
    Public:
       Declare function Item( byval nIndex as long) byref as wfxListBoxItem
@@ -107,15 +87,10 @@ Type wfxListBox Extends wfxControl
       Declare Property SelectionMode( ByVal nValue As ListBoxSelectionMode)
       Declare Property ScrollAlwaysVisible() As boolean
       Declare Property ScrollAlwaysVisible( ByVal nValue As boolean)
-<<<<<<< HEAD
+      Declare Property SelectedItem(byref as wfxListBoxItem) 
       Declare Property SelectedItem() byref as wfxListBoxItem
-      Declare Property SelectedItem( byref Item as wfxListBoxItem) 
       Declare Property SelectedIndex() As long
       Declare Property SelectedIndex( ByVal nValue As long)
-=======
-      Declare Property SelectedItem() As long
-      Declare Property SelectedItem( ByVal nValue As long)
->>>>>>> 7bfa41f408ea3bbe9bd0815fd7c1e6137d3479c4
       Declare Property Sorted() As boolean
       Declare Property Sorted( ByVal nValue As boolean)
       Declare Property TopIndex() As long
