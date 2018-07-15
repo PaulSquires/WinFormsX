@@ -24,26 +24,68 @@ constructor wfxLabel( byref wszName as wstring = "" )
    this.Name = wszName
 end constructor
 
-property wfxLabel.TextAlign() as LabelAlignment
+Property wfxLabel.BorderStyle() As ControlBorderStyle
+   if this.hWindow then 
+      If (AfxGetWindowExStyle(this.hWindow) And WS_EX_CLIENTEDGE) Then
+         _BorderStyle = ControlBorderStyle.Fixed3D
+      ElseIf (AfxGetWindowStyle(this.hWindow) And WS_BORDER) Then
+         _BorderStyle = ControlBorderStyle.FixedSingle
+      Else
+         _BorderStyle = ControlBorderStyle.None
+      End If   
+   End If
+   Property = _BorderStyle
+End Property
+
+Property wfxLabel.BorderStyle( ByVal nValue As ControlBorderStyle )
+   if this.hWindow then 
+      AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
+      AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
+      Dim As Long wsStyle
+      Select Case nValue
+         Case ControlBorderStyle.None
+         Case ControlBorderStyle.Fixed3D
+            AfxAddWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
+         Case ControlBorderStyle.FixedSingle
+            AfxAddWindowStyle(this.hWindow, WS_BORDER)
+      End Select
+      SetWindowPos( this.hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER Or SWP_NOMOVE Or SWP_NOSIZE Or SWP_DRAWFRAME)
+   End If
+   _BorderStyle = nValue
+End Property
+
+Function wfxLabel.GetTextAlignStyleValue( ByVal nValue As LabelAlignment ) As Long
+   Select Case nValue
+      Case LabelAlignment.MiddleCenter: Return (SS_CENTER Or SS_CENTERIMAGE)
+      Case LabelAlignment.MiddleLeft:   Return (SS_LEFT   Or SS_CENTERIMAGE)
+      Case LabelAlignment.MiddleRight:  Return (SS_RIGHT  Or SS_CENTERIMAGE)
+      Case LabelAlignment.TopCenter:    Return (SS_CENTER)
+      Case LabelAlignment.TopLeft:      Return (SS_LEFT)
+      Case LabelAlignment.TopRight:     Return (SS_RIGHT)
+   End Select
+   Return 0   
+End Function
+
+Property wfxLabel.TextAlign() As LabelAlignment
    property = _TextAlign
 end property
 
 property wfxLabel.TextAlign( byval nValue as LabelAlignment )
    if this.hWindow then 
       ' Remove the current alignment and set the new style
-      AfxRemoveWindowStyle(this.hWindow, _TextAlign)
-      AfxAddWindowStyle(this.hWindow, nValue)
+      AfxRemoveWindowStyle(this.hWindow, this.GetTextAlignStyleValue(_TextAlign))
+      AfxAddWindowStyle(this.hWindow, this.GetTextAlignStyleValue(nValue))
       this.Refresh
    end if
    _TextAlign = nValue
 end property
 
-property wfxLabel.FlatStyle() as boolean
-   property = _FlatStyle
+Property wfxLabel.UseMnemonic() As boolean
+   Property = _UseMnemonic
 end property
 
-property wfxLabel.FlatStyle( byval nValue as boolean )
-   _FlatStyle = nValue
+Property wfxLabel.UseMnemonic( ByVal nValue As boolean )
+   _UseMnemonic = nValue
 end property
 
 function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
@@ -59,15 +101,17 @@ function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    dim as long dwExStyle = 0
-   dim as long dwStyle = WS_GROUP OR SS_NOTIFY or _TextAlign
+   Dim As Long dwStyle = WS_GROUP Or SS_NOTIFY 
 
-   if this.FlatStyle = false then dwStyle = dwStyle OR SS_SUNKEN
    if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
+   If this.UseMnemonic = False Then dwStyle = dwStyle Or SS_NOPREFIX 
    
+   _CtrlID = this.Parent->GetNextCtrlID()
+
    this.hWindow = this.Parent->pWindow->AddControl ( _
          "LABEL", _                        ' // Class name
          hWndParent, _                     ' // Parent window handle
-         100, _                            ' // Control identifier (this gets modified when added to controls collection)
+         _CtrlID, _                        ' // Control identifier 
          this.Text, _                      ' // Control caption
          this.Left, _                      ' // Horizontal position
          this.Top, _                       ' // Vertical position
@@ -81,12 +125,19 @@ function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
 
+   ' Should we enable drag and drop files
+   If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
+
+   ' Apply properties that require a valid window handle
+   this.Font        = _wfxFontPtr
+   this.TextAlign   = _TextAlign
+   this.BorderStyle = _BorderStyle
+   this.Enabled     = _Enabled
+
    ' Store the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
-
-   this.Enabled = _Enabled
 
    function = 0
 END FUNCTION

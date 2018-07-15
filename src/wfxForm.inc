@@ -29,20 +29,8 @@ constructor wfxForm( byref wszName as wstring = "" )
 End Constructor
 
 destructor wfxForm
-   ' Destroy the Window and delete the CWindow class
-   DestroyWindow(this.pWindow->hWindow)
-   Delete this.pWindow
-
-   ' Deallocate elements in the Controls collection.
-   dim pNode as wfxLListNode ptr = this.Controls.get_first
-   do until pNode = 0
-      Delete cast(wfxControl ptr, pNode->pData)
-      pNode = this.Controls.remove(pNode)
-   LOOP
-   
-   ' Remove it from the Application form collection
-   Application.Forms.remove_bydata(@this)
-end destructor 
+   If this.pWindow Then Delete this.pWindow
+End Destructor 
          
 property wfxForm.WindowState() as FormWindowState
    if this.pWindow->hWindow THEN
@@ -137,6 +125,71 @@ property wfxForm.IsModal( byval nValue as boolean )
    _IsModal = nValue
 end property
 
+property wfxForm.Locked() as boolean
+   property = _Locked
+end property
+
+property wfxForm.Locked( byval nValue as boolean )
+   _Locked = nValue
+end property
+
+property wfxForm.ShowInTaskBar() as boolean
+   property = _ShowInTaskBar
+end property
+
+property wfxForm.ShowInTaskBar( byval nValue as boolean )
+   _ShowInTaskBar = nValue
+end property
+
+property wfxForm.MaximumHeight() as long
+   property = _MaximumHeight
+end property
+
+property wfxForm.MaximumHeight( byval nValue as long )
+   _MaximumHeight = nValue
+end property
+
+property wfxForm.MaximumWidth() as long
+   property = _MaximumWidth
+end property
+
+property wfxForm.MaximumWidth( byval nValue as long )
+   _MaximumWidth = nValue
+end property
+
+property wfxForm.MinimumHeight() as long
+   property = _MinimumHeight
+end property
+
+property wfxForm.MinimumHeight( byval nValue as long )
+   _MinimumHeight = nValue
+end property
+
+property wfxForm.MinimumWidth() as long
+   property = _MinimumWidth
+end property
+
+property wfxForm.MinimumWidth( byval nValue as long )
+   _MinimumWidth = nValue
+end property
+
+Property wfxForm.AcceptButton() As wfxButton ptr
+   property = _AcceptButton
+END PROPERTY
+
+Property wfxForm.AcceptButton( byval nValue as wfxButton ptr )
+   _AcceptButton = nValue
+END PROPERTY
+
+Property wfxForm.CancelButton() As wfxButton ptr
+   property = _CancelButton
+END PROPERTY
+
+Property wfxForm.CancelButton( byval nValue as wfxButton ptr )
+   _CancelButton = nValue
+END PROPERTY
+
+
 property wfxForm.ClientSize() as wfxSize
    if this.pWindow->hWindow THEN
       _ClientSize.Width = this.pWindow->ClientWidth
@@ -157,12 +210,14 @@ end property
 function wfxForm.GetNextCtrlID() as Long     
    ' This function is internal to the class.
    ' Return the next available control id. Used when creating controls.
-   function = _NextCtrlID 
    _NextCtrlID = _NextCtrlID + 1
-END FUNCTION
+   function = _NextCtrlID 
+End Function
 
 function wfxForm.Close() as Long
-   Delete(@this)
+   ' Call WM_CLOSE for the form. This allows the user to respond to
+   ' OnFormClosing and re-enable parent form in IsModal situations.
+   SendMessage(this.hWindow, WM_CLOSE, 0, 0)
    function = 0
 end function
 
@@ -173,10 +228,12 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    ' Get Window creation values before the hWindow actually exists
 
    ' If the form is created but simply hidden, then show it.
-   if this.hWindow THEN
+   If this.hWindow Then
       ShowWindow(this.hWindow, SW_SHOW)
       exit function
    END IF
+
+   If this.pWindow = 0 Then this.pWindow = New CWindow()
    
    dim pCtrl as wfxControl ptr
    dim pCtrlFocus as wfxControl ptr
@@ -185,14 +242,14 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    dim as long nTop    = this.Top
    dim as long nWidth  = this.Width
    dim as long nHeight = this.Height
-   dim as long dwStyle = WS_CLIPCHILDREN or WS_CLIPSIBLINGS or WS_VISIBLE
+   Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE 
    dim as long dwExStyle = 0
    dim as Boolean IsVisible 
-   dim as long FocusControlIndex = -1
    
    dim pNode as wfxLListNode ptr
    
-   if IsFormModal THEN dwStyle = dwStyle or WS_POPUP
+   if this.IsMainForm THEN dwStyle = dwStyle or WS_POPUP
+   If IsFormModal Then dwStyle = dwStyle Or WS_POPUP
    this.IsModal = IsFormModal
       
    if this.StartPosition = FormStartPosition.WindowsDefaultLocation then
@@ -209,21 +266,38 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    if this.MaximizeBox then dwStyle = dwStyle or WS_MAXIMIZEBOX or WS_CAPTION
    if this.ControlBox  THEN dwStyle = dwStyle or WS_SYSMENU or WS_CAPTION
       
-   if (this.BorderStyle = FormBorderStyle.SizableToolWindow) then
-      dwExStyle = dwExStyle or WS_EX_TOOLWINDOW
-      dwStyle   = dwStyle or WS_THICKFRAME
-   elseif(this.BorderStyle = FormBorderStyle.FixedToolWindow) then
-      dwExStyle = dwExStyle or WS_EX_TOOLWINDOW
-   else
-      dwStyle = dwStyle or this.BorderStyle
-   end if      
-         
+   select case this.BorderStyle 
+      case FormBorderStyle.None
+         dwStyle   = dwStyle and (not WS_BORDER)
+      case FormBorderStyle.SizableToolWindow
+         dwExStyle = dwExStyle or WS_EX_TOOLWINDOW
+         dwStyle   = dwStyle or WS_BORDER or WS_THICKFRAME
+      case FormBorderStyle.FixedToolWindow
+         dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
+         dwExStyle = dwExStyle or WS_EX_TOOLWINDOW
+      case FormBorderStyle.Sizable
+         dwStyle   = dwStyle or WS_THICKFRAME or WS_DLGFRAME or WS_BORDER	
+         dwExStyle = dwExStyle or WS_EX_WINDOWEDGE
+      case FormBorderStyle.Fixed3D
+         dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
+         dwExStyle = dwExStyle or WS_EX_WINDOWEDGE or WS_EX_CLIENTEDGE
+      case FormBorderStyle.FixedSingle
+         dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
+         dwExStyle = dwExStyle or WS_EX_WINDOWEDGE
+      Case FormBorderStyle.FixedDialog
+         dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
+         dwExStyle = dwExStyle or WS_EX_DLGMODALFRAME
+   end select     
 
+   If this.ShowInTaskBar Then
+      dwExStyle = dwExStyle Or WS_EX_APPWINDOW
+   End If
+   
    ' Determine if the WS_VISIBLE style is set. Save that value in order to
    ' prevent the form moving on screen when the subsequent StartPosition 
    ' property is executed.
    IsVisible = (dwStyle and WS_VISIBLE)
-   if IsVisible then dwStyle = dwStyle and not WS_VISIBLE
+   If IsVisible Then dwStyle = (dwStyle And Not WS_VISIBLE)
  
    '  Create the main window based on properties set
    this.hWindow = this.pWindow->Create( hWndParent, _
@@ -231,6 +305,9 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
                          @wfxApplication.WndProc, _
                          nLeft, nTop, nWidth, nHeight, _
                          dwStyle, dwExStyle ) 
+
+   ' Should we enable drag and drop files
+   if this.AllowDrop then DragAcceptFiles(this.hWindow, CTRUE)
 
    ' Store the hWindow in the application linked list in order to allow
    ' for fast lookups via GetControlByHandle.
@@ -247,10 +324,15 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    pNode = this.Controls.get_first
    do until pNode = 0
       pCtrl = cast(wfxControl ptr, pNode->pData)
-      if pCtrl then
-         if pCtrl->Focused then pCtrlFocus = pCtrl
+      If pCtrl Then
          pCtrl->Show(this.hWindow)
-      END IF
+         If pCtrl->TabStop Then
+            ' By default, set the first control to have keyboard focus. If a focus 
+            ' is specifically set in a later control then the pCtrl->Focused property
+            ' will catch that. Last control because controls created in reverse order.
+            If pCtrlFocus = 0 Then pCtrlFocus = pCtrl
+         End If
+      End If
       pNode = this.Controls.get_next(pNode)
    LOOP
 
@@ -286,14 +368,25 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       if pCtrl then
          pCtrl->Refresh
          RedrawWindow( pCtrl->hWindow, Null, Null, RDW_FRAME or RDW_INVALIDATE or RDW_UPDATENOW)
-      END IF
+         ' Check for new focus control in case it was set in the OnLoad event.
+         If pCtrl->Focused Then pCtrlFocus = pCtrl
+      End If
       pNode = this.Controls.get_next(pNode)
    LOOP
 
    ' Set the focus to the correct control
-   if pCtrlFocus then SetFocus(pCtrlFocus->hWindow)
+   If pCtrlFocus Then 
+      If pCtrlFocus->CtrlType = ControlType.TextBox Then
+         Dim pTextBox As wfxTextBox Ptr = Cast(wfxTextBox Ptr, pCtrlFocus)
+         If pTextBox->MultiLine = False Then
+            pTextBox->SelectionStart = 0 
+            pTextBox->SelectionLength = Len(pTextBox->Text)
+         End If
+      End If
+      SetFocus(pCtrlFocus->hWindow)
+   End If
    
-   ShowWindow(this.hWindow, iif(IsVisible, SW_SHOW, SW_HIDE))
+   ShowWindow(this.hWindow, Iif(IsVisible, SW_SHOW, SW_HIDE))
    AfxRedrawWindow(this.hWindow)
    
    ' The Shown event is only raised the first time a form is displayed; 

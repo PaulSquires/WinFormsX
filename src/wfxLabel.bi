@@ -20,15 +20,19 @@
 
 Type wfxLabel Extends wfxControl
    private:
-      _TextAlign      as LabelAlignment = LabelAlignment.MiddleLeft
-      _FlatStyle      as Boolean = true    ' if false then use SS_SUNKEN style
-
+      _TextAlign   As LabelAlignment = LabelAlignment.TopLeft
+      _UseMnemonic As Boolean = True    
+      _BorderStyle As ControlBorderStyle = ControlBorderStyle.None
+      
    Public:
       Declare Constructor( byref wszName as wstring = "" )
-      declare property TextAlign() as LabelAlignment
+      Declare Function GetTextAlignStyleValue( ByVal nValue As LabelAlignment ) As Long
+      Declare Property BorderStyle() As ControlBorderStyle
+      Declare Property BorderStyle( ByVal nValue As ControlBorderStyle )
+      Declare Property TextAlign() As LabelAlignment
       declare property TextAlign( byval nValue as LabelAlignment )
-      declare property FlatStyle() as boolean
-      declare property FlatStyle( byval nValue as boolean )
+      Declare Property UseMnemonic() As boolean
+      Declare Property UseMnemonic( ByVal nValue As boolean )
       declare function Show(byval hWndParent as hwnd = 0) as long override
 
       OnAllEvents        as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
@@ -41,6 +45,7 @@ Type wfxLabel Extends wfxControl
       OnMouseEnter       as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
       OnMouseHover       as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
       OnMouseLeave       as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
+      OnDropFiles        As Function( ByRef sender As wfxLabel, ByRef e As EventArgs ) As LRESULT
 
 End Type
 

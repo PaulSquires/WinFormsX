@@ -23,35 +23,103 @@
 constructor wfxTextBox( byref wszName as wstring = "" )
    this.CtrlType = ControlType.TextBox
    this.Name = wszName
-   this.BackColor = Colors.SystemWindowFace
+   this.BackColor = Colors.SystemWindow
    this.ForeColor = Colors.SystemWindowText
 end constructor
 
-property wfxTextBox.TextAlign() as TextBoxAlignment
-   property = _TextAlign
+Property wfxTextBox.TextAlign() As TextAlignment
+   if this.hWindow then 
+      Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
+      If (wsStyle And ES_LEFT) Then 
+         _TextAlign = TextAlignment.Left
+      ElseIf (wsStyle And ES_CENTER) Then 
+         _TextAlign = TextAlignment.Center
+      ElseIf (wsStyle And ES_RIGHT) Then 
+         _TextAlign = TextAlignment.Right
+      End If 
+   End If
+   Property = _TextAlign
 end property
 
-property wfxTextBox.TextAlign( byval nValue as TextBoxAlignment )
+Property wfxTextBox.TextAlign( ByVal nValue As TextAlignment )
    if this.hWindow then 
       ' Remove the current alignment and set the new style
-      AfxRemoveWindowStyle(this.hWindow, _TextAlign)
-      AfxAddWindowStyle(this.hWindow, nValue)
+      AfxRemoveWindowStyle(this.hWindow, ES_LEFT)
+      AfxRemoveWindowStyle(this.hWindow, ES_CENTER)
+      AfxRemoveWindowStyle(this.hWindow, ES_RIGHT)
+      Dim As Long wsStyle
+      Select Case nValue 
+         Case TextAlignment.Left:   wsStyle = ES_LEFT
+         Case TextAlignment.Center: wsStyle = ES_CENTER
+         Case TextAlignment.Right:  wsStyle = ES_RIGHT
+      End Select
+      AfxAddWindowStyle(this.hWindow, wsStyle)
       this.Refresh
    end if
    _TextAlign = nValue
 end property
 
-property wfxTextBox.BorderStyle() as TextBoxBorderStyle
-   property = _BorderStyle
-end property
+Property wfxTextBox.BorderStyle() As ControlBorderStyle
+   If this.hWindow Then 
+      If (AfxGetWindowExStyle(this.hWindow) And WS_EX_CLIENTEDGE) Then
+         _BorderStyle = ControlBorderStyle.Fixed3D
+      ElseIf (AfxGetWindowStyle(this.hWindow) And WS_BORDER) Then
+         _BorderStyle = ControlBorderStyle.FixedSingle
+      Else
+         _BorderStyle = ControlBorderStyle.None
+      End If   
+   End If
+   Property = _BorderStyle
+End Property
 
-property wfxTextBox.BorderStyle( byval nValue as TextBoxBorderStyle )
+Property wfxTextBox.BorderStyle( ByVal nValue As ControlBorderStyle )
+   If this.hWindow Then 
+      AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
+      AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
+      Dim As Long wsStyle
+      Select Case nValue
+         Case ControlBorderStyle.None
+         Case ControlBorderStyle.Fixed3D
+            AfxAddWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
+         Case ControlBorderStyle.FixedSingle
+            AfxAddWindowStyle(this.hWindow, WS_BORDER)
+      End Select
+      SetWindowPos( this.hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER Or SWP_NOMOVE Or SWP_NOSIZE Or SWP_DRAWFRAME)
+   End If
    _BorderStyle = nValue
-end property
+End Property
 
-property wfxTextBox.Multiline() as boolean
+Property wfxTextBox.CharacterCasing() As CharacterCase
+   If this.hWindow Then 
+      Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
+      If (wsStyle And ES_LOWERCASE) Then
+         _CharacterCasing = CharacterCase.Lower
+      ElseIf (wsStyle And ES_UPPERCASE) Then
+         _CharacterCasing = CharacterCase.Upper
+      Else
+         _CharacterCasing = CharacterCase.Normal
+      End If   
+   End If
+   Property = _CharacterCasing
+End Property
+
+Property wfxTextBox.CharacterCasing( ByVal nValue As CharacterCase )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, ES_LOWERCASE)
+      AfxRemoveWindowStyle(this.hWindow, ES_UPPERCASE)
+      Dim As Long wsStyle
+      Select Case nValue
+         Case CharacterCase.Normal
+         Case CharacterCase.Upper: wsStyle = ES_UPPERCASE
+         Case CharacterCase.Lower: wsStyle = ES_LOWERCASE
+      End Select
+   End If
+   _CharacterCasing = nValue
+End Property
+
+Property wfxTextBox.Multiline() As boolean
    if this.hWindow then 
-      _Multiline = iIF( (AfxGetWindowStyle(this.hWindow) AND ES_MULTILINE) = ES_MULTILINE, true, false)
+      _Multiline = Iif( (AfxGetWindowStyle(this.hWindow) And ES_MULTILINE), True, False)
    end if
    property = _Multiline
 end property
@@ -69,7 +137,45 @@ property wfxTextBox.Multiline( byval nValue as boolean )
    _Multiline = nValue
 end property
 
-property wfxTextBox.WordWrap() as boolean
+Property wfxTextBox.ReadOnly() As boolean
+   If this.hWindow Then 
+      _ReadOnly = Iif( (AfxGetWindowStyle(this.hWindow) And ES_READONLY), True, False)
+   End If
+   Property = _ReadOnly
+End Property
+
+Property wfxTextBox.ReadOnly( ByVal nValue As boolean )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, ES_READONLY)
+      If nValue Then AfxAddWindowStyle(this.hWindow, ES_READONLY)
+   End If
+   _ReadOnly = nValue
+End Property
+
+Property wfxTextBox.AcceptsReturn() As boolean
+   If this.hWindow Then 
+      _AcceptsReturn = Iif( (AfxGetWindowStyle(this.hWindow) And ES_WANTRETURN), True, False)
+   End If
+   Property = _AcceptsReturn
+End Property
+
+Property wfxTextBox.AcceptsReturn( ByVal nValue As boolean )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, ES_WANTRETURN)
+      If nValue Then AfxAddWindowStyle(this.hWindow, ES_WANTRETURN)
+   End If
+   _AcceptsReturn = nValue
+End Property
+
+Property wfxTextBox.AcceptsTab() As boolean
+   Property = _AcceptsTab
+End Property
+
+Property wfxTextBox.AcceptsTab( ByVal nValue As boolean )
+   _AcceptsTab = nValue
+End Property
+
+Property wfxTextBox.WordWrap() As boolean
    if this.hWindow then 
       _WordWrap = iIF( (AfxGetWindowStyle(this.hWindow) AND ES_AUTOHSCROLL) = ES_AUTOHSCROLL, false, true)
    end if
@@ -89,7 +195,90 @@ property wfxTextBox.WordWrap( byval nValue as boolean )
    _Multiline = nValue
 end property
 
-function wfxTextBox.Show(byval hWndParent as hwnd = 0) as long
+Property wfxTextBox.PasswordChar() As CWSTR
+   Dim As Long iChr = 0
+   If this.hWindow Then 
+      iChr = SendMessage(this.hWindow, EM_GETPASSWORDCHAR, 0, 0)
+   End If
+   _PasswordChar = WChr(iChr)      
+   Property = _PasswordChar
+End Property
+
+Property wfxTextBox.PasswordChar( ByRef nValue As WString )
+   Dim As Long iChr = 0
+   If Len(nValue) Then iChr = nValue[0]
+   If this.hWindow Then 
+      SendMessage(this.hWindow, EM_SETPASSWORDCHAR, iChr, 0)
+   End If
+   _PasswordChar = WChr(iChr)      
+End Property
+
+Property wfxTextBox.MaxLength() As Long
+   If this.hWindow Then 
+      _MaxLength = SendMessage(this.hWindow, EM_GETLIMITTEXT, 0, 0)
+   End If
+   Property = _MaxLength       
+End Property
+
+Property wfxTextBox.MaxLength( ByVal nValue As Long )
+   If this.hWindow Then 
+      SendMessage(this.hWindow, EM_SETLIMITTEXT, nValue, 0)
+   End If
+   _MaxLength = nValue       
+End Property
+
+Property wfxTextBox.TextScrollBars() As ScrollBars
+   If this.hWindow Then 
+      Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
+      If (wsStyle And (WS_HSCROLL Or WS_VSCROLL) ) Then 
+         _TextScrollBars = ScrollBars.Both
+      ElseIf (wsStyle And WS_VSCROLL) Then 
+         _TextScrollBars = ScrollBars.Vertical
+      ElseIf (wsStyle And WS_HSCROLL) Then 
+         _TextScrollBars = ScrollBars.Horizontal
+      Else
+         _TextScrollBars = ScrollBars.None
+      End If 
+   End If
+   Property = _TextScrollBars
+End Property
+
+Property wfxTextBox.TextScrollBars( ByVal nValue As ScrollBars )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, WS_HSCROLL)
+      AfxRemoveWindowStyle(this.hWindow, WS_VSCROLL)
+      Dim As Long wsStyle
+      Select Case nValue 
+         Case ScrollBars.None
+         Case ScrollBars.Both:       wsStyle = (WS_HSCROLL Or WS_VSCROLL)
+         Case ScrollBars.Horizontal: wsStyle = WS_HSCROLL
+         Case ScrollBars.Vertical:   wsStyle = WS_VSCROLL
+      End Select
+      AfxAddWindowStyle(this.hWindow, wsStyle)
+      this.Refresh
+   End If
+   _TextScrollBars = nValue
+End Property
+
+Property wfxTextBox.SelectionStart() As Long
+   Property = Edit_GetSelStart(this.hWindow)
+End Property
+
+Property wfxTextBox.SelectionStart( ByVal nValue As Long )
+   SendMessage( this.hWindow, EM_SETSEL, nValue, Edit_GetSelEnd(this.hWindow))
+End Property
+
+Property wfxTextBox.SelectionLength() As Long
+   Property = Edit_GetSelStart(this.hWindow) - Edit_GetSelEnd(this.hWindow)
+End Property
+
+Property wfxTextBox.SelectionLength( ByVal nValue As Long )
+   SendMessage( this.hWindow, EM_SETSEL, this.SelectionStart, this.SelectionStart + nValue)
+End Property
+
+
+
+Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
 
    dim wszClassName as wstring * MAX_PATH
    
@@ -103,25 +292,28 @@ function wfxTextBox.Show(byval hWndParent as hwnd = 0) as long
    ' create this control when the form is created.
    if hWndParent = 0 THEN exit function
       
-   dim as long dwExStyle = _BorderStyle
-   dim as long dwStyle = _TextAlign
+   Dim As dword dwStyle, dwExStyle
    
-   if _Multiline then
-      dwStyle = dwStyle or WS_VSCROLL OR ES_MULTILINE OR ES_NOHIDESEL OR ES_WANTRETURN
-      if _WordWrap = false then dwStyle = dwStyle OR ES_AUTOHSCROLL
+   If _HideSelection = False Then dwStyle = dwStyle Or ES_NOHIDESEL
+   if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
+   If _Visible Then dwStyle = dwStyle Or WS_VISIBLE
+   
+   If _Multiline Then 
+      dwStyle = dwStyle Or ES_MULTILINE 
+      If _AcceptsReturn Then dwStyle = dwStyle Or ES_WANTRETURN
+      If _WordWrap = False Then dwStyle = dwStyle Or ES_AUTOHSCROLL
       wszClassName = "MULTILINETEXTBOX"
    else   
       dwStyle = dwStyle or ES_AUTOHSCROLL 
       wszClassName = "TEXTBOX"
    end if   
-
-   if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
-   if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
+   _CtrlID = this.Parent->GetNextCtrlID()
+
    this.hWindow = this.Parent->pWindow->AddControl ( _
          wszClassName, _                   ' // Class name
          hWndParent, _                     ' // Parent window handle
-         100, _                            ' // Control identifier (this gets modified when added to controls collection)
+         _CtrlID, _                        ' // Control identifier (this gets modified when added to controls collection)
          this.Text, _                      ' // Control caption
          this.Left, _                      ' // Horizontal position
          this.Top, _                       ' // Vertical position
@@ -134,7 +326,20 @@ function wfxTextBox.Show(byval hWndParent as hwnd = 0) as long
          100, _                            ' // The subclass ID
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
+ 
+   ' Should we enable drag and drop files
+   If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
 
+   ' Apply properties that require a valid window handle
+   this.Font            = _wfxFontPtr
+   this.CharacterCasing = _CharacterCasing
+   this.ReadOnly        = _ReadOnly
+   this.TextScrollBars  = _TextScrollBars
+   this.TextAlign       = _TextAlign
+   this.BorderStyle     = _BorderStyle
+   this.PasswordChar    = _PasswordChar
+   this.MaxLength       = _MaxLength
+   
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.

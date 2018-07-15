@@ -47,7 +47,7 @@ type wfxListBoxItemsCollection
       Declare function Clear() as long 
       Declare function Count() as long 
       Declare function Remove( byval nIndex as long ) as long 
-      declare function Add() as long
+      Declare Function Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
       declare function ByIndex( byval nIndex as long ) byref as wfxListBoxItem
       Declare Constructor
       declare destructor 
@@ -55,17 +55,18 @@ END TYPE
 
 Type wfxListBox Extends wfxControl
    private:
-      _TempItem as wfxListBoxItem
-      _AllowSelection as boolean = true
-      _BorderStyle as FormBorderStyle = FormBorderStyle.Fixed3D
-      _ColumnWidth as long
-      _IntegralHeight as boolean
-      _MultiColumn as boolean
-      _SelectionMode as ListBoxSelectionMode = ListBoxSelectionMode.One
-      _ScrollAlwaysVisible as boolean
+      _TempItem As wfxListBoxItem
+      _AllowSelection As boolean 
+      _BorderStyle As ControlBorderStyle = ControlBorderStyle.Fixed3D
+      _ColumnWidth as long = 0
+      _IntegralHeight As boolean = False
+      _MultiColumn As boolean = False
+      _SelectionMode As ListSelectionMode = ListSelectionMode.One
+      _ScrollAlwaysVisible As boolean = False
       _SelectedItem as wfxListBoxItem
       _SelectedIndex as Long = -1
-      _Sorted as boolean
+      _Sorted As boolean = False
+      _UseTabStops As boolean = True
       _TopIndex as Long
       _ItemsCollection as wfxListBoxItemsCollection
       _IsLoading as Boolean = true   ' internal
@@ -74,16 +75,16 @@ Type wfxListBox Extends wfxControl
       Declare function Item( byval nIndex as long) byref as wfxListBoxItem
       declare function Items byref As wfxListBoxItemsCollection
       Declare Property AllowSelection() As boolean
-      Declare Property BorderStyle() As FormBorderStyle
-      Declare Property BorderStyle( ByVal nValue As FormBorderStyle )
+      Declare Property BorderStyle() As ControlBorderStyle
+      Declare Property BorderStyle( ByVal nValue As ControlBorderStyle )
       Declare Property ColumnWidth() As long
       Declare Property ColumnWidth( ByVal nValue As long)
       Declare Property IntegralHeight() As boolean
       Declare Property IntegralHeight( ByVal nValue As boolean)
       Declare Property MultiColumn() As boolean
       Declare Property MultiColumn( ByVal nValue As boolean)
-      Declare Property SelectionMode() As ListBoxSelectionMode
-      Declare Property SelectionMode( ByVal nValue As ListBoxSelectionMode)
+      Declare Property SelectionMode() As ListSelectionMode
+      Declare Property SelectionMode( ByVal nValue As ListSelectionMode)
       Declare Property ScrollAlwaysVisible() As boolean
       Declare Property ScrollAlwaysVisible( ByVal nValue As boolean)
       Declare Property SelectedItem(byref as wfxListBoxItem) 
@@ -92,7 +93,9 @@ Type wfxListBox Extends wfxControl
       Declare Property SelectedIndex( ByVal nValue As long)
       Declare Property Sorted() As boolean
       Declare Property Sorted( ByVal nValue As boolean)
-      Declare Property TopIndex() As long
+      Declare Property UseTabStops() As boolean
+      Declare Property UseTabStops( ByVal nValue As boolean)
+      Declare Property TopIndex() As Long
       Declare Property TopIndex( ByVal nValue As long)
       
       Declare Constructor( byref wszName as wstring = "" )

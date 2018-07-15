@@ -19,7 +19,7 @@
 constructor wfxListBox( byref wszName as wstring = "" )
    this.CtrlType = ControlType.ListBox
    this.Name = wszName
-   this.BackColor = Colors.SystemWindowFace
+   this.BackColor = Colors.SystemWindow
    this.ForeColor = Colors.SystemWindowText
 end constructor
 
@@ -38,67 +38,144 @@ function wfxListBox.Items byref As wfxListBoxItemsCollection
    return this._ItemsCollection
 END function
 
-property wfxListBox.AllowSelection() as boolean
-   property = _AllowSelection
-end property
+Property wfxListBox.BorderStyle() As ControlBorderStyle
+   If this.hWindow Then 
+      If (AfxGetWindowExStyle(this.hWindow) And WS_EX_CLIENTEDGE) Then
+         _BorderStyle = ControlBorderStyle.Fixed3D
+      ElseIf (AfxGetWindowStyle(this.hWindow) And WS_BORDER) Then
+         _BorderStyle = ControlBorderStyle.FixedSingle
+      Else
+         _BorderStyle = ControlBorderStyle.None
+      End If   
+   End If
+   Property = _BorderStyle
+End Property
 
-property wfxListBox.BorderStyle() as FormBorderStyle
-   property = _BorderStyle
-end property
-
-property wfxListBox.BorderStyle( byval nValue as FormBorderStyle )
-   if this.hWindow then 
-      ' Remove the current alignment and set the new style
-      AfxRemoveWindowStyle(this.hWindow, _BorderStyle)
-      if nValue = false then AfxAddWindowStyle(this.hWindow, nValue)
-      this.Refresh
-   end if
+Property wfxListBox.BorderStyle( ByVal nValue As ControlBorderStyle )
+   If this.hWindow Then 
+      AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
+      AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
+      Dim As Long wsStyle
+      Select Case nValue
+         Case ControlBorderStyle.None
+         Case ControlBorderStyle.Fixed3D
+            AfxAddWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
+         Case ControlBorderStyle.FixedSingle
+            AfxAddWindowStyle(this.hWindow, WS_BORDER)
+      End Select
+      SetWindowPos( this.hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER Or SWP_NOMOVE Or SWP_NOSIZE Or SWP_DRAWFRAME)
+   End If
    _BorderStyle = nValue
-end property
+End Property
 
 property wfxListBox.ColumnWidth() as long
-   property = _ColumnWidth
+   ' There is no such existing message as LB_GETCOLUMNWIDTH unfortunately.
+   Property = _ColumnWidth
 end property
 
 property wfxListBox.ColumnWidth( byval nValue as long )
    if this.hWindow then 
-      SendMessage( this.hWindow, LB_SETCOLUMNWIDTH, nValue, 0)
+      ' if column width is zero it will cause a gpf
+      If nValue > 0 Then SendMessage( this.hWindow, LB_SETCOLUMNWIDTH, nValue, 0)
       this.Refresh
    end if
    _ColumnWidth = nValue
 end property
 
 property wfxListBox.IntegralHeight() as boolean
-   property = _IntegralHeight
+   If this.hWindow Then 
+      _IntegralHeight = Iif( (AfxGetWindowStyle(this.hWindow) And LBS_NOINTEGRALHEIGHT), False, True)
+   End If
+   Property = _IntegralHeight
 end property
 
 property wfxListBox.IntegralHeight( byval nValue as boolean )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, LBS_NOINTEGRALHEIGHT)
+      If nValue = False Then AfxAddWindowStyle(this.hWindow, LBS_NOINTEGRALHEIGHT)
+      this.Refresh
+   End If   
    _IntegralHeight = nValue
 end property
 
 property wfxListBox.MultiColumn() as boolean
-   property = _MultiColumn
+   If this.hWindow Then 
+      _MultiColumn = Iif( (AfxGetWindowStyle(this.hWindow)And LBS_MULTICOLUMN), True, False)
+   End If
+   Property = _MultiColumn
 end property
 
 property wfxListBox.MultiColumn( byval nValue as boolean )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, LBS_MULTICOLUMN)
+      If nValue Then AfxAddWindowStyle(this.hWindow, LBS_MULTICOLUMN)
+      this.Refresh
+   End If   
    _MultiColumn = nValue
 end property
 
-property wfxListBox.SelectionMode() as ListBoxSelectionMode
-   property = _SelectionMode
-end property
+Property wfxListBox.AllowSelection() As boolean
+   ' This is a Get only property. Set via SelectionMode.
+   If this.hWindow Then 
+      _AllowSelection = True
+      If (AfxGetWindowStyle(this.hWindow)And LBS_NOSEL) Then _AllowSelection = False
+   End If
+   Property = _AllowSelection
+End Property
 
-property wfxListBox.SelectionMode( byval nValue as ListBoxSelectionMode )
+Property wfxListBox.SelectionMode() As ListSelectionMode
+   If this.hWindow Then 
+      Dim As Long dwStyle = AfxGetWindowStyle(this.hWindow)
+      If (dwStyle And LBS_NOSEL) Then 
+         _SelectionMode = ListSelectionMode.None
+      ElseIf (dwStyle And LBS_MULTIPLESEL) Then 
+         _SelectionMode = ListSelectionMode.MultiSimple
+      ElseIf (dwStyle And LBS_EXTENDEDSEL) Then 
+         _SelectionMode = ListSelectionMode.MultiExtended
+      Else
+         _SelectionMode = ListSelectionMode.One   ' default
+      End If
+   End If
+   Property = _SelectionMode
+End Property
+
+Property wfxListBox.SelectionMode( ByVal nValue As ListSelectionMode )
+   if this.hWindow then 
+      AfxRemoveWindowStyle(this.hWindow, LBS_NOSEL)
+      AfxRemoveWindowStyle(this.hWindow, LBS_MULTIPLESEL)
+      AfxRemoveWindowStyle(this.hWindow, LBS_EXTENDEDSEL)
+      Dim As Long dwStyle
+      Select Case nValue
+         Case ListSelectionMode.None
+            dwStyle = LBS_NOSEL
+            _AllowSelection = False
+         Case ListSelectionMode.One
+            ' This is the default for a listbox
+         Case ListSelectionMode.MultiSimple
+            dwStyle = LBS_MULTIPLESEL
+         Case ListSelectionMode.MultiExtended
+            dwStyle = LBS_EXTENDEDSEL
+      End Select
+      AfxAddWindowStyle(this.hWindow, dwStyle)
+   End If
    _SelectionMode = nValue
 end property
 
 property wfxListBox.ScrollAlwaysVisible() as boolean
-   property = _ScrollAlwaysVisible
+   If this.hWindow Then 
+      _ScrollAlwaysVisible = Iif( (AfxGetWindowStyle(this.hWindow) And LBS_DISABLENOSCROLL), True, False)
+   End If   
+   Property = _ScrollAlwaysVisible
 end property
 
 property wfxListBox.ScrollAlwaysVisible( byval nValue as boolean )
+   if this.hWindow then 
+      AfxRemoveWindowStyle(this.hWindow, LBS_DISABLENOSCROLL)
+      If nValue Then AfxAddWindowStyle(this.hWindow, LBS_DISABLENOSCROLL)
+      this.Refresh
+   End If   
    _ScrollAlwaysVisible = nValue
-end property
+End Property
 
 property wfxListBox.SelectedItem() byref as wfxListBoxItem
    if this.hWindow then 
@@ -129,14 +206,38 @@ property wfxListBox.SelectedIndex( byval nValue as long )
 end property
 
 property wfxListBox.Sorted() as boolean
-   property = _Sorted
+   if this.hWindow then 
+      _Sorted = Iif( (AfxGetWindowStyle(this.hWindow) And LBS_SORT), True, False)
+   End If   
+   Property = _Sorted
 end property
 
 property wfxListBox.Sorted( byval nValue as boolean )
+   if this.hWindow then 
+      AfxRemoveWindowStyle(this.hWindow, LBS_SORT)
+      If nValue Then AfxAddWindowStyle(this.hWindow, LBS_SORT)
+      this.Refresh
+   End If   
    _Sorted = nValue
 end property
 
-property wfxListBox.TopIndex() as long
+Property wfxListBox.UseTabStops() As boolean
+   If this.hWindow Then 
+      _UseTabStops = Iif( (AfxGetWindowStyle(this.hWindow) And LBS_USETABSTOPS), True, False)
+   End If   
+   Property = _UseTabStops
+End Property
+
+Property wfxListBox.UseTabStops( ByVal nValue As boolean )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, LBS_USETABSTOPS)
+      If nValue Then AfxAddWindowStyle(this.hWindow, LBS_USETABSTOPS)
+      this.Refresh
+   End If   
+   _Sorted = nValue
+End Property
+
+Property wfxListBox.TopIndex() As Long
    if this.hWindow then 
       _TopIndex = SendMessage( this.hWindow, LB_GETTOPINDEX, 0, 0)
    end if
@@ -166,34 +267,22 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
    ' create this control when the form is created.
    if hWndParent = 0 THEN exit function
       
-   dim as long dwExStyle = _BorderStyle
+   Dim As Long dwExStyle = 0
    dim as long dwStyle = WS_HSCROLL OR WS_VSCROLL or LBS_HASSTRINGS OR LBS_NOTIFY
   
    if _ScrollAlwaysVisible then dwStyle = dwStyle or LBS_DISABLENOSCROLL
-   if _AllowSelection = false then dwStyle = dwStyle or LBS_NOSEL
    if _IntegralHeight = false then dwStyle = dwStyle or LBS_NOINTEGRALHEIGHT
    if _Sorted then dwStyle = dwStyle or LBS_SORT
    if _MultiColumn then dwStyle = dwStyle or LBS_MULTICOLUMN
    if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
-   _AllowSelection = true
-   select case _SelectionMode 
-      CASE ListBoxSelectionMode.None
-         dwStyle = dwStyle or LBS_NOSEL
-         _AllowSelection = false
-      CASE ListBoxSelectionMode.One
-         ' This is the default for a listbox
-      CASE ListBoxSelectionMode.MultiSimple
-         dwStyle = dwStyle or LBS_MULTIPLESEL
-      CASE ListBoxSelectionMode.MultiExtended
-         dwStyle = dwStyle or LBS_EXTENDEDSEL
-   END SELECT
+   _CtrlID = this.Parent->GetNextCtrlID()
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
          "LISTBOX", _                      ' // Class name
          hWndParent, _                     ' // Parent window handle
-         100, _                            ' // Control identifier (this gets modified when added to controls collection)
+         _CtrlID, _                        ' // Control identifier 
          this.Text, _                      ' // Control caption
          this.Left, _                      ' // Horizontal position
          this.Top, _                       ' // Vertical position
@@ -207,6 +296,16 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
 
+   ' Should we enable drag and drop files
+   If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
+
+   ' Apply properties that require a valid window handle
+   this.Font        = _wfxFontPtr
+   this.BorderStyle = _BorderStyle
+   this.Enabled     = _Enabled
+
+   If _MultiColumn Then this.ColumnWidth = _ColumnWidth 
+   
 
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
@@ -219,21 +318,19 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
       
-   this.Enabled = _Enabled
-   if _MultiColumn then this.ColumnWidth = _ColumnWidth 
-   
    ' Set the text for the Items.
-   for i as long = 0 to this.Items.Count - 1
+   For i As Long = 0 To this.Items.Count - 1
       ' Get the Item text prior to assigning the ListBox handle otherwise the
       ' library will try to retrieve the text from the actual window control and
       ' that text hasn't even been assigned yet.
-      dim as CWSTR wszItemText = this.Item(i).Text
-      dim as long nData32 = this.Item(i).data32
+      Dim As CWSTR wszItemText = this.Item(i).Text
+      Dim As Long nData32 = this.Item(i).data32
       this.Item(i).hWindow = this.hWindow
-      dim as long idx = SendMessage( this.hWindow, LB_ADDSTRING, 0, cast(LPARAM, wszItemText.vptr) )
-      SendMessage( this.hWindow, LB_SETITEMDATA, idx, CAST(LPARAM, nData32) )
-   next
+      Dim As Long idx = SendMessage( this.hWindow, LB_ADDSTRING, 0, Cast(LPARAM, wszItemText.vptr) )
+      SendMessage( this.hWindow, LB_SETITEMDATA, idx, Cast(LPARAM, nData32) )
+   Next
    SendMessage( this.hWindow, LB_SETCURSEL, _SelectedIndex, 0 )
+
    ' Set the hWindow for the collection
    this.Items.hWindow = this.hWindow
    _IsLoading = false
@@ -344,13 +441,17 @@ function wfxListBoxItemsCollection.Count() as Long
    end if
 end function
 
-function wfxListBoxItemsCollection.Add() as long
-   if this.hWindow then
-      function = SendMessage( this.hWindow, LB_ADDSTRING, 0, cast(LPARAM, @"") )
-   else
-      dim pData as wfxListBoxItem ptr = new wfxListBoxItem
+Function wfxListBoxItemsCollection.Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
+   If this.hWindow Then
+      Dim As Long idx = SendMessage( this.hWindow, LB_ADDSTRING, 0, Cast(LPARAM, @wszValue) )
+      SendMessage( this.hWindow, LB_SETITEMDATA, idx, CAST(LPARAM, nValue))
+      Function = idx
+   Else
+      Dim pData As wfxListBoxItem Ptr = New wfxListBoxItem
       pData->hWindow = this.hWindow
       pData->Index = (this.Count - 1) + 1
+      pData->Text = wszValue
+      pData->Data32 = nValue
       _Collection.Add( ControlType.ListBox, pData ) 
       function = pData->Index
    END IF

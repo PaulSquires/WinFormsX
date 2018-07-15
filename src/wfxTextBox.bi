@@ -13,21 +13,48 @@
 
 
 Type wfxTextBox Extends wfxControl
-      _TextAlign   as TextBoxAlignment = TextBoxAlignment.Left
-      _BorderStyle as FormBorderStyle = FormBorderStyle.Fixed3D
-      _Multiline   as Boolean = false
-      _WordWrap    as Boolean = false
+      _TextAlign   As TextAlignment = TextAlignment.Left
+      _BorderStyle As ControlBorderStyle = ControlBorderStyle.Fixed3D
+      _CharacterCasing As CharacterCase = CharacterCase.Normal
+      _TextScrollBars  As ScrollBars = ScrollBars.None
+      _HideSelection   As boolean = True
+      _Multiline       As Boolean = False
+      _WordWrap        As Boolean = False
+      _AcceptsReturn   As boolean = False
+      _AcceptsTab      As boolean = False
+      _ReadOnly        As boolean = False
+      _PasswordChar    As CWSTR
+      _MaxLength       As Long = 32767
        
    Public:
-      Declare Property TextAlign() As TextBoxAlignment
-      Declare Property TextAlign( ByVal nValue As TextBoxAlignment)
-      Declare Property BorderStyle() As TextBoxBorderStyle
-      Declare Property BorderStyle( ByVal nValue As TextBoxBorderStyle )
-      declare property Multiline() as boolean
-      declare property Multiline( byval nValue as boolean )
-      declare property WordWrap() as boolean
+      Declare Property TextAlign() As TextAlignment
+      Declare Property TextAlign( ByVal nValue As TextAlignment)
+      Declare Property BorderStyle() As ControlBorderStyle
+      Declare Property BorderStyle( ByVal nValue As ControlBorderStyle )
+      Declare Property TextScrollBars() As ScrollBars
+      Declare Property TextScrollBars( ByVal nValue As ScrollBars )
+      Declare Property PasswordChar() As CWSTR
+      Declare Property PasswordChar( ByRef nValue As WString )
+      Declare Property Multiline() As boolean
+      Declare Property Multiline( ByVal nValue As boolean )
+      Declare Property MaxLength() As Long
+      Declare Property MaxLength( ByVal nValue As Long )
+      Declare Property CharacterCasing() As CharacterCase
+      Declare Property CharacterCasing( ByVal nValue As CharacterCase )
+      Declare Property ReadOnly() As boolean
+      Declare Property ReadOnly( ByVal nValue As boolean )
+      Declare Property AcceptsReturn() As boolean
+      Declare Property AcceptsReturn( ByVal nValue As boolean )
+      Declare Property AcceptsTab() As boolean
+      Declare Property AcceptsTab( ByVal nValue As boolean )
+      Declare Property WordWrap() As boolean
       declare property WordWrap( byval nValue as boolean )
-      declare function Show(byval hWndParent as hwnd = 0) as long override
+      Declare Property SelectionStart() As Long
+      Declare Property SelectionStart( ByVal nValue As Long )
+      Declare Property SelectionLength() As Long
+      Declare Property SelectionLength( ByVal nValue As Long )
+
+      Declare Function Show(ByVal hWndParent As HWnd = 0) As Long Override
       Declare Constructor( byref wszName as wstring = "" )
 
       OnAllEvents        as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT

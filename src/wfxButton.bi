@@ -14,13 +14,38 @@
 
 Type wfxButton Extends wfxControl
    private:
-      _TextAlign as ButtonAlignment = ButtonAlignment.MiddleCenter
-    
+      _XpButtonPtr As CXpButton Ptr
+      _TextAlign As ButtonAlignment = ButtonAlignment.MiddleCenter
+      _ThemeSupport      As boolean = True
+      _TextForeColor     As COLORREF = Colors.SystemControlText
+      _TextForeColorDown As COLORREF = Colors.SystemControlText
+      _TextBackColor     As COLORREF = Colors.SystemControl
+      _TextBackColorDown As COLORREF = Colors.SystemControl
+      _ToggleMode        As boolean = False
+      _ToggleState       As boolean = False
+      
    Public:
+      declare Property BackColor( ByVal nValue As COLORREF )
+      Declare Property BackColor() As COLORREF 
+      Declare Property TextForeColor() As COLORREF
+      Declare Property TextForeColor( ByVal nValue As COLORREF)
+      Declare Property TextBackColor() As COLORREF
+      Declare Property TextBackColor( ByVal nValue As COLORREF)
+      Declare Property TextForeColorDown() As COLORREF
+      Declare Property TextForeColorDown( ByVal nValue As COLORREF)
+      Declare Property TextBackColorDown() As COLORREF
+      Declare Property TextBackColorDown( ByVal nValue As COLORREF)
+      Declare Property ToggleMode() As boolean
+      Declare Property ToggleMode( ByVal nValue As boolean )
+      Declare Property ToggleState() As boolean
+      Declare Property ToggleState( ByVal nValue As boolean )
+      Declare Property ThemeSupport() As boolean
+      Declare Property ThemeSupport( ByVal nValue As boolean )
       Declare Property TextAlign() As ButtonAlignment
       Declare Property TextAlign( ByVal nValue As ButtonAlignment )
-      Declare Constructor( byref wszName as wstring = "" )
       declare function Show(byval hWndParent as hwnd = 0) as long override
+      Declare Constructor( ByRef wszName As WString = "" )
+      Declare Destructor()
 
       OnAllEvents        as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
@@ -37,5 +62,7 @@ Type wfxButton Extends wfxControl
       OnKeyDown          as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnKeyPress         as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+      OnDropFiles        as function( byref sender as wfxButton, byref e as EventArgs ) as LRESULT
+
 End Type
 

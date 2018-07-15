@@ -37,6 +37,7 @@ Destructor wfxApplication()
 '   NEXT
 end destructor
 
+
 ''
 ''  Company name as stored in the program's resource file
 ''
@@ -122,7 +123,10 @@ end function
 ''
 Function wfxApplication.Run( Byref pForm As wfxForm ) As LRESULT
 
-   Dim as MSG uMsg 
+   dim pNode as wfxLListNode ptr
+   Dim pCtrl As wfxControl Ptr
+   Dim pActiveForm As wfxForm Ptr
+   Dim As MSG uMsg 
 
    ' Show the window and update its client area (this will also create any child controls)
    pForm.IsMainForm = true
@@ -136,16 +140,45 @@ Function wfxApplication.Run( Byref pForm As wfxForm ) As LRESULT
    Do While GetMessage(@uMsg, Null, 0, 0)
       ' Processes accelerator keys for menu commands
       If (pForm.pWindow->AccelHandle = 0) Or _
-         (TranslateAccelerator(pForm.pWindow->hWindow, pForm.pWindow->AccelHandle, @uMsg)) = 0 Then
-         If IsDialogMessage(pForm.pWindow->hWindow, @uMsg) = 0 Then
+         (TranslateAccelerator(pForm.hWindow, pForm.pWindow->AccelHandle, @uMsg)) = 0 Then
+
+         if uMsg.message = WM_KEYUP then
+            ' If a button has been set for ACCEPTBUTTON or CANCELBUTTON then send Click
+            ' message to that button. We need to get the activewindow because this could
+            ' a popup window.
+            pNode = Application.GetControlByHandle(GetActiveWindow)
+            If pNode Then 
+               pCtrl = Cast(wfxControl Ptr, pNode->pData)
+               If pNode->CtrlType = ControlType.Form Then
+                  pActiveForm  = Cast(wfxForm Ptr, pNode->pData)
+                  If uMsg.wParam = VK_RETURN Then
+                     If pActiveForm->AcceptButton Then
+                        ' Simulates the user clicking a button. This message causes the button to receive the
+                        ' WM_LBUTTONDOWN and WM_LBUTTONUP messages, and the button's parent window to receive a
+                        ' BN_CLICKED notification code.
+                        SendMessage(pActiveForm->AcceptButton->hWindow, BM_CLICK, 0, 0)
+                        Continue Do
+                     End If   
+                  ElseIf uMsg.wParam = VK_ESCAPE Then
+                     If pActiveForm->CancelButton Then
+                        ' Simulates the user clicking a button. This message causes the button to receive the
+                        ' WM_LBUTTONDOWN and WM_LBUTTONUP messages, and the button's parent window to receive a
+                        ' BN_CLICKED notification code.
+                        SendMessage(pActiveForm->CancelButton->hWindow, BM_CLICK, 0, 0)
+                        Continue Do
+                     End If   
+                  End If
+               End If
+            End If   
+         End If
+         
+         If IsDialogMessage(pForm.hWindow, @uMsg) = 0 Then
             TranslateMessage @uMsg    ' Translates virtual-key messages into character messages.
             DispatchMessage  @uMsg    ' Dispatches a message to a window procedure.
          End If
       End If
    Loop
    Function = uMsg.wParam
-
-print "Message loop exited. Program ending."
 
 end function
 
@@ -206,6 +239,9 @@ Function wfxApplication.SetEventArgs( byval uMsg   as UINT, _
 
       case WM_CHAR   
          e.KeyChar = wParam
+   
+      case WM_DROPFILES
+         e.hDrop = cast(HDROP, wParam)
    END SELECT
          
    function = 0
@@ -226,7 +262,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    
    dim pCtrl      as wfxControl ptr
    dim pForm      as wfxForm ptr
-   dim pLabel     as wfxLabel ptr
+   Dim pLabel     As wfxLabel Ptr
    dim pButton    as wfxButton ptr
    dim pTextBox   as wfxTextBox ptr
    dim pCheckBox  as wfxCheckBox ptr
@@ -264,6 +300,19 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
    ' Attempt to process the message using any defined functions
    Select Case uMsg
+
+       Case WM_GETMINMAXINFO
+         if pForm then 
+             DefWindowProc(hWin, uMsg, wParam, lParam)
+             Dim pMinMaxInfo As MINMAXINFO Ptr
+             pMinMaxInfo = Cast(MINMAXINFO Ptr,lParam)
+             pMinMaxInfo->ptMinTrackSize.x = iif(pForm->MinimumWidth, pForm->MinimumWidth, pMinMaxInfo->ptMinTrackSize.x)
+             pMinMaxInfo->ptMinTrackSize.y = iif(pForm->MinimumHeight, pForm->MinimumHeight, pMinMaxInfo->ptMinTrackSize.y)
+             pMinMaxInfo->ptMaxTrackSize.x = iif(pForm->MaximumWidth, pForm->MaximumWidth, pMinMaxInfo->ptMaxTrackSize.x)
+             pMinMaxInfo->ptMaxTrackSize.y = iif(pForm->MaximumHeight, pForm->MaximumHeight, pMinMaxInfo->ptMaxTrackSize.y)
+             return 0
+          End If	 
+
       case WM_ACTIVATE
          if pForm then 
             ' Get the activation state
@@ -274,38 +323,47 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             END IF
          END IF
 
-      case WM_CLOSE
+      Case WM_CLOSE
          if pForm then 
             if pForm->OnFormClosing then 
                pForm->OnFormClosing(*pForm, e)
                if e.Cancel THEN return true
             end if   
-            if pForm->IsModal then 
-               ' Enables parent window keeping parent's zorder
-               EnableWindow( GetParent(hWin), true)
-               DestroyWindow(hWin)
-            end if    
-         end if   
+            ' Enables parent window keeping parent's zorder
+            If pForm->IsModal Then EnableWindow( GetParent(hWin), True)
+            DestroyWindow(hWin)
+         End If   
           
       Case WM_DESTROY
-         if pForm andalso pForm->OnFormClosed then pForm->OnFormClosed(*pForm, e)
+         If pForm AndAlso pForm->OnFormClosed Then pForm->OnFormClosed(*pForm, e)
          if pLabel andalso pLabel->OnDestroy then pLabel->OnDestroy(*pLabel, e)
          if pButton andalso pButton->OnDestroy then pButton->OnDestroy(*pButton, e)
          if pTextBox andalso pTextBox->OnDestroy then pTextBox->OnDestroy(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnDestroy then pCheckBox->OnDestroy(*pCheckBox, e)
          if pListBox andalso pListBox->OnDestroy then pListBox->OnDestroy(*pListBox, e)
          if pStatusBar andalso pStatusBar->OnDestroy then pStatusBar->OnDestroy(*pStatusBar, e)
-         ' If this is the main form then post a quit message
-         if pForm then 
-            if pForm->IsMainForm THEN 
+         ' Reset the window handles for the control and pNode so that future messages can no
+         ' longer act on the control classes.
+         If pCtrl Then
+            pCtrl->hWindow = 0
+            pNode->hWindow = 0
+         End If
+         If pForm Then 
+            If pForm->pWindow Then 
+               Delete pForm->pWindow
+               pForm->pWindow = 0
+            End If   
+            If pForm->IsMainForm Then 
+               ' If this is the main form then post a quit message
                PostQuitMessage(0)
-            end if
-         else
+            End If
+         Else
             ' This was a subclassed control so return to the subclass procedure
             ' and remove the subclass because now the final Destroy event handlers
             ' have been processed.
-            return true      
-         END IF
+            Return True      
+         End If
+      
   
       case WM_COMMAND
          select CASE hiword(wParam)
@@ -372,9 +430,22 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                end if
          end select
                
+      Case WM_MOVING, WM_SIZING
+         ' wParam: This parameter is not used.
+         ' lParam: A pointer to a RECT structure with the current position of the window in screen coordinates. 
+         '         To change the position of the drag rectangle, an application must change the members of this structure.
+         if pForm then
+            if pForm->Locked then 
+               dim pRect as RECT ptr = cast(RECT ptr, lParam)
+               dim rc as RECT = AfxGetWindowRect(hWin)
+               *pRect = rc
+               return true
+            end if
+         END IF
+
       Case WM_SIZE
          if pForm then 
-            if pForm->OnResize then pForm->OnResize(*pForm, e)
+            If pForm->OnResize Then pForm->OnResize(*pForm, e)
             ' If a StatusBar exists on this form then resize it.
             pNode = pForm->Controls.search_controltype(ControlType.StatusBar)
             if pNode then
@@ -383,7 +454,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             END IF
          END IF
       
-      case WM_CTLCOLORSTATIC, WM_CTLCOLOREDIT 
+      Case WM_CTLCOLORSTATIC, WM_CTLCOLOREDIT, WM_CTLCOLORBTN, WM_CTLCOLORLISTBOX 
          ' wParam: HDC of the control. 
          ' lParam: Handle to the control.
          ' Need to determine the child control handle that is sending the request to be painted.
@@ -405,6 +476,13 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             return true
          end if   
           
+      Case WM_DROPFILES
+         ' wParam: hDrop, a handle to an internal structure describing the dropped files. 
+         '         Pass this handle DragFinish, DragQueryFile, or DragQueryPoint to retrieve 
+         '         information about the dropped files.
+         ' lParam: Must be zero.
+         if pForm andalso pForm->OnDropFiles then pForm->OnDropFiles(*pForm, e)
+
       case WM_MOUSEMOVE
          if pForm andalso pForm->OnMouseMove then pForm->OnMouseMove(*pForm, e)
          if pLabel andalso pLabel->OnMouseMove then pLabel->OnMouseMove(*pLabel, e)
@@ -522,6 +600,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
    End Select
    
+   ' If the event was handled by the user then return true
+   if e.Handled THEN return true
+
    ' For messages that we don't deal with make sure that Windows handles them.
    Function = DefWindowProc(hWin, uMsg, wParam, lParam)
 
@@ -545,7 +626,7 @@ static Function wfxApplication.SubclassProc ( _
          ' All keyboard input
          Function = DLGC_WANTALLKEYS
 
-      case WM_MOUSEMOVE, _
+      Case WM_MOUSEMOVE, _
            WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, _
            WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, _
            WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, _

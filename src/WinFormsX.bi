@@ -7,6 +7,7 @@
 
 #include once "windows.bi"
 #include once "Afx\CWindow.inc"
+#Include Once "Afx\CXpButton.inc"
 
 using Afx
 
@@ -14,13 +15,14 @@ namespace WinFormsX
 
 #Include Once "wfxColors.bi"
 #Include Once "wfxDeclares.bi"
+#Include Once "wfxFont.bi"
 #Include Once "wfxSize.bi"
 #Include Once "wfxPoint.bi"
 #Include once "wfxLList.bi"
 #include once "wfxControl.bi"
+#include once "wfxButton.bi"
 #include once "wfxForm.bi"
 #include once "wfxLabel.bi"
-#include once "wfxButton.bi"
 #include once "wfxTextBox.bi"
 #include once "wfxCheckBox.bi"
 #include once "wfxListbox.bi"

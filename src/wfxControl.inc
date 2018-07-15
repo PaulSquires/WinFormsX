@@ -10,7 +10,8 @@ end constructor
 destructor wfxControl()
    ' Destroy the background brush
    DeleteObject(_hBackBrush)
-end destructor
+   If _wfxFontPtr Then Delete _wfxFontPtr
+End Destructor
 
 property wfxControl.CtrlType() as LONG
    property = _CtrlType
@@ -28,6 +29,14 @@ property wfxControl.Name( byref cwzValue as wstring )
    _CtrlName = cwzValue
 end property
 
+property wfxControl.Tag() as CWSTR
+   property = _Tag
+end property
+
+property wfxControl.Tag( byref cwzValue as wstring )
+   _Tag = cwzValue
+end property
+
 property wfxControl.CtrlID() as LONG
    if this.hWindow then 
       _CtrlID = GetDlgCtrlID(this.hWindow)
@@ -42,7 +51,15 @@ property wfxControl.CtrlID( byval nValue as long )
    _CtrlID = nValue
 end property
 
-property wfxControl.hBackBrush() as HBRUSH
+Property wfxControl.AllowDrop() As boolean
+   Property = _AllowDrop
+End Property
+
+Property wfxControl.AllowDrop( ByVal nValue As boolean )
+   _AllowDrop = nValue
+End Property
+
+Property wfxControl.hBackBrush() As HBRUSH
    property = _hBackBrush
 end property
 
@@ -60,7 +77,7 @@ property wfxControl.BackColor( byval nValue as COLORREF )
    if this.hWindow THEN AfxRedrawWindow(this.hWindow)
 end property
 
-property wfxControl.ForeColor() as COLORREF
+Property wfxControl.ForeColor() As COLORREF
    property = _ForeColor
 end property
 
@@ -68,12 +85,25 @@ property wfxControl.ForeColor( byval nValue as COLORREF )
    _ForeColor = nValue
    if this.hWindow THEN AfxRedrawWindow(this.hWindow)
    ' You can not change the Foreground color of the following controls:
-   ' - Button
    ' - CheckBox
    ' - RadioButton
 end property
 
-property wfxControl.Focused() as Boolean
+Property wfxControl.Font( ByVal wfxFontPtr As wfxFont Ptr )
+   If (_wfxFontPtr <> 0) AndAlso (_wfxFontPtr <> wfxFontPtr) Then Delete(_wfxFontPtr)
+   _wfxFontPtr = wfxFontPtr
+   If this.hWindow Then 
+      If _wfxFontPtr Then
+         AfxSetWindowFont( this.hWindow, _wfxFontPtr->FontHandle, CTRUE )
+      End If
+   End If
+End Property
+    
+Property wfxControl.Font() As wfxFont 
+   Property = *(_wfxFontPtr)
+End Property
+
+Property wfxControl.Focused() As Boolean
    if this.hWindow then 
       _Focused = iif( GetFocus() = this.hWindow, true, false)
    end if
@@ -103,7 +133,7 @@ property wfxControl.TabStop( byval nValue as Boolean )
    _TabStop = nValue
 end property
 
-property wfxControl.Enabled() as Boolean
+Property wfxControl.Enabled() As Boolean
    if this.hWindow then 
       _Enabled = IsWindowEnabled(this.hWindow)
    end if
@@ -134,7 +164,7 @@ end property
 property wfxControl.Left() as LONG
    if this.hWindow then 
       dim as long nLeft, nTop
-      AfxGetWindowLocation(this.hWindow, @nLeft, @nTop)
+      AfxGetWindowLocation(this.hWindow, nLeft, nTop)
       _Location.x = nLeft
    end if
    property = _Location.x
@@ -150,7 +180,7 @@ end property
 property wfxControl.Top() as LONG
    if this.hWindow then 
       dim as long nLeft, nTop
-      AfxGetWindowLocation(this.hWindow, @nLeft, @nTop)
+      AfxGetWindowLocation(this.hWindow, nLeft, nTop)
       _Location.y = nTop
    end if
    property = _Location.y
@@ -274,7 +304,28 @@ function wfxControl.Hide() as Long
    function = 0
 END FUNCTION
 
+Function wfxControl.SelectNextControl( ByVal bForward As boolean ) As boolean
+   ' move input fcous to the next/prev control in the tab order
+   Dim As HWnd hCtrl = GetNextDlgTabItem( this.Parent->hWindow, this.hWindow, (Not bForward))
 
+   ' If the control is a textbox then select all text to simulate a TAB press.
+   dim pNode as wfxLListNode ptr
+   pNode = Application.GetControlByHandle(hCtrl)
+   If pNode Then 
+      Dim pCtrl As wfxControl Ptr
+      pCtrl = Cast(wfxControl Ptr, pNode->pData)
+      If pNode->CtrlType = ControlType.TextBox Then
+         Dim pTextBox As wfxTextBox Ptr
+         pTextBox = Cast(wfxTextBox Ptr, pNode->pData)
+         If pTextBox->MultiLine = False Then
+            pTextBox->SelectionStart = 0 
+            pTextBox->SelectionLength = Len(pTextBox->Text)
+         End If
+      End If
+   End If      
+   SetFocus(hCtrl)
+   If hCtrl <> this.hWindow Then Return True
+End Function
 
 
 

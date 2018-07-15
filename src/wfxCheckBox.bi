@@ -14,12 +14,18 @@
 
 Type wfxCheckBox Extends wfxControl
    private:
-      _Checked   as Boolean
-    
+      _CheckState As CheckBoxState
+      _ThreeState As boolean
+      _TextAlign  As ButtonAlignment = ButtonAlignment.MiddleLeft
+      
    Public:
-      declare property Checked() as boolean
-      declare property Checked( byval nValue as boolean )
-      Declare Constructor( byref wszName as wstring = "" )
+      Declare Constructor( ByRef wszName As WString = "" )
+      Declare Property CheckState() As CheckBoxState
+      Declare Property CheckState( ByVal nValue As CheckBoxState )
+      Declare Property ThreeState() As boolean
+      Declare Property ThreeState( ByVal nValue As boolean )
+      Declare Property TextAlign() As ButtonAlignment
+      Declare Property TextAlign( ByVal nValue As ButtonAlignment )
       declare function Show(byval hWndParent as hwnd = 0) as long override
 
       OnAllEvents        as function( byref sender as wfxCheckBox, byref e as EventArgs ) as LRESULT

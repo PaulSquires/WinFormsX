@@ -22,13 +22,43 @@ enum ControlType
    Treeview
 end enum
 
-enum FormWindowState
+Enum FontStyles
+   Normal    = 0
+   Bold      = 1
+   Italic    = 2
+   Strikeout = 4
+   Underline = 8
+End Enum
+
+Enum FontCharset
+   Default     = DEFAULT_CHARSET
+   Ansi        = ANSI_CHARSET
+   Arabic      = ARABIC_CHARSET
+   Baltic      = BALTIC_CHARSET
+   ChineseBig5 = CHINESEBIG5_CHARSET
+   EastEurope  = EASTEUROPE_CHARSET
+   GB2312      = GB2312_CHARSET
+   Greek       = GREEK_CHARSET
+   Hangul      = HANGUL_CHARSET
+   Hebrew      = HEBREW_CHARSET
+   Johab       = JOHAB_CHARSET
+   Mac         = MAC_CHARSET
+   OEM         = OEM_CHARSET
+   Russian     = RUSSIAN_CHARSET
+   Shiftjis    = SHIFTJIS_CHARSET
+   Symbol      = SYMBOL_CHARSET
+   Thai        = THAI_CHARSET
+   Turkish     = TURKISH_CHARSET
+   Vietnamese  = VIETNAMESE_CHARSET
+End Enum
+
+Enum FormWindowState
    Maximized = 1
    Minimized
    Normal
-end enum
+End Enum
 
-enum FormStartPosition
+Enum FormStartPosition
    CenterParent = 1
    CenterScreen
    Manual
@@ -36,51 +66,77 @@ enum FormStartPosition
 end enum
 
 enum FormBorderStyle
-   None	= 0
-   Sizable = WS_THICKFRAME	
-   Fixed3D = WS_EX_CLIENTEDGE	
-   FixedSingle	= WS_EX_WINDOWEDGE	
-   FixedDialog	= WS_EX_DLGMODALFRAME
-   FixedToolWindow = 1
-   SizableToolWindow = 2
+   None = 1
+   Sizable 
+   Fixed3D 
+   FixedSingle	
+   FixedDialog	
+   FixedToolWindow 
+   SizableToolWindow 
 end enum
 
+enum ControlBorderStyle
+   None	= 1
+   FixedSingle	
+   Fixed3D 
+End Enum
+
+Enum ImageLayout
+   None = 1
+   Tile
+   Center
+   Stretch
+   Zoom
+END ENUM
+
 enum ButtonAlignment
-   BottomCenter = BS_CENTER OR BS_BOTTOM
-   BottomLeft   = BS_LEFT   or BS_BOTTOM
-   BottomRight  = BS_RIGHT  or BS_BOTTOM
-   MiddleCenter = BS_CENTER OR BS_VCENTER
-   MiddleLeft   = BS_LEFT   or BS_VCENTER
-   MiddleRight  = BS_RIGHT  or BS_VCENTER
-   TopCenter    = BS_CENTER or BS_TOP
-   TopLeft      = BS_LEFT   or BS_TOP
-   TopRight     = BS_RIGHT  or BS_TOP     
+   BottomCenter = 1
+   BottomLeft   
+   BottomRight  
+   MiddleCenter 
+   MiddleLeft   
+   MiddleRight  
+   TopCenter    
+   TopLeft      
+   TopRight     
 end enum
 
 enum LabelAlignment
-   MiddleCenter = SS_CENTER OR SS_CENTERIMAGE
-   MiddleLeft   = SS_LEFT   or SS_CENTERIMAGE
-   MiddleRight  = SS_RIGHT  or SS_CENTERIMAGE
-   TopCenter    = SS_CENTER
-   TopLeft      = SS_LEFT  
-   TopRight     = SS_RIGHT 
+   MiddleCenter = 1
+   MiddleLeft   
+   MiddleRight  
+   TopCenter    
+   TopLeft      
+   TopRight     
 end enum
 
-enum TextBoxAlignment
-   Left   = ES_LEFT 
-   Right  = ES_RIGHT
-   Center = ES_CENTER
+Enum CharacterCase
+   Normal = 1
+   Upper
+   Lower
+End Enum
+
+Enum ScrollBars
+   None = 1
+   Horizontal
+   Vertical
+   Both
+End Enum
+
+Enum CheckBoxState      
+   Checked = 1
+   Unchecked
+   Indeterminate
+End Enum
+   
+Enum TextAlignment
+   Left   = 1 
+   Right  
+   Center 
 end enum
 
-enum TextBoxBorderStyle
-   None	= 0
-   Fixed3D = WS_EX_CLIENTEDGE	
-   FixedSingle	= WS_EX_WINDOWEDGE	
-   FixedDialog	= WS_EX_DLGMODALFRAME
-end enum
-
-enum ListBoxSelectionMode
-   None = 0
+Enum ListSelectionMode
+   None = 1
    One
    MultiSimple
    MultiExtended
@@ -107,6 +163,7 @@ Type wfxEventArgs Extends Object
       x               as long        ' the x-coordinate of the mouse click
       y               as long        ' the y-coordinate of the mouse click
       PanelClickIndex as long        ' the zero-based index of clicked statusbar panel 
+      hDrop           as HDROP       ' handle used for WM_DROPFILES message
 end type
 
 

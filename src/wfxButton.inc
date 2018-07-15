@@ -7,21 +7,145 @@
 constructor wfxButton( byref wszName as wstring = "" )
    this.CtrlType = ControlType.Button
    this.Name = wszName
-   this.BackColor = Colors.SystemButtonFace
-   this.ForeColor = Colors.SystemButtonText
-end constructor
+   this.BackColor = Colors.SystemControl
+End Constructor
 
-property wfxButton.TextAlign() as ButtonAlignment
-   property = _TextAlign
-end property
+Destructor wfxButton()
+   Delete _XpButtonPtr
+End Destructor
 
-property wfxButton.TextAlign( byval nValue as ButtonAlignment )
-   if this.hWindow then 
-      ' Remove the current alignment and set the new style
-      AfxRemoveWindowStyle(this.hWindow, _TextAlign)
-      AfxAddWindowStyle(this.hWindow, nValue)
-      this.Refresh
-   end if
+Property wfxButton.ToggleMode() As boolean 
+   If _XpButtonPtr Then 
+      _ToggleMode = cbool(_XpButtonPtr->GetToggle)
+   End If
+   Property = _ToggleMode   
+End Property
+
+Property wfxButton.ToggleMode( ByVal nValue As boolean )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetToggle(nValue)
+   End If
+   _ToggleMode = nValue
+End Property
+
+Property wfxButton.ToggleState() As boolean 
+   If _XpButtonPtr Then 
+      _ToggleState = cbool(_XpButtonPtr->GetToggleState)
+   End If
+   Property = _ToggleState
+End Property
+
+Property wfxButton.ToggleState( ByVal nValue As boolean )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetToggleState(nValue, True)
+   End If
+   _ToggleState = nValue
+End Property
+
+Property wfxButton.ThemeSupport() As boolean 
+   If _XpButtonPtr Then 
+      _ThemeSupport = _XpButtonPtr->IsThemed
+   End If
+   Property = _ThemeSupport   
+End Property
+
+Property wfxButton.ThemeSupport( ByVal nValue As boolean )
+   If _XpButtonPtr Then 
+      If nValue Then 
+         _XpButtonPtr->EnableTheming
+      Else
+         _XpButtonPtr->DisableTheming
+      End If
+   End If
+   _ThemeSupport = nValue
+End Property
+
+Property wfxButton.TextForeColor( ByVal nValue As COLORREF )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetTextForeColor(nValue)
+   End If
+   _TextForeColor = nValue
+End Property
+
+Property wfxButton.TextForeColor() As COLORREF
+   If _XpButtonPtr Then 
+      _TextForeColor = _XpButtonPtr->GetTextForeColor
+   End If
+   Property = _TextForeColor 
+End Property
+
+Property wfxButton.TextForeColorDown( ByVal nValue As COLORREF )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetTextForeColorDown(nValue)
+   End If
+   _TextForeColorDown = nValue
+End Property
+
+Property wfxButton.TextForeColorDown() As COLORREF
+   If _XpButtonPtr Then 
+      _TextForeColorDown = _XpButtonPtr->GetTextForeColorDown
+   End If
+   Property = _TextForeColorDown 
+End Property
+
+Property wfxButton.TextBackColor( ByVal nValue As COLORREF )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetTextBkColor(nValue)
+   End If
+   _TextBackColor = nValue
+End Property
+
+Property wfxButton.TextBackColor() As COLORREF
+   If _XpButtonPtr Then 
+      _TextBackColor = _XpButtonPtr->GetTextBkColor
+   End If
+   Property = _TextBackColor 
+End Property
+
+Property wfxButton.TextBackColorDown( ByVal nValue As COLORREF )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetTextBkColorDown(nValue)
+   End If
+   _TextBackColorDown = nValue
+End Property
+
+Property wfxButton.TextBackColorDown() As COLORREF
+   If _XpButtonPtr Then 
+      _TextBackColorDown = _XpButtonPtr->GetTextBkColorDown
+   End If
+   Property = _TextBackColorDown 
+End Property
+
+Property wfxButton.BackColor( ByVal nValue As COLORREF )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetButtonBkColor(nValue)
+   End If
+   _BackColor = nValue
+End Property
+
+Property wfxButton.BackColor() As COLORREF 
+   If _XpButtonPtr Then 
+      _BackColor = _XpButtonPtr->GetButtonBkColor
+   End If
+   Property = _BackColor 
+End Property
+
+Property wfxButton.TextAlign( ByVal nValue As ButtonAlignment )
+   If _XpButtonPtr Then 
+      Dim As Long wsStyle
+      Select Case nValue
+         Case ButtonAlignment.BottomCenter: wsStyle = DT_CENTER Or DT_BOTTOM
+         Case ButtonAlignment.BottomLeft:   wsStyle = DT_LEFT   Or DT_BOTTOM
+         Case ButtonAlignment.BottomRight:  wsStyle = DT_RIGHT  Or DT_BOTTOM
+         Case ButtonAlignment.MiddleCenter: wsStyle = DT_CENTER Or DT_VCENTER
+         Case ButtonAlignment.MiddleLeft:   wsStyle = DT_LEFT   Or DT_VCENTER
+         Case ButtonAlignment.MiddleRight:  wsStyle = DT_RIGHT  Or DT_VCENTER
+         Case ButtonAlignment.TopCenter:    wsStyle = DT_CENTER Or DT_TOP
+         Case ButtonAlignment.TopLeft:      wsStyle = DT_LEFT   Or DT_TOP
+         Case ButtonAlignment.TopRight:     wsStyle = DT_RIGHT  Or DT_TOP
+      End Select
+      _XpButtonPtr->SetTextFormat(wsStyle Or DT_SINGLELINE, True)
+   End If
    _TextAlign = nValue
 end property
 
@@ -42,23 +166,27 @@ function wfxButton.Show(byval hWndParent as hwnd = 0) as long
    if this.TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
-   this.hWindow = this.Parent->pWindow->AddControl ( _
-         "BUTTON", _                       ' // Class name
-         hWndParent, _                     ' // Parent window handle
-         100, _                            ' // Control identifier (this gets modified when added to controls collection)
-         this.Text, _                      ' // Control caption
-         this.Left, _                      ' // Horizontal position
-         this.Top, _                       ' // Vertical position
-         this.Width, _                     ' // Control width
-         this.Height, _                    ' // Control height
-         dwStyle, _                        ' // Control style
-         dwExStyle, _                      ' // Extended style
-          0, _                             ' // Pointer to custom data
-         Cast(WNDPROC, @wfxApplication.SubclassProc), _   ' // Address of the window callback procedure
-         100, _                            ' // The subclass ID
-         Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
-         )
+   Dim pWindow As CWindow Ptr = AfxCWindowPtr(hWndParent)
 
+   ' Use the custom control CXpButton instead of the standard Windows button control.
+   _CtrlID = this.Parent->GetNextCtrlID()
+   _XpButtonPtr = New CXpButton(pWindow, _CtrlID, this.Text, this.Left, this.top, this.Width, this.height )
+   this.hWindow = _XpButtonPtr->hWindow
+   SetWindowSubclass(this.hWindow, Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), 100, Cast(DWORD_PTR, 0))
+
+   ' Should we enable drag and drop files
+   If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
+
+   ' Apply the properties
+   this.ThemeSupport      = _ThemeSupport
+   this.BackColor         = _BackColor
+   this.TextForeColor     = _TextForeColor
+   this.TextForeColorDown = _TextForeColorDown
+   this.TextBackColor     = _TextBackColor
+   this.TextBackColorDown = _TextBackColorDown
+   this.ToggleMode        = _ToggleMode
+   this.Font              = _wfxFontPtr
+   
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.

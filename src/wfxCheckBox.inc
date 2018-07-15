@@ -22,24 +22,84 @@
 constructor wfxCheckBox( byref wszName as wstring = "" )
    this.CtrlType = ControlType.CheckBox
    this.Name = wszName
-   this.BackColor = Colors.SystemButtonFace
+   this.BackColor = Colors.SystemWindow
 end constructor
 
-property wfxCheckBox.Checked() as boolean
+Property wfxCheckBox.ThreeState() As boolean
+   If this.hWindow Then 
+      Dim As boolean bState = False
+      Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
+      If (wsStyle And BS_3STATE) Then bState = True
+      If (wsStyle And BS_AUTO3STATE) Then bState = True
+      _ThreeState = bState
+   End If
+   Property = _ThreeState
+End Property
+
+Property wfxCheckBox.ThreeState( ByVal nValue As boolean )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, BS_AUTOCHECKBOX)
+      AfxAddWindowStyle(this.hWindow, BS_AUTO3STATE)
+   End If
+   _ThreeState = nValue
+End Property
+
+Property wfxCheckBox.CheckState() As CheckBoxState
    if this.hWindow then 
-      _Checked = Iif( SendMessage( this.hWindow, BM_GETCHECK, 0, 0) = BST_CHECKED, true, false)
-   end if
-   property = _Checked
+      Dim As Long wsState = SendMessage( this.hWindow, BM_GETCHECK, 0, 0)
+      Select Case wsState
+         Case BST_CHECKED: wsState = CheckBoxState.Checked
+         Case BST_UNCHECKED: wsState = CheckBoxState.UnChecked
+         Case BST_INDETERMINATE: wsState = CheckBoxState.Indeterminate
+      End Select
+      _CheckState = wsState
+   End If
+   Property = _CheckState
 end property
 
-property wfxCheckBox.Checked( byval nValue as boolean )
+Property wfxCheckBox.CheckState( ByVal nValue As CheckBoxState )
    if this.hWindow then 
-      SendMessage( this.hWindow, BM_SETCHECK, iif(nValue, BST_CHECKED, BST_UNCHECKED), 0)
+      Dim As Long wsState
+      Select Case nValue
+         Case CheckBoxState.Checked: wsState = BST_CHECKED
+         Case CheckBoxState.UnChecked: wsState = BST_UNCHECKED
+         Case CheckBoxState.Indeterminate: wsState = BST_INDETERMINATE
+      End Select   
+      SendMessage( this.hWindow, BM_SETCHECK, wsState, 0)
    end if
-   _Checked = nValue
+   _CheckState = nValue
 end property
 
-function wfxCheckBox.Show(byval hWndParent as hwnd = 0) as long
+Property wfxCheckBox.TextAlign() As ButtonAlignment 
+   Property = _TextAlign
+End Property
+
+Property wfxCheckBox.TextAlign( ByVal nValue As ButtonAlignment )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, BS_LEFT)
+      AfxRemoveWindowStyle(this.hWindow, BS_RIGHT)
+      AfxRemoveWindowStyle(this.hWindow, BS_CENTER)
+      AfxRemoveWindowStyle(this.hWindow, BS_TOP)
+      AfxRemoveWindowStyle(this.hWindow, BS_BOTTOM)
+      Dim As Long wsStyle
+      Select Case nValue
+         Case ButtonAlignment.BottomCenter: wsStyle = BS_CENTER Or BS_BOTTOM
+         Case ButtonAlignment.BottomLeft:   wsStyle = BS_LEFT   Or BS_BOTTOM
+         Case ButtonAlignment.BottomRight:  wsStyle = BS_RIGHT  Or BS_BOTTOM
+         Case ButtonAlignment.MiddleCenter: wsStyle = BS_CENTER Or BS_VCENTER
+         Case ButtonAlignment.MiddleLeft:   wsStyle = BS_LEFT   Or BS_VCENTER
+         Case ButtonAlignment.MiddleRight:  wsStyle = BS_RIGHT  Or BS_VCENTER
+         Case ButtonAlignment.TopCenter:    wsStyle = BS_CENTER Or BS_TOP
+         Case ButtonAlignment.TopLeft:      wsStyle = BS_LEFT   Or BS_TOP
+         Case ButtonAlignment.TopRight:     wsStyle = BS_RIGHT  Or BS_TOP
+      End Select
+      AfxAddWindowStyle(this.hWindow, wsStyle)
+      this.Refresh
+   End If
+   _TextAlign = nValue
+End Property
+
+Function wfxCheckBox.Show(ByVal hWndParent As HWnd = 0) As Long
 
    ' If the control is created but simply hidden, then show it.
    if this.hWindow THEN
@@ -52,14 +112,21 @@ function wfxCheckBox.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    dim as long dwExStyle = 0
-   dim as long dwStyle = BS_AUTOCHECKBOX 
+   Dim As Long dwStyle = BS_NOTIFY
    if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
+   If _ThreeState Then 
+      dwStyle = dwStyle Or BS_AUTO3STATE
+   Else
+      dwStyle = dwStyle Or BS_AUTOCHECKBOX
+   End If   
+   
+   _CtrlID = this.Parent->GetNextCtrlID()
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
          "CHECKBOX", _                     ' // Class name
          hWndParent, _                     ' // Parent window handle
-         100, _                            ' // Control identifier (this gets modified when added to controls collection)
+         _CtrlID, _                        ' // Control identifier
          this.Text, _                      ' // Control caption
          this.Left, _                      ' // Horizontal position
          this.Top, _                       ' // Vertical position
@@ -73,6 +140,15 @@ function wfxCheckBox.Show(byval hWndParent as hwnd = 0) as long
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
 
+   ' Should we enable drag and drop files
+   If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
+
+   ' Apply properties that require a valid window handle
+   this.Font       = _wfxFontPtr
+   this.TextAlign  = _TextAlign
+   this.Enabled    = _Enabled
+   this.CheckState = _CheckState
+
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.
@@ -84,9 +160,6 @@ function wfxCheckBox.Show(byval hWndParent as hwnd = 0) as long
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
       
-   this.Enabled = _Enabled
-   this.Checked = _Checked
-
    function = 0
 END FUNCTION
 

@@ -28,6 +28,7 @@ declare function Form1_Text1_MouseEnter( byref sender as wfxTextBox, byref e as 
 declare function Form1_Text1_MouseHover( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
 declare function Form1_Text1_MouseLeave( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
 declare function Form1_Text1_KeyPress( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
+declare function Form1_Text1_KeyUp( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
 declare function Form1_Text1_GotFocus( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
 declare function Form1_Text1_LostFocus( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
 declare function Form1_Text2_Destroy( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
@@ -92,6 +93,7 @@ constructor TFORMMAIN
       .OnMouseHover  = @Form1_Text1_MouseHover
       .OnMouseLeave  = @Form1_Text1_MouseLeave
       .OnKeyPress    = @Form1_Text1_KeyPress
+      .OnKeyUp       = @Form1_Text1_KeyUp
       .OnGotFocus    = @Form1_Text1_GotFocus
       .OnLostFocus   = @Form1_Text1_LostFocus
    end with
@@ -199,7 +201,12 @@ function Form1_Text1_LostFocus( byref sender as wfxTextBox, byref e as EventArgs
 end function
 
 function Form1_Text1_KeyPress( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
-   ? "Text1 KeyPress: "; chr(e.KeyChar)
+   ? "Text1 KeyPress: "; chr(e.KeyChar), e.KeyCode
+   function = 0
+end function
+
+function Form1_Text1_KeyUp( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
+   ? "Text1 KeyUp: "; e.KeyCode
    function = 0
 end function
 

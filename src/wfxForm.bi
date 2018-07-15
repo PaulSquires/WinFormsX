@@ -14,16 +14,24 @@
 
 Type wfxForm Extends wfxControl
    protected:
-      _WindowState     as FormWindowState = FormWindowState.Normal
+      _WindowState     as FormWindowState   = FormWindowState.Normal
       _StartPosition   as FormStartPosition = FormStartPosition.Manual
-      _BorderStyle     as FormBorderStyle = FormBorderStyle.Sizable
+      _BorderStyle     as FormBorderStyle   = FormBorderStyle.Sizable
       _MinimizeBox     as boolean = true
       _MaximizeBox     as boolean = true
       _ControlBox      as boolean = true
+      _ShowInTaskBar   as Boolean = true
       _ClientSize      as wfxSize 
       _NextCtrlID      as long    = 100
       _IsMainForm      as boolean = false 
       _IsModal         as Boolean = false
+      _Locked          as Boolean = false
+      _MinimumHeight   as Long = 0
+      _MinimumWidth    as Long = 0
+      _MaximumHeight   as Long = 0
+      _MaximumWidth    as Long = 0
+      _AcceptButton as wfxButton ptr
+      _CancelButton as wfxButton ptr
       
    Public:           
       Controls         As wfxLList
@@ -47,6 +55,22 @@ Type wfxForm Extends wfxControl
       Declare Property IsMainForm( ByVal nValue As boolean )
       Declare Property IsModal() As boolean
       Declare Property IsModal( ByVal nValue As boolean )
+      Declare Property MinimumHeight( ByVal nValue As long )
+      Declare Property MinimumHeight() As long
+      Declare Property MinimumWidth( ByVal nValue As long )
+      Declare Property MinimumWidth() As long
+      Declare Property MaximumHeight( ByVal nValue As long )
+      Declare Property MaximumHeight() as long
+      Declare Property MaximumWidth( ByVal nValue As long )
+      Declare Property MaximumWidth() as long
+      Declare Property Locked() As boolean
+      Declare Property Locked( ByVal nValue As boolean )
+      Declare Property ShowInTaskBar() As boolean
+      Declare Property ShowInTaskBar( ByVal nValue As boolean )
+      Declare Property AcceptButton() As wfxButton ptr
+      Declare Property AcceptButton( byval nValue as wfxButton ptr )
+      Declare Property CancelButton() As wfxButton ptr
+      Declare Property CancelButton( byval nValue as wfxButton ptr )
 
       declare function GetNextCtrlID() as Long     
       declare function Close() as Long
@@ -78,6 +102,7 @@ Type wfxForm Extends wfxControl
       OnKeyDown          as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnKeyPress         as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+      OnDropFiles        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 
       Declare Constructor( byref wszName as wstring = "" )
       Declare Destructor

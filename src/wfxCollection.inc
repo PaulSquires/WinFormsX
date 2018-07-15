@@ -43,10 +43,9 @@ function wfxCollection.Add( byval pCtrl as wfxControl ptr ) as long
    ' If this is not a Form then render the control now. If the parent form
    ' has not yet been rendered then control creation will be delayed until
    ' the form gets created.
-   if pCtrl->CtrlType <> ControlType.Form THEN 
-      pCtrl->CtrlID = this.pFormParent->GetNextCtrlID()
-      pCtrl->Show
-   end if   
+   If pCtrl->CtrlType <> ControlType.Form Then 
+      If this.pFormParent->hWindow Then pCtrl->Show
+   End If   
    function = ub
 end function
 

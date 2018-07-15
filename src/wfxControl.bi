@@ -28,10 +28,15 @@ Type wfxControl Extends Object
       _Enabled     as Boolean = True
       _Visible     as Boolean = True
       _TabStop     as boolean = true
-      _BackColor   as COLORREF = Colors.SystemButtonFace
-      _hBackBrush  as HBRUSH = CreateSolidBrush(Colors.SystemButtonFace)
-      _ForeColor   as COLORREF = Colors.SystemButtonText
+      _BackColor   As COLORREF = Colors.SystemControl
+      _hBackBrush  As HBRUSH = CreateSolidBrush(Colors.SystemControl)
+      _ForeColor   As COLORREF = Colors.SystemControlText
       _bIsTracking as Boolean = false    ' mouse tracking for Enter/Leave
+      _AllowDrop   As Boolean = False
+      _Tag         As CWSTR
+      _hFont       As HFONT
+      _FontString  As CWSTR
+      _wfxFontPtr  As wfxFont Ptr
       
    Public:
       Declare Property hWindow() As hwnd
@@ -40,6 +45,12 @@ Type wfxControl Extends Object
       Declare Property CtrlType( ByVal nValue As Long )
       Declare Property Name() As CWSTR 
       Declare Property Name( ByRef cwzValue As wstring )
+      Declare Property Tag() As CWSTR 
+      Declare Property Tag( ByRef cwzValue As wstring )
+      Declare Property Font() As wfxFont 
+      Declare Property Font( ByVal wfxFontPtr As wfxFont Ptr )
+      Declare Property AllowDrop() As boolean
+      Declare Property AllowDrop( ByVal nValue As boolean )
       Declare Property Focused() As boolean
       Declare Property Focused( ByVal nValue As Boolean)
       Declare Property CtrlID() As Long
@@ -76,7 +87,8 @@ Type wfxControl Extends Object
       declare function Refresh() as long
       declare function SetBounds( byval xPos as long, byval yPos as long, byval nWidth as long, byval nHeight as long ) as long
       declare function Hide() As long
-      declare abstract function Show(byval hWndParent as hwnd = 0) as long
+      Declare Function SelectNextControl( ByVal bForward As boolean ) As boolean
+      Declare Abstract Function Show(ByVal hWndParent As HWnd = 0) As Long
 
       declare constructor ()
       Declare Constructor ( ByRef rhs As wfxControl ) '' to avoid user copy-construction from root
