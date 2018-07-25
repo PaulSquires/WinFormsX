@@ -125,7 +125,15 @@ property wfxForm.IsModal( byval nValue as boolean )
    _IsModal = nValue
 end property
 
-property wfxForm.Locked() as boolean
+Property wfxForm.KeyPreview() As boolean
+   Property = _KeyPreview
+End Property
+
+Property wfxForm.KeyPreview( ByVal nValue As boolean )
+   _KeyPreview = nValue
+End Property
+
+Property wfxForm.Locked() As boolean
    property = _Locked
 end property
 

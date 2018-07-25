@@ -142,36 +142,31 @@ Function wfxApplication.Run( Byref pForm As wfxForm ) As LRESULT
       If (pForm.pWindow->AccelHandle = 0) Or _
          (TranslateAccelerator(pForm.hWindow, pForm.pWindow->AccelHandle, @uMsg)) = 0 Then
 
-         if uMsg.message = WM_KEYUP then
-            ' If a button has been set for ACCEPTBUTTON or CANCELBUTTON then send Click
-            ' message to that button. We need to get the activewindow because this could
-            ' a popup window.
-            pNode = Application.GetControlByHandle(GetActiveWindow)
-            If pNode Then 
-               pCtrl = Cast(wfxControl Ptr, pNode->pData)
-               If pNode->CtrlType = ControlType.Form Then
-                  pActiveForm  = Cast(wfxForm Ptr, pNode->pData)
-                  If uMsg.wParam = VK_RETURN Then
-                     If pActiveForm->AcceptButton Then
-                        ' Simulates the user clicking a button. This message causes the button to receive the
-                        ' WM_LBUTTONDOWN and WM_LBUTTONUP messages, and the button's parent window to receive a
-                        ' BN_CLICKED notification code.
-                        SendMessage(pActiveForm->AcceptButton->hWindow, BM_CLICK, 0, 0)
-                        Continue Do
-                     End If   
-                  ElseIf uMsg.wParam = VK_ESCAPE Then
-                     If pActiveForm->CancelButton Then
-                        ' Simulates the user clicking a button. This message causes the button to receive the
-                        ' WM_LBUTTONDOWN and WM_LBUTTONUP messages, and the button's parent window to receive a
-                        ' BN_CLICKED notification code.
-                        SendMessage(pActiveForm->CancelButton->hWindow, BM_CLICK, 0, 0)
-                        Continue Do
-                     End If   
-                  End If
-               End If
-            End If   
+         ' If a button has been set for ACCEPTBUTTON or CANCELBUTTON then send Click
+         ' message to that button. We need to get the activewindow because this could
+         ' a popup window.
+         If uMsg.message = WM_KEYDOWN Then
+            If uMsg.wParam = VK_RETURN Then
+               pActiveForm = Application.GetpFormObject(GetParent(uMsg.HWnd))
+               If pActiveForm AndAlso pActiveForm->AcceptButton Then
+                  ' Simulates the user clicking a button. This message causes the button to receive the
+                  ' WM_LBUTTONDOWN and WM_LBUTTONUP messages, and the button's parent window to receive a
+                  ' BN_CLICKED notification code.
+                  SendMessage(pActiveForm->AcceptButton->hWindow, BM_CLICK, 0, 0)
+                  Continue Do
+               End If   
+            ElseIf uMsg.wParam = VK_ESCAPE Then
+               pActiveForm = Application.GetpFormObject(GetParent(uMsg.HWnd))
+               If pActiveForm AndAlso pActiveForm->CancelButton Then
+                  ' Simulates the user clicking a button. This message causes the button to receive the
+                  ' WM_LBUTTONDOWN and WM_LBUTTONUP messages, and the button's parent window to receive a
+                  ' BN_CLICKED notification code.
+                  SendMessage(pActiveForm->CancelButton->hWindow, BM_CLICK, 0, 0)
+                  Continue Do
+               End If   
+            End If
          End If
-         
+
          If IsDialogMessage(pForm.hWindow, @uMsg) = 0 Then
             TranslateMessage @uMsg    ' Translates virtual-key messages into character messages.
             DispatchMessage  @uMsg    ' Dispatches a message to a window procedure.
@@ -247,6 +242,26 @@ Function wfxApplication.SetEventArgs( byval uMsg   as UINT, _
    function = 0
 END FUNCTION
  
+''
+''  wfxApplication get the pForm pointer object
+''
+Function wfxApplication.GetpFormObject( ByVal hWin As HWnd ) As wfxForm Ptr
+
+   Dim pNode As wfxLListNode Ptr
+   Dim pCtrl As wfxControl Ptr
+   Dim pForm As wfxForm Ptr
+   
+   pNode = Application.GetControlByHandle(hWin)
+   If pNode Then 
+      pCtrl = Cast(wfxControl Ptr, pNode->pData)
+      If pNode->CtrlType = ControlType.Form Then
+         pForm  = Cast(wfxForm Ptr, pNode->pData)
+      End If
+   End If
+   
+   Return pForm
+End Function      
+
 ''    
 ''  wfxApplication General Window procedure
 ''
@@ -258,16 +273,17 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
 
    dim pNode as wfxLListNode ptr
-   dim e     as wfxEventArgs 
+   Dim e     As wfxEventArgs 
    
-   dim pCtrl      as wfxControl ptr
-   dim pForm      as wfxForm ptr
-   Dim pLabel     As wfxLabel Ptr
-   dim pButton    as wfxButton ptr
-   dim pTextBox   as wfxTextBox ptr
-   dim pCheckBox  as wfxCheckBox ptr
-   dim pListBox   as wfxListBox ptr
-   dim pStatusBar as wfxStatusBar ptr
+   Dim pActiveForm As wfxForm Ptr
+   Dim pCtrl       As wfxControl Ptr
+   Dim pForm       As wfxForm Ptr
+   Dim pLabel      As wfxLabel Ptr
+   Dim pButton     As wfxButton Ptr
+   Dim pTextBox    As wfxTextBox Ptr
+   Dim pCheckBox   As wfxCheckBox Ptr
+   Dim pListBox    As wfxListBox Ptr
+   Dim pStatusBar  As wfxStatusBar Ptr
    
    pNode = Application.GetControlByHandle(hWin)
    if pNode then 
@@ -574,27 +590,56 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pCheckBox andalso pCheckBox->OnLostFocus then pCheckBox->OnLostFocus(*pCheckBox, e)
          if pListBox andalso pListBox->OnLostFocus then pListBox->OnLostFocus(*pListBox, e)
 
-      case WM_KEYDOWN
-         if pForm andalso pForm->OnKeyDown then pForm->OnKeyDown(*pForm, e)
-         if pButton andalso pButton->OnKeyDown then pButton->OnKeyDown(*pButton, e)
-         if pTextBox andalso pTextBox->OnKeyDown then pTextBox->OnKeyDown(*pTextBox, e)
+      Case WM_KEYDOWN
+         ' Handle any form level keypreview. All keys are previewed included the TAB
+         ' key that would normally move focus input amongst controls.
+         pActiveForm = Application.GetpFormObject(GetParent(hWin))
+         If cbool(pActiveForm <> 0) AndAlso pActiveForm->KeyPreview Then
+            If pActiveForm->OnKeyDown Then pActiveForm->OnKeyDown(*pActiveForm, e)
+            If e.Handled Then Return True  ' do not process any subsequent control handlers
+         End If
+         If pButton AndAlso pButton->OnKeyDown Then pButton->OnKeyDown(*pButton, e)
+         If pTextBox AndAlso pTextBox->OnKeyDown Then pTextBox->OnKeyDown(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnKeyDown then pCheckBox->OnKeyDown(*pCheckBox, e)
          if pListBox andalso pListBox->OnKeyDown then pListBox->OnKeyDown(*pListBox, e)
+         If e.Handled = False Then  
+            ' Need to manually handle any TAB key becuase otherwise it is eaten.
+            If e.KeyCode = VK_TAB Then SetFocus( GetNextDlgTabItem( GetParent(hWin), hWin, e.Shift) )
+         End If   
 
       case WM_KEYUP
-         if pForm andalso pForm->OnKeyUp then pForm->OnKeyUp(*pForm, e)
-         if pButton andalso pButton->OnKeyUp then pButton->OnKeyUp(*pButton, e)
+         ' Handle any form level keypreview. All keys are previewed included the TAB
+         ' key that would normally move focus input amongst controls.
+         pActiveForm = Application.GetpFormObject(GetParent(hWin))
+         If cbool(pActiveForm <> 0) AndAlso pActiveForm->KeyPreview Then
+            If pActiveForm->OnKeyUp Then pActiveForm->OnKeyUp(*pActiveForm, e)
+            If e.Handled Then Return True
+         End If
+         If pButton AndAlso pButton->OnKeyUp Then pButton->OnKeyUp(*pButton, e)
          if pTextBox andalso pTextBox->OnKeyUp then pTextBox->OnKeyUp(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnKeyUp then pCheckBox->OnKeyUp(*pCheckBox, e)
          if pListBox andalso pListBox->OnKeyUp then pListBox->OnKeyUp(*pListBox, e)
 
       case WM_CHAR
-         if pForm andalso pForm->OnKeyPress then pForm->OnKeyPress(*pForm, e)
-         if pButton andalso pButton->OnKeyPress then pButton->OnKeyPress(*pButton, e)
+         ' Handle any form level keypreview. All keys are previewed included the TAB
+         ' key that would normally move focus input amongst controls.
+         pActiveForm = Application.GetpFormObject(GetParent(hWin))
+         If cbool(pActiveForm <> 0) AndAlso pActiveForm->KeyPreview Then
+            If pActiveForm->OnKeyPress Then pActiveForm->OnKeyPress(*pActiveForm, e)
+            If e.Handled Then Return True
+         End If
+         If pButton AndAlso pButton->OnKeyPress Then pButton->OnKeyPress(*pButton, e)
          if pTextBox andalso pTextBox->OnKeyPress then pTextBox->OnKeyPress(*pTextBox, e)
          if pCheckBox andalso pCheckBox->OnKeyPress then pCheckBox->OnKeyPress(*pCheckBox, e)
          if pListBox andalso pListBox->OnKeyPress then pListBox->OnKeyPress(*pListBox, e)
-         
+
+         ' If this is a single line textbox then illegal characters such as ENTER and TAB
+         ' will cause a beep. Test for these and return TRUE in order for the subclass
+         ' to bypass processing these keys. Must handle this in WM_CHAR only.
+         If cbool(pTextBox <> 0) AndAlso (pTextBox->MultiLine = False) Then 
+            If (e.KeyChar = 13) Or (e.KeyChar = 9) Then Return True
+         End If
+
       Case WM_MOVE
          if pForm andalso pForm->OnMove then pForm->OnMove(*pForm, e)
 
@@ -624,16 +669,20 @@ static Function wfxApplication.SubclassProc ( _
    Select Case uMsg
       Case WM_GETDLGCODE
          ' All keyboard input
-         Function = DLGC_WANTALLKEYS
+         Return DLGC_WANTALLKEYS 
 
       Case WM_MOUSEMOVE, _
            WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, _
            WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, _
            WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, _
            WM_SETFOCUS, WM_KILLFOCUS, _
-           WM_KEYDOWN, WM_KEYUP, WM_CHAR, _
            WM_MOUSELEAVE, WM_MOUSEHOVER
-         wfxApplication.WndProc( hWin, uMsg, wParam, lParam )
+         If wfxApplication.WndProc( hWin, uMsg, wParam, lParam ) Then Return 0
+
+      Case WM_KEYDOWN, WM_KEYUP, WM_CHAR
+         ' If the key was handled then the WnfProc will return True.
+         ' Return 0 to prevent beep
+         If wfxApplication.WndProc( hWin, uMsg, wParam, lParam ) Then Return 0
          
       Case WM_DESTROY
          ' Handle any final Destroy messages for the control and then return

@@ -22,7 +22,8 @@
 constructor wfxLabel( byref wszName as wstring = "" )
    this.CtrlType = ControlType.Label
    this.Name = wszName
-end constructor
+   this.BackColor = Colors.SystemControl
+End Constructor
 
 Property wfxLabel.BorderStyle() As ControlBorderStyle
    if this.hWindow then 

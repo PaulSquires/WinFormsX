@@ -22,7 +22,7 @@
 constructor wfxCheckBox( byref wszName as wstring = "" )
    this.CtrlType = ControlType.CheckBox
    this.Name = wszName
-   this.BackColor = Colors.SystemWindow
+   this.BackColor = Colors.SystemControl
 end constructor
 
 Property wfxCheckBox.ThreeState() As boolean

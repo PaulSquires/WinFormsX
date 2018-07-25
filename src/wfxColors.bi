@@ -41,7 +41,7 @@ TYPE wfxColors
    SystemMenu              As COLORREF = GetSysColor(COLOR_MENU)
    SystemMenuBar           As COLORREF = GetSysColor(COLOR_MENUBAR)
    SystemMenuHighlight     As COLORREF = GetSysColor(COLOR_MENUHILIGHT)
-   SytemMenuText           As COLORREF = GetSysColor(COLOR_MENUTEXT)
+   SystemMenuText          As COLORREF = GetSysColor(COLOR_MENUTEXT)
    SystemScrollBar         As COLORREF = GetSysColor(COLOR_SCROLLBAR)
    SystemWindow            As COLORREF = GetSysColor(COLOR_WINDOW)
    SystemWindowFrame       As COLORREF = GetSysColor(COLOR_WINDOWFRAME)
