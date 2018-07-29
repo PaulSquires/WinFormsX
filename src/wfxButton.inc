@@ -130,6 +130,20 @@ Property wfxButton.BackColor() As COLORREF
    Property = _BackColor 
 End Property
 
+Property wfxButton.BackColorDown( ByVal nValue As COLORREF )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetButtonBkColorDown(nValue)
+   End If
+   _BackColorDown = nValue
+End Property
+
+Property wfxButton.BackColorDown() As COLORREF 
+   If _XpButtonPtr Then 
+      _BackColorDown = _XpButtonPtr->GetButtonBkColorDown
+   End If
+   Property = _BackColorDown 
+End Property
+
 Property wfxButton.TextAlign( ByVal nValue As ButtonAlignment )
    If _XpButtonPtr Then 
       Dim As Long wsStyle
@@ -180,6 +194,7 @@ function wfxButton.Show(byval hWndParent as hwnd = 0) as long
    ' Apply the properties
    this.ThemeSupport      = _ThemeSupport
    this.BackColor         = _BackColor
+   this.BackColorDown     = _BackColorDown
    this.TextForeColor     = _TextForeColor
    this.TextForeColorDown = _TextForeColorDown
    this.TextBackColor     = _TextBackColor
