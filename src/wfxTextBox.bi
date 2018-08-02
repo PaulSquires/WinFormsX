@@ -69,7 +69,8 @@ Type wfxTextBox Extends wfxControl
       OnMouseEnter       as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
       OnMouseHover       as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
       OnMouseLeave       as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
-      OnKeyDown          as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
+      OnTextChanged      As Function( ByRef sender As wfxTextBox, ByRef e As EventArgs ) As LRESULT
+      OnKeyDown          As Function( ByRef sender As wfxTextBox, ByRef e As EventArgs ) As LRESULT
       OnKeyPress         as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
 End Type

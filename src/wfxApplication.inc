@@ -404,10 +404,21 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   END SELECT
                end if
 
-            case LBN_DBLCLK
-               ' wParam: LOWORD contains the button's control identifier. 
+            Case EN_CHANGE
+               ' wParam: LOWORD contains the textbox's control identifier. 
                '         HIWORD specifies the notification code.
-               ' lParam: Handle to the button.
+               ' lParam: Handle to the textbox.
+               ' Determine the pointer based on the Window handle generating the notification.
+               pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
+               If pNode Then 
+                  pTextBox = Cast(wfxTextBox Ptr, pNode->pData)
+                  If pTextBox AndAlso pTextBox->OnTextChanged Then pTextBox->OnTextChanged(*pTextBox, e)
+               End If
+
+            Case LBN_DBLCLK
+               ' wParam: LOWORD contains the listbox's control identifier. 
+               '         HIWORD specifies the notification code.
+               ' lParam: Handle to the listbox.
                ' Determine the pointer based on the Window handle generating the notification.
                pNode = Application.GetControlByHandle( cast(hwnd, lParam) )
                if pNode then 
@@ -416,9 +427,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                end if
                      
             case LBN_SELCHANGE
-               ' wParam: LOWORD contains the button's control identifier. 
+               ' wParam: LOWORD contains the listbox's control identifier. 
                '         HIWORD specifies the notification code.
-               ' lParam: Handle to the button.
+               ' lParam: Handle to the listbox.
                ' Determine the pointer based on the Window handle generating the notification.
                pNode = Application.GetControlByHandle( cast(hwnd, lParam) )
                if pNode then 
