@@ -46,7 +46,8 @@ type wfxListBoxItemsCollection
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Clear() as long 
       Declare function Count() as long 
-      Declare function Remove( byval nIndex as long ) as long 
+      Declare Function SelectedCount() As Long
+      Declare Function Remove( ByVal nIndex As Long ) As Long 
       Declare Function Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
       declare function ByIndex( byval nIndex as long ) byref as wfxListBoxItem
       Declare Constructor
@@ -72,7 +73,7 @@ Type wfxListBox Extends wfxControl
       _IsLoading as Boolean = true   ' internal
       
    Public:
-      Declare function Item( byval nIndex as long) byref as wfxListBoxItem
+      Declare Function Item( ByVal nIndex As Long) ByRef As wfxListBoxItem
       declare function Items byref As wfxListBoxItemsCollection
       Declare Property AllowSelection() As boolean
       Declare Property BorderStyle() As ControlBorderStyle
@@ -101,21 +102,6 @@ Type wfxListBox Extends wfxControl
       Declare Constructor( byref wszName as wstring = "" )
       declare function Show(byval hWndParent as hwnd = 0) as long override
 
-      declare function SelectedCount() as Long
-      
-      ' ClearSelected   (unselects all items in the listbox)
-      ' FindString
-      ' FindStringExact
-      ' BeginUpdate
-      ' EndUpdate
-      ' GetItemHeight
-      ' GetItemRectangle
-      
-      ' GetSelected(int32)  t/f the item is selected
-      ' SetSelected(Int32, Boolean)
-      ' IndexFromPoint
-      
-      
       OnAllEvents        as function( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
       OnClick            as function( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT

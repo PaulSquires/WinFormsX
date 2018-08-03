@@ -23,7 +23,8 @@ constructor wfxListBox( byref wszName as wstring = "" )
    this.ForeColor = Colors.SystemWindowText
 end constructor
 
-function wfxListBox.Item( ByVal nIndex As long ) byref As wfxListBoxItem
+
+Function wfxListBox.Item( ByVal nIndex As Long ) ByRef As wfxListBoxItem
    if _IsLoading then
       return this.Items.ByIndex(nIndex)
    else
@@ -277,6 +278,13 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
    if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
+   Select Case _SelectionMode
+      Case ListSelectionMode.None:          dwStyle = dwStyle Or LBS_NOSEL
+      Case ListSelectionMode.One            ' This is the default for a listbox
+      Case ListSelectionMode.MultiSimple:   dwStyle = dwStyle Or LBS_MULTIPLESEL
+      Case ListSelectionMode.MultiExtended: dwStyle = dwStyle Or LBS_EXTENDEDSEL
+   End Select
+   
    _CtrlID = this.Parent->GetNextCtrlID()
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
@@ -350,13 +358,13 @@ END PROPERTY
 
 property wfxListBoxItem.Index() as long
    property = _Index
-END PROPERTY
+End Property
 
 property wfxListBoxItem.Index( ByVal nValue As long) 
    _Index = nValue
 END PROPERTY
 
-property wfxListBoxItem.Selected() as boolean
+Property wfxListBoxItem.Selected() As boolean
    if this.hWindow then 
       _Selected = false
       DIM nSelCount AS LONG = SendMessage(this.hWindow, LB_GETSELCOUNT, 0, 0)
@@ -441,6 +449,20 @@ function wfxListBoxItemsCollection.Count() as Long
    end if
 end function
 
+Function wfxListBoxItemsCollection.SelectedCount() As Long
+   If this.hWindow Then
+      Function = SendMessage( this.hWindow, LB_GETSELCOUNT, 0, 0 )
+   Else
+      Dim As Long nSelCount = 0
+      For i As Long = 0 To this.Count - 1
+         If this.ByIndex(i).Selected Then
+            nSelCount = nSelCount + 1
+         End If
+      Next    
+      Function = nSelCount
+   End If
+End Function
+
 Function wfxListBoxItemsCollection.Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
    If this.hWindow Then
       Dim As Long idx = SendMessage( this.hWindow, LB_ADDSTRING, 0, Cast(LPARAM, @wszValue) )
@@ -505,41 +527,5 @@ function wfxListBoxItemsCollection.Clear() as long
    function = 0
 END FUNCTION
 
-'function wfxListBox.ClearItems() as long
-'   SendMessage( this.hWindow, LB_RESETCONTENT, 0, 0)
-'   function = 0
-'END FUNCTION
-
-'function wfxListBox.Count() as Long
-'   function = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0)
-'END FUNCTION
-
-'function wfxListBox.SelectedCount() as Long
-'   function = SendMessage( this.hWindow, LB_GETSELCOUNT, 0, 0)
-'END FUNCTION
-
-'function wfxListBox.AddItem( byref wszName as wstring, byval nValue32 as long = 0 ) as Long
-'   dim as long nIndex
-'   nIndex = SendMessage( this.hWindow, LB_ADDSTRING, 0, CAST(LPARAM, @wszName))   
-'   SendMessage( this.hWindow, LB_SETITEMDATA, nIndex, CAST(LPARAM, nValue32))
-'   function = nIndex
-'END FUNCTION
-
-'function wfxListBox.DeleteItem( byval nIndex as long ) as Long
-'   function = SendMessage( this.hWindow, LB_DELETESTRING, nIndex, 0)
-'END FUNCTION
-
-'function wfxListBox.GetItemText( byval nIndex as long ) as CWSTR
-'   DIM cbLen AS LONG = SendMessage(this.hWindow, LB_GETTEXTLEN, nIndex, 0)
-'   IF cbLen THEN 
-'      dim wszText as CWSTR = space(cbLen * 2)
-'      SendMessage( this.hWindow, LB_GETTEXT, nIndex, CAST(LPARAM, wszText.vptr))
-'      return wszText
-'   end if   
-'END FUNCTION
-
-'function wfxListBox.GetItemData( byval nIndex as long ) as long
-'   function = SendMessage( this.hWindow, LB_GETITEMDATA, nIndex, 0)
-'end function
 
 
