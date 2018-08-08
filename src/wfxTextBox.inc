@@ -126,11 +126,8 @@ end property
 
 property wfxTextBox.Multiline( byval nValue as boolean )
    if this.hWindow then 
-      ' Test if the style has changed
-      if nValue <> _Multiline THEN
-         AfxRemoveWindowStyle(this.hWindow, ES_MULTILINE)
-         if nValue then AfxAddWindowStyle(this.hWindow, ES_MULTILINE)
-      END IF
+      AfxAddWindowStyle(this.hWindow, ES_MULTILINE)
+      If nValue Then AfxRemoveWindowStyle(this.hWindow, ES_MULTILINE)
       ' TODO: Recreate textbox if multiline style changed?
       this.Refresh  
    end if
@@ -175,6 +172,21 @@ Property wfxTextBox.AcceptsTab( ByVal nValue As boolean )
    _AcceptsTab = nValue
 End Property
 
+Property wfxTextBox.HideSelection() As boolean
+   if this.hWindow then 
+      _HideSelection = Iif( (AfxGetWindowStyle(this.hWindow) And ES_NOHIDESEL) = ES_NOHIDESEL, False, True)
+   End If
+   Property = _HideSelection
+End Property
+
+Property wfxTextBox.HideSelection( ByVal nValue As boolean )
+   If this.hWindow Then 
+      AfxRemoveWindowStyle(this.hWindow, ES_NOHIDESEL)
+      If nValue = False Then AfxAddWindowStyle(this.hWindow, ES_NOHIDESEL)
+   End If
+   _HideSelection = nValue
+End Property
+
 Property wfxTextBox.WordWrap() As boolean
    if this.hWindow then 
       _WordWrap = iIF( (AfxGetWindowStyle(this.hWindow) AND ES_AUTOHSCROLL) = ES_AUTOHSCROLL, false, true)
@@ -184,15 +196,16 @@ end property
 
 property wfxTextBox.WordWrap( byval nValue as boolean )
    if this.hWindow then 
-      ' Test if the style has changed
-      if nValue <> _WordWrap THEN
-         AfxRemoveWindowStyle(this.hWindow, ES_MULTILINE)
-         if nValue then AfxAddWindowStyle(this.hWindow, ES_MULTILINE)
-      END IF
+      If nValue Then 
+         ' ES_AUTOHSCROLL must not exist if you want to have word wrapping.
+         AfxRemoveWindowStyle(this.hWindow, ES_AUTOHSCROLL)
+      else
+         AfxAddWindowStyle(this.hWindow, ES_AUTOHSCROLL)
+      End If
       ' TODO: Recreate textbox if wordwrap style changed?
       this.Refresh  
    end if
-   _Multiline = nValue
+   _WordWrap = nValue
 end property
 
 Property wfxTextBox.PasswordChar() As CWSTR

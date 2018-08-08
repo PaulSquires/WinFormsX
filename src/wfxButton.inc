@@ -62,7 +62,7 @@ End Property
 
 Property wfxButton.TextForeColor( ByVal nValue As COLORREF )
    If _XpButtonPtr Then 
-      _XpButtonPtr->SetTextForeColor(nValue)
+      _XpButtonPtr->SetTextForeColor(nValue, True)
    End If
    _TextForeColor = nValue
 End Property
@@ -76,7 +76,7 @@ End Property
 
 Property wfxButton.TextForeColorDown( ByVal nValue As COLORREF )
    If _XpButtonPtr Then 
-      _XpButtonPtr->SetTextForeColorDown(nValue)
+      _XpButtonPtr->SetTextForeColorDown(nValue, True)
    End If
    _TextForeColorDown = nValue
 End Property
@@ -90,7 +90,7 @@ End Property
 
 Property wfxButton.TextBackColor( ByVal nValue As COLORREF )
    If _XpButtonPtr Then 
-      _XpButtonPtr->SetTextBkColor(nValue)
+      _XpButtonPtr->SetTextBkColor(nValue, True)
    End If
    _TextBackColor = nValue
 End Property
@@ -104,7 +104,7 @@ End Property
 
 Property wfxButton.TextBackColorDown( ByVal nValue As COLORREF )
    If _XpButtonPtr Then 
-      _XpButtonPtr->SetTextBkColorDown(nValue)
+      _XpButtonPtr->SetTextBkColorDown(nValue, True)
    End If
    _TextBackColorDown = nValue
 End Property
@@ -118,7 +118,7 @@ End Property
 
 Property wfxButton.BackColor( ByVal nValue As COLORREF )
    If _XpButtonPtr Then 
-      _XpButtonPtr->SetButtonBkColor(nValue)
+      _XpButtonPtr->SetButtonBkColor(nValue, True)
    End If
    _BackColor = nValue
 End Property
@@ -132,7 +132,7 @@ End Property
 
 Property wfxButton.BackColorDown( ByVal nValue As COLORREF )
    If _XpButtonPtr Then 
-      _XpButtonPtr->SetButtonBkColorDown(nValue)
+      _XpButtonPtr->SetButtonBkColorDown(nValue, True)
    End If
    _BackColorDown = nValue
 End Property

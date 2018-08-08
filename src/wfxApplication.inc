@@ -164,7 +164,32 @@ Function wfxApplication.Run( Byref pForm As wfxForm ) As LRESULT
                   SendMessage(pActiveForm->CancelButton->hWindow, BM_CLICK, 0, 0)
                   Continue Do
                End If   
+            ElseIf uMsg.wParam = VK_TAB Then
+               ' If this is a multiline textbox then test to see if a TAB key should be
+               ' allowed as a valid character (the default action) or if the TAB should
+               ' move control focus.
+               Dim pNode As wfxLListNode Ptr
+               Dim pTextBox    As wfxTextBox Ptr
+               pNode = Application.GetControlByHandle(uMsg.HWnd)
+               If pNode Then 
+                  pCtrl = Cast(wfxControl Ptr, pNode->pData)
+                  If pNode->CtrlType = ControlType.TextBox Then
+                     pTextBox = Cast(wfxTextBox Ptr, pNode->pData)
+                     If cbool(pTextBox <> 0) AndAlso (pTextBox->MultiLine = True) Then
+                        If pTextBox->AcceptsTab = False Then
+                           If (GetKeyState(VK_SHIFT) And &H8000) Then
+                              SetFocus( GetNextDlgTabItem( GetParent(uMsg.HWnd), uMsg.HWnd, True) )
+                           Else
+                              SetFocus( GetNextDlgTabItem( GetParent(uMsg.HWnd), uMsg.HWnd, False) )
+                           End If
+                           Continue Do   
+                        End If
+                     End If
+                  End If
+               End If      
             End If
+
+
          End If
 
          If IsDialogMessage(pForm.hWindow, @uMsg) = 0 Then
@@ -272,7 +297,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                                         ) As LRESULT
 
 
-   dim pNode as wfxLListNode ptr
+   Dim pNode As wfxLListNode Ptr
    Dim e     As wfxEventArgs 
    
    Dim pActiveForm As wfxForm Ptr
@@ -610,11 +635,16 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             If e.Handled Then Return True  ' do not process any subsequent control handlers
          End If
          If pButton AndAlso pButton->OnKeyDown Then pButton->OnKeyDown(*pButton, e)
-         If pTextBox AndAlso pTextBox->OnKeyDown Then pTextBox->OnKeyDown(*pTextBox, e)
-         if pCheckBox andalso pCheckBox->OnKeyDown then pCheckBox->OnKeyDown(*pCheckBox, e)
+         If pTextBox then
+            If pTextBox->OnKeyDown Then pTextBox->OnKeyDown(*pTextBox, e)
+            ' If this a multiline textbox and AcceptsTab is true then we do not want
+            ' shift control focus. The TAB is a valid character entered into the textbox.
+            If (pTextBox->MultiLine) AndAlso (pTextBox->AcceptsTab) Then e.Handled = True
+         End If   
+         If pCheckBox AndAlso pCheckBox->OnKeyDown Then pCheckBox->OnKeyDown(*pCheckBox, e)
          if pListBox andalso pListBox->OnKeyDown then pListBox->OnKeyDown(*pListBox, e)
          If e.Handled = False Then  
-            ' Need to manually handle any TAB key becuase otherwise it is eaten.
+            ' Need to manually handle any TAB key because otherwise it is eaten.
             If e.KeyCode = VK_TAB Then SetFocus( GetNextDlgTabItem( GetParent(hWin), hWin, e.Shift) )
          End If   
 

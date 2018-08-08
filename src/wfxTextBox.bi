@@ -47,6 +47,8 @@ Type wfxTextBox Extends wfxControl
       Declare Property AcceptsReturn( ByVal nValue As boolean )
       Declare Property AcceptsTab() As boolean
       Declare Property AcceptsTab( ByVal nValue As boolean )
+      Declare Property HideSelection() As boolean
+      Declare Property HideSelection( ByVal nValue As boolean )
       Declare Property WordWrap() As boolean
       declare property WordWrap( byval nValue as boolean )
       Declare Property SelectionStart() As Long
