@@ -133,14 +133,6 @@ Property wfxForm.KeyPreview( ByVal nValue As boolean )
    _KeyPreview = nValue
 End Property
 
-Property wfxForm.Locked() As boolean
-   property = _Locked
-end property
-
-property wfxForm.Locked( byval nValue as boolean )
-   _Locked = nValue
-end property
-
 property wfxForm.ShowInTaskBar() as boolean
    property = _ShowInTaskBar
 end property
@@ -202,7 +194,7 @@ property wfxForm.ClientSize() as wfxSize
    if this.pWindow->hWindow THEN
       _ClientSize.Width = this.pWindow->ClientWidth
       _ClientSize.Height = this.pWindow->ClientHeight
-   end if   
+   End If   
    property = _ClientSize
 end property
 
@@ -351,6 +343,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    ' finishes.
    dim e as wfxEventArgs 
    if this.OnLoad then this.OnLoad(this, *(@e))
+   If this.OnResize Then this.OnResize(this, *(@e))
 
    ' Position the window on the screen (do after Load to ensure that
    ' Activate and Move messages occur after Load)

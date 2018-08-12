@@ -77,6 +77,14 @@ property wfxControl.BackColor( byval nValue as COLORREF )
    if this.hWindow THEN AfxRedrawWindow(this.hWindow)
 end property
 
+Property wfxControl.Locked() As boolean
+   Property = _Locked
+End Property
+
+Property wfxControl.Locked( ByVal nValue As boolean )
+   _Locked = nValue
+End Property
+
 Property wfxControl.ForeColor() As COLORREF
    property = _ForeColor
 end property

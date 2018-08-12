@@ -25,7 +25,6 @@ Type wfxForm Extends wfxControl
       _NextCtrlID      as long    = 100
       _IsMainForm      as boolean = false 
       _IsModal         as Boolean = false
-      _Locked          As Boolean = False
       _KeyPreview      As Boolean = False
       _MinimumHeight   as Long = 0
       _MinimumWidth    as Long = 0
@@ -66,8 +65,6 @@ Type wfxForm Extends wfxControl
       Declare Property MaximumWidth() as long
       Declare Property KeyPreview() As boolean
       Declare Property KeyPreview( ByVal nValue As boolean )
-      Declare Property Locked() As boolean
-      Declare Property Locked( ByVal nValue As boolean )
       Declare Property ShowInTaskBar() As boolean
       Declare Property ShowInTaskBar( ByVal nValue As boolean )
       Declare Property AcceptButton() As wfxButton ptr

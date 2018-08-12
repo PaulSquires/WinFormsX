@@ -24,7 +24,8 @@ Type wfxControl Extends Object
       _Location    as wfxPoint
       _Parent      as wfxForm_ ptr
       _hWindow     as hwnd
-      _Focused     as Boolean = False
+      _Locked      As Boolean = False
+      _Focused     As Boolean = False
       _Enabled     as Boolean = True
       _Visible     as Boolean = True
       _TabStop     as boolean = true
@@ -62,6 +63,8 @@ Type wfxControl Extends Object
       Declare Property ForeColor( ByVal nValue As COLORREF )
       Declare Property IsTracking() As boolean
       Declare Property IsTracking( ByVal nValue As Boolean)
+      Declare Property Locked() As boolean
+      Declare Property Locked( ByVal nValue As boolean )
       Declare Property Enabled() As boolean
       Declare Property Enabled( ByVal nValue As Boolean)
       Declare Property Visible() As boolean

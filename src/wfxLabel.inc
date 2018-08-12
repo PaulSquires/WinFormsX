@@ -68,7 +68,17 @@ Function wfxLabel.GetTextAlignStyleValue( ByVal nValue As LabelAlignment ) As Lo
 End Function
 
 Property wfxLabel.TextAlign() As LabelAlignment
-   property = _TextAlign
+   if this.hWindow then 
+      Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
+      If wsStyle And (SS_CENTER Or SS_CENTERIMAGE)  Then Return LabelAlignment.MiddleCenter
+      If wsStyle And (SS_LEFT   Or SS_CENTERIMAGE)  Then Return LabelAlignment.MiddleLeft
+      If wsStyle And (SS_RIGHT  Or SS_CENTERIMAGE)  Then Return LabelAlignment.MiddleRight
+      If wsStyle And (SS_CENTER)                    Then Return LabelAlignment.TopCenter
+      If wsStyle And (SS_LEFT)                      Then Return LabelAlignment.TopLeft
+      If wsStyle And (SS_RIGHT)                     Then Return LabelAlignment.TopRight
+   Else
+      Return _TextAlign
+   End If   
 end property
 
 property wfxLabel.TextAlign( byval nValue as LabelAlignment )

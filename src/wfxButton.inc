@@ -163,7 +163,25 @@ Property wfxButton.TextAlign( ByVal nValue As ButtonAlignment )
    _TextAlign = nValue
 end property
 
-function wfxButton.Show(byval hWndParent as hwnd = 0) as long
+Property wfxButton.TextAlign() As ButtonAlignment 
+   If _XpButtonPtr Then 
+      Dim As Long wsStyle
+      wsStyle = _XpButtonPtr->GetTextFormat
+      If wsStyle And (DT_CENTER Or DT_BOTTOM)  Then Return ButtonAlignment.BottomCenter
+      If wsStyle And (DT_LEFT Or DT_BOTTOM)    Then Return ButtonAlignment.BottomLeft   
+      If wsStyle And (DT_RIGHT Or DT_BOTTOM)   Then Return ButtonAlignment.BottomRight  
+      If wsStyle And (DT_CENTER Or DT_VCENTER) Then Return ButtonAlignment.MiddleCenter 
+      If wsStyle And (DT_LEFT Or DT_VCENTER)   Then Return ButtonAlignment.MiddleLeft   
+      If wsStyle And (DT_RIGHT Or DT_VCENTER)  Then Return ButtonAlignment.MiddleRight  
+      If wsStyle And (DT_CENTER Or DT_TOP)     Then Return ButtonAlignment.TopCenter    
+      If wsStyle And (DT_LEFT Or DT_TOP)       Then Return ButtonAlignment.TopLeft      
+      If wsStyle And (DT_RIGHT Or DT_TOP)      Then Return ButtonAlignment.TopRight     
+   Else
+      Return _TextAlign
+   End If
+End Property
+
+Function wfxButton.Show(ByVal hWndParent As HWnd = 0) As Long
 
    ' If the control is created but simply hidden, then show it.
    if this.hWindow THEN
@@ -193,6 +211,7 @@ function wfxButton.Show(byval hWndParent as hwnd = 0) as long
 
    ' Apply the properties
    this.ThemeSupport      = _ThemeSupport
+   this.TextAlign         = _TextAlign
    this.BackColor         = _BackColor
    this.BackColorDown     = _BackColorDown
    this.TextForeColor     = _TextForeColor
