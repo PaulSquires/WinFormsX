@@ -233,9 +233,19 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       exit function
    END IF
 
+   ' If this form is being shown modal then save the current control focus 
+   ' so that it can be restored when the modal form closes.
+   Dim As HWnd hWndParentFocus 
+   If IsFormModal Then hWndParentFocus = GetFocus()
+
+
+   this.hWindowParent = hWndParent
    If this.pWindow = 0 Then this.pWindow = New CWindow()
    
-   dim pCtrl as wfxControl ptr
+   ' Add the form to the Application Form collection
+   Application.Forms.Add(ControlType.Form, @this)
+
+   Dim pCtrl As wfxControl Ptr
    dim pCtrlFocus as wfxControl ptr
    
    dim as long nLeft   = this.Left
@@ -358,6 +368,9 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    ' adding the controls otherwise they may not initially paint correctly.
    if IsVisible THEN AfxAddWindowStyle(this.hWindow, WS_VISIBLE)
 
+   ShowWindow(this.hWindow, Iif(IsVisible, SW_SHOW, SW_HIDE))
+   AfxRedrawWindow(this.hWindow)
+
    ' Repaint all of the child controls because painted was clipped due to 
    ' non-visible Form. Also, set the focus/selected control which will also
    ' cause the Activate message for the Form to fire. Use UpdateWindow rather
@@ -387,9 +400,6 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       SetFocus(pCtrlFocus->hWindow)
    End If
    
-   ShowWindow(this.hWindow, Iif(IsVisible, SW_SHOW, SW_HIDE))
-   AfxRedrawWindow(this.hWindow)
-   
    ' The Shown event is only raised the first time a form is displayed; 
    ' subsequently minimizing, maximizing, restoring, hiding, showing, or 
    ' invalidating and repainting will not raise this event. 
@@ -399,9 +409,60 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
 
    ' If this is a modal popup window so disable the parent window. The
    ' parent window will be re-enabled when this form is closed.
-   if this.IsModal then EnableWindow(hWndParent, False)
+   If this.IsModal Then 
+      EnableWindow(hWndParent, False)
 
-   function = 0
+      ' Message loop
+      Dim As MSG uMsg 
+      Do While GetMessage(@uMsg, Null, 0, 0)
+         ' Processes accelerator keys for menu commands
+         If (this.pWindow->AccelHandle = 0) Or _
+            (TranslateAccelerator(this.hWindow, this.pWindow->AccelHandle, @uMsg)) = 0 Then
+   
+            ' Preprocess the message to handle keyboard input and route it to the correct event
+            ' handlers. If the message was not handled then continue to process the keystroke
+            ' further via IsDialogMessage and TranslateMessage.
+            If Application.PreprocessMessage(this.hWindow, uMsg.HWnd, @uMsg) = False Then 
+               ' Use IsDialogMessage to handle all keyboard movement related keys for the dialog. This
+               ' ensures that controls are TAB'd to correctly and that the focus rectangle also
+               ' changes correctly. IsDialogMessage sends WM_GETDLGCODE messages to the control to
+               ' determine if it should handle the message. At this point, we have handled all incoming
+               ' keyboard messages through the PreprocessMessage function so we only want to send
+               ' movement keys to the IsDialogMessage function. Doing this prevents unwanted beeps
+               ' when illegal characters are entered for controls.
+   
+               ' Loop through the form collection and test each hWindow for IsDialogMessage
+               Dim As boolean bIsDialogMessage = False
+               Select Case uMsg.message
+                  Case WM_KEYDOWN, WM_KEYUP, WM_CHAR
+                     Select Case uMsg.wParam
+                        Case VK_TAB, VK_LEFT, VK_UP, VK_DOWN, VK_RIGHT, VK_PRIOR, VK_NEXT, VK_RETURN
+                           Dim pNode As wfxLListNode Ptr = Application.Forms.get_first
+                           Do Until pNode = 0
+                              If IsDialogMessage(pNode->hWindow, @uMsg) Then
+                                 bIsDialogMessage = True: Exit Do
+                              End If   
+                              pNode = Application.Forms.get_next(pNode)
+                           Loop
+                      End Select
+               End Select
+                
+               If bIsDialogMessage = False Then 
+                  TranslateMessage @uMsg    ' Translates virtual-key messages into character messages.
+                  DispatchMessage  @uMsg    ' Dispatches a message to a window procedure.
+               End If
+            End If
+         End If
+         If IsWindow(this.hWindow) = 0 Then Exit Do  ' popup modal window closed
+      Loop
+
+      ' Set the focus back to the control that had focus prior to the modal window being displayed.
+      SetFocus hWndParentFocus 
+      
+   End If
+   
+   Function = 0
+
 END FUNCTION
 
 ''

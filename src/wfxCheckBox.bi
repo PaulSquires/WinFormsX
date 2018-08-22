@@ -24,6 +24,7 @@ Type wfxCheckBox Extends wfxControl
       Declare Property CheckState( ByVal nValue As CheckBoxState )
       Declare Property ThreeState() As boolean
       Declare Property ThreeState( ByVal nValue As boolean )
+      Declare Function GetTextAlignStyleValue( ByVal nValue As ButtonAlignment ) As Long
       Declare Property TextAlign() As ButtonAlignment
       Declare Property TextAlign( ByVal nValue As ButtonAlignment )
       declare function Show(byval hWndParent as hwnd = 0) as long override
@@ -43,5 +44,6 @@ Type wfxCheckBox Extends wfxControl
       OnKeyDown          as function( byref sender as wfxCheckBox, byref e as EventArgs ) as LRESULT
       OnKeyPress         as function( byref sender as wfxCheckBox, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxCheckBox, byref e as EventArgs ) as LRESULT
+      OnDropFiles        As Function( ByRef sender As wfxCheckBox, ByRef e As EventArgs ) As LRESULT
 End Type
 

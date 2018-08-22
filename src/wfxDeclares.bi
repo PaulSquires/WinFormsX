@@ -3,10 +3,10 @@ enum ControlType
    Form = 1
    Button
    CheckBox
-   RadioButton
+   OptionButton
    DateTimePicker
    GroupBox
-   Label
+   Label 
    ListBox
    Listview
    MonthCalendar
@@ -20,7 +20,8 @@ enum ControlType
    ToolBar
    TrackBar
    Treeview
-end enum
+   Frame
+End Enum
 
 Enum FontStyles
    Normal    = 0
@@ -167,21 +168,6 @@ Type wfxEventArgs Extends Object
 end type
 
 
-'Type wfxRadioButton Extends wfxControl
-'      _TextAlign  as ButtonAlignment = ButtonAlignment.MiddleLeft
-'      _Checked    as Boolean
-'      _StartGroup as Boolean
-       
-'   Public:
-'      Declare Property TextAlign() As ButtonAlignment
-'      Declare Property TextAlign( ByVal nValue As ButtonAlignment )
-'      declare property Checked() as boolean
-'      declare property Checked( byval nValue as boolean )
-'      declare property StartGroup() as boolean
-'      declare property StartGroup( byval nValue as boolean )
-'      Declare Constructor( byref wszName as wstring = "" )
-'      declare function Show(byval hWndParent as hwnd = 0) as long override
-'End Type
 
 
 

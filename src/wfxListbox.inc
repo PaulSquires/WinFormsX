@@ -300,7 +300,7 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
          dwExStyle, _                      ' // Extended style
          0, _                              ' // Pointer to custom data
          Cast(WNDPROC, @wfxApplication.SubclassProc), _   ' // Address of the window callback procedure
-         100, _                            ' // The subclass ID
+         _CtrlID, _                        ' // The subclass ID
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
 

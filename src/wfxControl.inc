@@ -4,7 +4,9 @@
 ''  https://msdn.microsoft.com/en-us/library/system.windows.forms.control(v=vs.110).aspx
 ''
 
-constructor wfxControl()
+#Include Once "wfxControl.bi"
+
+Constructor wfxControl()
 end constructor
 
 destructor wfxControl()
@@ -93,8 +95,10 @@ property wfxControl.ForeColor( byval nValue as COLORREF )
    _ForeColor = nValue
    if this.hWindow THEN AfxRedrawWindow(this.hWindow)
    ' You can not change the Foreground color of the following controls:
+   ' (unless Windows Themes are disabled and we don't want to do that)
    ' - CheckBox
    ' - RadioButton
+   ' - Frame (GroupBoxes)
 end property
 
 Property wfxControl.Font( ByVal wfxFontPtr As wfxFont Ptr )
@@ -302,7 +306,27 @@ property wfxControl.hWindow( byval nValue as hwnd )
    _hWindow = nValue
 end property
 
-function wfxControl.Refresh() as Long
+Property wfxControl.hWindowParent() As HWnd
+   if this.hWindow then 
+      ' Only set if this is a child control
+      If (AfxGetWindowStyle(this.hWindow) And WS_CHILD) Then
+         _hWindowParent = GetParent(this.hWindow) 
+      End If   
+   End If
+   Property = _hWindowParent
+End Property
+
+Property wfxControl.hWindowParent( ByVal nValue As HWnd )
+   If this.hWindow Then 
+      ' Only set if this is a child control
+      If (AfxGetWindowStyle(this.hWindow) And WS_CHILD) Then
+         SetParent(this.hWindow, nValue)
+      End If   
+   End If
+   _hWindowParent = nValue
+End Property
+
+Function wfxControl.Refresh() As Long
    AfxRedrawWindow(this.hWindow)
    function = 0
 END FUNCTION

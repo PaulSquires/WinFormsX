@@ -16,32 +16,35 @@ type wfxForm_ as wfxForm    ' forward reference
 
 Type wfxControl Extends Object
    protected:
-      _CtrlType    As Long
-      _CtrlName    As CWSTR
-      _CtrlID      As Long
-      _Text        as CWSTR
-      _Size        as wfxSize 
-      _Location    as wfxPoint
-      _Parent      as wfxForm_ ptr
-      _hWindow     as hwnd
-      _Locked      As Boolean = False
-      _Focused     As Boolean = False
-      _Enabled     as Boolean = True
-      _Visible     as Boolean = True
-      _TabStop     as boolean = true
-      _BackColor   As COLORREF = Colors.SystemControl
-      _hBackBrush  As HBRUSH = CreateSolidBrush(Colors.SystemControl)
-      _ForeColor   As COLORREF = Colors.SystemControlText
-      _bIsTracking as Boolean = false    ' mouse tracking for Enter/Leave
-      _AllowDrop   As Boolean = False
-      _Tag         As CWSTR
-      _hFont       As HFONT
-      _FontString  As CWSTR
-      _wfxFontPtr  As wfxFont Ptr
+      _CtrlType      As Long
+      _CtrlName      As CWSTR
+      _CtrlID        As Long
+      _Text          As CWSTR
+      _Size          As wfxSize 
+      _Location      As wfxPoint
+      _Parent        As wfxForm_ Ptr
+      _hWindow       As HWnd
+      _hWindowParent As HWnd
+      _Locked        As Boolean = False
+      _Focused       As Boolean = False
+      _Enabled       As Boolean = True
+      _Visible       As Boolean = True
+      _TabStop       As boolean = True
+      _BackColor     As COLORREF = Colors.SystemControl
+      _hBackBrush    As HBRUSH = CreateSolidBrush(Colors.SystemControl)
+      _ForeColor     As COLORREF = Colors.SystemControlText
+      _bIsTracking   As Boolean = False    ' mouse tracking for Enter/Leave
+      _AllowDrop     As Boolean = False
+      _Tag           As CWSTR
+      _hFont         As HFONT
+      _FontString    As CWSTR
+      _wfxFontPtr    As wfxFont Ptr
       
    Public:
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue as hwnd )
+      Declare Property hWindowParent() As HWnd
+      Declare Property hWindowParent( ByVal nValue As HWnd )
       Declare Property CtrlType() As Long
       Declare Property CtrlType( ByVal nValue As Long )
       Declare Property Name() As CWSTR 

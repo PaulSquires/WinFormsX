@@ -75,5 +75,6 @@ Type wfxTextBox Extends wfxControl
       OnKeyDown          As Function( ByRef sender As wfxTextBox, ByRef e As EventArgs ) As LRESULT
       OnKeyPress         as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxTextBox, byref e as EventArgs ) as LRESULT
+      OnDropFiles        As Function( ByRef sender As wfxTextBox, ByRef e As EventArgs ) As LRESULT
 End Type
 

@@ -110,6 +110,7 @@ type wfxStatusBar extends wfxControl
       OnMouseEnter       as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
       OnMouseHover       as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
       OnMouseLeave       as function( byref sender as wfxStatusBar, byref e as EventArgs ) as LRESULT
+      OnDropFiles        As Function( ByRef sender As wfxStatusBar, ByRef e As EventArgs ) As LRESULT
    
 END TYPE
 

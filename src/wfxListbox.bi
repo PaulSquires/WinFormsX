@@ -117,5 +117,6 @@ Type wfxListBox Extends wfxControl
       OnKeyDown          as function( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
       OnKeyPress         as function( byref sender as wfxListBox, byref e as EventArgs ) as LRESULT
+      OnDropFiles        As Function( ByRef sender As wfxListBox, ByRef e As EventArgs ) As LRESULT
 End Type
 

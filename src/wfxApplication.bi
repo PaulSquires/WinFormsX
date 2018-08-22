@@ -37,6 +37,8 @@ Type wfxApplication
       declare Function SetEventArgs( byval uMsg as UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM, byref e as wfxEventArgs) as Long
       declare static Function WndProc( ByVal HWnd As HWnd, ByVal uMsg As UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM) As LRESULT
       declare static Function SubclassProc( ByVal HWnd As HWnd, ByVal uMsg As UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM, ByVal uIdSubclass As UINT_PTR, ByVal dwRefData As DWORD_PTR ) As LRESULT
+      Declare Function HandleCommonMessages( ByVal HWnd As HWnd, ByVal uMsg As UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM) As LRESULT
+      Declare Function PreprocessMessage( ByVal hWndForm As HWnd, ByVal hwndControl As HWnd, ByVal pMsg As MSG Ptr) As Boolean
       
       ' Gets a collection of open forms owned by the wfxApplication
       Forms As wfxLList

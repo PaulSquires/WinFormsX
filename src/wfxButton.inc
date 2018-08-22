@@ -204,7 +204,7 @@ Function wfxButton.Show(ByVal hWndParent As HWnd = 0) As Long
    _CtrlID = this.Parent->GetNextCtrlID()
    _XpButtonPtr = New CXpButton(pWindow, _CtrlID, this.Text, this.Left, this.top, this.Width, this.height )
    this.hWindow = _XpButtonPtr->hWindow
-   SetWindowSubclass(this.hWindow, Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), 100, Cast(DWORD_PTR, 0))
+   SetWindowSubclass(this.hWindow, Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), _CtrlID, Cast(DWORD_PTR, 0))
 
    ' Should we enable drag and drop files
    If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)

@@ -1,76 +1,18 @@
-'    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018 Paul Squires, PlanetSquires Software
-'
-'    This program is free software: you can redistribute it and/or modify
-'    it under the terms of the GNU General Public License as published by
-'    the Free Software Foundation, either version 3 of the License, or
-'    (at your option) any later version.
-'
-'    This program is distributed in the hope that it will be useful,
-'    but WITHOUT any WARRANTY; without even the implied warranty of
-'    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
-'    GNU General Public License for more details.
-
 ''
-''  CheckBox Class
+''  RadioButton Class
 ''
-''  https://msdn.microsoft.com/en-us/library/system.windows.forms.checkbox(v=vs.110).aspx
+''  https://msdn.microsoft.com/en-us/library/system.windows.forms.radiobutton(v=vs.110).aspx
 ''
 
-#include once "wfxCheckBox.bi"
+#Include Once "wfxOptionButton.bi"
 
-constructor wfxCheckBox( byref wszName as wstring = "" )
-   this.CtrlType = ControlType.CheckBox
+Constructor wfxOptionButton( ByRef wszName As WString = "" )
+   this.CtrlType = ControlType.OptionButton
    this.Name = wszName
    this.BackColor = Colors.SystemControl
-end constructor
+End Constructor
 
-Property wfxCheckBox.ThreeState() As boolean
-   If this.hWindow Then 
-      Dim As boolean bState = False
-      Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
-      If (wsStyle And BS_3STATE) Then bState = True
-      If (wsStyle And BS_AUTO3STATE) Then bState = True
-      _ThreeState = bState
-   End If
-   Property = _ThreeState
-End Property
-
-Property wfxCheckBox.ThreeState( ByVal nValue As boolean )
-   If this.hWindow Then 
-      AfxRemoveWindowStyle(this.hWindow, BS_AUTOCHECKBOX)
-      AfxAddWindowStyle(this.hWindow, BS_AUTO3STATE)
-   End If
-   _ThreeState = nValue
-End Property
-
-Property wfxCheckBox.CheckState() As CheckBoxState
-   if this.hWindow then 
-      Dim As Long wsState = SendMessage( this.hWindow, BM_GETCHECK, 0, 0)
-      Select Case wsState
-         Case BST_CHECKED: wsState = CheckBoxState.Checked
-         Case BST_UNCHECKED: wsState = CheckBoxState.UnChecked
-         Case BST_INDETERMINATE: wsState = CheckBoxState.Indeterminate
-      End Select
-      _CheckState = wsState
-   End If
-   Property = _CheckState
-end property
-
-Property wfxCheckBox.CheckState( ByVal nValue As CheckBoxState )
-   if this.hWindow then 
-      Dim As Long wsState
-      Select Case nValue
-         Case CheckBoxState.Checked: wsState = BST_CHECKED
-         Case CheckBoxState.UnChecked: wsState = BST_UNCHECKED
-         Case CheckBoxState.Indeterminate: wsState = BST_INDETERMINATE
-      End Select   
-      SendMessage( this.hWindow, BM_SETCHECK, wsState, 0)
-   end if
-   _CheckState = nValue
-end property
-
-Function wfxCheckBox.GetTextAlignStyleValue( ByVal nValue As ButtonAlignment ) As Long
+Function wfxOptionButton.GetTextAlignStyleValue( ByVal nValue As ButtonAlignment ) As Long
    Select Case nValue
       Case ButtonAlignment.BottomCenter: Return (BS_CENTER Or BS_BOTTOM)
       Case ButtonAlignment.BottomLeft:   Return (BS_LEFT   Or BS_BOTTOM)
@@ -85,8 +27,8 @@ Function wfxCheckBox.GetTextAlignStyleValue( ByVal nValue As ButtonAlignment ) A
    Return 0   
 End Function
 
-Property wfxCheckBox.TextAlign() As ButtonAlignment 
-   if this.hWindow then 
+Property wfxOptionButton.TextAlign() As ButtonAlignment 
+   If this.hWindow Then 
       Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
       If wsStyle And (BS_CENTER Or BS_BOTTOM)  Then Return ButtonAlignment.BottomCenter
       If wsStyle And (BS_LEFT   Or BS_BOTTOM)  Then Return ButtonAlignment.BottomLeft
@@ -102,7 +44,7 @@ Property wfxCheckBox.TextAlign() As ButtonAlignment
    End If   
 End Property
 
-Property wfxCheckBox.TextAlign( ByVal nValue As ButtonAlignment )
+Property wfxOptionButton.TextAlign( ByVal nValue As ButtonAlignment )
    If this.hWindow Then 
       ' Remove the current alignment and set the new style
       AfxRemoveWindowStyle(this.hWindow, this.GetTextAlignStyleValue(_TextAlign))
@@ -112,7 +54,55 @@ Property wfxCheckBox.TextAlign( ByVal nValue As ButtonAlignment )
    _TextAlign = nValue
 End Property
 
-Function wfxCheckBox.Show(ByVal hWndParent As HWnd = 0) As Long
+Property wfxOptionButton.Checked() As boolean
+   if this.hWindow then 
+      _Checked = Iif( SendMessage( this.hWindow, BM_GETCHECK, 0, 0) = BST_CHECKED, true, false)
+   end if
+   property = _Checked
+end property
+
+property wfxOptionButton.Checked( byval nValue as boolean )
+   if this.hWindow then 
+      SendMessage( this.hWindow, BM_SETCHECK, iif(nValue, BST_CHECKED, BST_UNCHECKED), 0)
+   end if
+   _Checked = nValue
+end property
+
+Property wfxOptionButton.Index() As Long
+   Property = _Index
+End Property
+
+Property wfxOptionButton.Index( ByVal nValue As Long )
+   _Index = nValue
+End Property
+
+Property wfxOptionButton.StartGroup() As boolean
+   if this.hWindow then 
+      _StartGroup = (AfxGetWindowStyle(this.hWindow) and WS_GROUP) = WS_GROUP
+   end if
+   property = _StartGroup
+end property
+
+property wfxOptionButton.StartGroup( byval nValue as boolean )
+   if this.hWindow then 
+      If nValue Then 
+         AfxAddWindowStyle(this.hWindow, WS_GROUP)
+      Else   
+         AfxRemoveWindowStyle(this.hWindow, WS_GROUP)
+      End If
+   End If
+   _StartGroup = nValue
+end property
+
+Property wfxOptionButton.GroupName() As CWSTR
+   Property = _GroupName
+End Property
+
+Property wfxOptionButton.GroupName( ByRef nValue As WString )
+   _GroupName = nValue
+End Property
+
+Function wfxOptionButton.Show(ByVal hWndParent As HWnd = 0) As Long
 
    ' If the control is created but simply hidden, then show it.
    if this.hWindow THEN
@@ -125,21 +115,17 @@ Function wfxCheckBox.Show(ByVal hWndParent As HWnd = 0) As Long
    if hWndParent = 0 THEN exit function
       
    dim as long dwExStyle = 0
-   Dim As Long dwStyle = BS_NOTIFY
+   Dim As Long dwStyle = BS_AUTORADIOBUTTON 
    if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
-   If _ThreeState Then 
-      dwStyle = dwStyle Or BS_AUTO3STATE
-   Else
-      dwStyle = dwStyle Or BS_AUTOCHECKBOX
-   End If   
-   
+   if _StartGroup THEN dwStyle = dwStyle or WS_GROUP
+
    _CtrlID = this.Parent->GetNextCtrlID()
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
-         "CHECKBOX", _                     ' // Class name
+         "RADIOBUTTON", _                  ' // Class name
          hWndParent, _                     ' // Parent window handle
-         _CtrlID, _                        ' // Control identifier
+         _CtrlID, _                        ' // Control identifier 
          this.Text, _                      ' // Control caption
          this.Left, _                      ' // Horizontal position
          this.Top, _                       ' // Vertical position
@@ -157,21 +143,23 @@ Function wfxCheckBox.Show(ByVal hWndParent As HWnd = 0) As Long
    If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
 
    ' Apply properties that require a valid window handle
-   this.Font       = _wfxFontPtr
-   this.TextAlign  = _TextAlign
-   this.Enabled    = _Enabled
-   this.CheckState = _CheckState
+   this.Font      = _wfxFontPtr
+   this.TextAlign = _TextAlign
+   this.Enabled   = _Enabled
+   this.Checked   = _Checked
 
+   
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.
    ' Refer to wfxForm.CreateFormInternal for the setting of the focus/selected
    ' control once events have fired correctly.
-      
+
    ' Store the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
-   dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
-   if pNode then pNode->hWindow = this.hWindow
+   Dim pNode As wfxLListNode Ptr = this.Parent->Controls.search_data(@this)
+   If pNode Then pNode->hWindow = this.hWindow
+      
       
    function = 0
 END FUNCTION
