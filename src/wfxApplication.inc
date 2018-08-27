@@ -146,18 +146,19 @@ end function
 #EndMacro
 
 #Macro WINFORMSX_HANDLE_MESSAGE(msg)    
-   'OnDestroy is FormClosed for forms.
-   #If(#msg <> "OnDestroy" AndAlso #msg <> "OnGotFocus" AndAlso #msg <> "OnLostFocus" AndAlso #msg <> "OnKeyDown" AndAlso #msg <> "OnKeyUp" AndAlso #msg <> "OnKeyPress" )  
-      If pForm AndAlso pForm->##msg Then pForm->##msg(*pForm, e)
+   ' Bypass controls that do not handle focus or keyboard input
+   #If( #msg <> "OnGotFocus" AndAlso #msg <> "OnLostFocus" AndAlso #msg <> "OnKeyDown" AndAlso #msg <> "OnKeyUp" AndAlso #msg <> "OnKeyPress" )  
+      #If(#msg <> "OnDestroy")  ' OnDestroy is FormClosed for forms.
+         If pForm AndAlso pForm->##msg Then pForm->##msg(*pForm, e)
+      #EndIf
+      #If(#msg <> "OnMouseDoubleClick")  ' Handled through STN_DBLCLK notification
+         If pLabel AndAlso pLabel->##msg Then pLabel->##msg(*pLabel, e)
+      #EndIf
+      If pStatusBar AndAlso pStatusBar->##msg Then pStatusBar->##msg(*pStatusBar, e)
    #EndIf
    ' Mouse doubleclicks are handled through LBN_DBLCLK notifications
    #If(#msg <> "OnMouseDoubleClick")  
       If pListBox AndAlso pListBox->##msg Then pListBox->##msg(*pListBox, e)
-   #EndIf
-   ' Bypass controls that do not handle focus or keyboard input
-   #If( #msg <> "OnGotFocus" AndAlso #msg <> "OnLostFocus" AndAlso #msg <> "OnKeyDown" AndAlso #msg <> "OnKeyUp" AndAlso #msg <> "OnKeyPress" )  
-      If pLabel AndAlso pLabel->##msg Then pLabel->##msg(*pLabel, e)
-      If pStatusBar AndAlso pStatusBar->##msg Then pStatusBar->##msg(*pStatusBar, e)
    #EndIf
    If pButton AndAlso pButton->##msg Then pButton->##msg(*pButton, e)
    If pTextBox AndAlso pTextBox->##msg Then pTextBox->##msg(*pTextBox, e)
@@ -430,6 +431,7 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
       Case WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
          WINFORMSX_HANDLE_MESSAGE(OnMouseDoubleClick)
          ' For Listboxes, the doubleclick is handled through the LBN_DBLCLK notification.
+         ' Labels handle doubleclick through STN_DBLCLK notification.
          
       Case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN
          WINFORMSX_HANDLE_MESSAGE(OnMouseDown)
@@ -537,8 +539,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
   
       case WM_COMMAND
          pForm = Application.GetpFormObject(hWin)
-         Select Case Hiword(wParam)
-            case BN_CLICKED
+         Dim As Long lNotification = Hiword(wParam)
+         Select Case lNotification
+            Case BN_CLICKED, STN_CLICKED
                ' wParam: LOWORD contains the button's control identifier. 
                '         HIWORD specifies the notification code.
                ' lParam: Handle to the button.
@@ -547,10 +550,10 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                if pNode then 
                   pCtrl = cast(wfxControl ptr, pNode->pData)
                   select case pNode->CtrlType 
-                     CASE ControlType.Label
-                        pLabel = cast(wfxLabel ptr, pNode->pData)
-                        if pLabel andalso pLabel->OnClick then pLabel->OnClick(*pLabel, e)
-                     CASE ControlType.Button
+                     Case ControlType.Label
+                        pLabel = Cast(wfxLabel Ptr, pNode->pData)
+                        If pLabel AndAlso pLabel->OnClick Then pLabel->OnClick(*pLabel, e)
+                     Case ControlType.Button
                         pButton = cast(wfxButton ptr, pNode->pData)
                         if pButton andalso pButton->OnClick then pButton->OnClick(*pButton, e)
                      CASE ControlType.CheckBox
@@ -562,6 +565,17 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   End Select
                end if
 
+            Case STN_DBLCLK
+               ' wParam: LOWORD contains the button's control identifier. 
+               '         HIWORD specifies the notification code.
+               ' lParam: Handle to the button.
+               ' Determine the pointer based on the Window handle generating the notification.
+               pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
+               If pNode Then 
+                  pLabel = Cast(wfxLabel Ptr, pNode->pData)
+                  If pLabel AndAlso pLabel->OnMouseDoubleClick Then pLabel->OnMouseDoubleClick(*pLabel, e)
+               End If
+                        
             Case EN_CHANGE
                ' wParam: LOWORD contains the textbox's control identifier. 
                '         HIWORD specifies the notification code.

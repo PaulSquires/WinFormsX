@@ -252,7 +252,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    dim as long nTop    = this.Top
    dim as long nWidth  = this.Width
    dim as long nHeight = this.Height
-   Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE 
+   Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
    dim as long dwExStyle = 0
    dim as Boolean IsVisible 
    

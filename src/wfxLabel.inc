@@ -114,7 +114,7 @@ function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
    dim as long dwExStyle = 0
    Dim As Long dwStyle = WS_GROUP Or SS_NOTIFY 
 
-   if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
+   if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE 
    If this.UseMnemonic = False Then dwStyle = dwStyle Or SS_NOPREFIX 
    
    _CtrlID = this.Parent->GetNextCtrlID()

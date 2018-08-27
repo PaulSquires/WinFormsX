@@ -18,6 +18,7 @@ Type wfxButton Extends wfxControl
       _TextAlign As ButtonAlignment = ButtonAlignment.MiddleCenter
       _ThemeSupport      As boolean = True
       _BackColorDown     As COLORREF = Colors.SystemControl
+      _BackColorHot      As COLORREF = Colors.SystemControl
       _TextForeColor     As COLORREF = Colors.SystemControlText
       _TextForeColorDown As COLORREF = Colors.SystemControlText
       _TextBackColor     As COLORREF = Colors.SystemControl
@@ -30,6 +31,8 @@ Type wfxButton Extends wfxControl
       Declare Property BackColor() As COLORREF 
       Declare Property BackColorDown( ByVal nValue As COLORREF )
       Declare Property BackColorDown() As COLORREF 
+      Declare Property BackColorHot( ByVal nValue As COLORREF )
+      Declare Property BackColorHot() As COLORREF 
       Declare Property TextForeColor() As COLORREF
       Declare Property TextForeColor( ByVal nValue As COLORREF)
       Declare Property TextBackColor() As COLORREF
