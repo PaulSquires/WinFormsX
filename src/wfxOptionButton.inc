@@ -68,13 +68,13 @@ property wfxOptionButton.Checked( byval nValue as boolean )
    _Checked = nValue
 end property
 
-Property wfxOptionButton.Index() As Long
-   Property = _Index
-End Property
-
-Property wfxOptionButton.Index( ByVal nValue As Long )
-   _Index = nValue
-End Property
+'Property wfxOptionButton.Index() As Long
+'   Property = _Index
+'End Property
+'
+'Property wfxOptionButton.Index( ByVal nValue As Long )
+'   _Index = nValue
+'End Property
 
 Property wfxOptionButton.StartGroup() As boolean
    if this.hWindow then 

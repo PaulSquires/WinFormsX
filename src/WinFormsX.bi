@@ -2,8 +2,12 @@
 ''  WinFormsX.inc
 ''
 
-#Define UNICODE
-#Define _WIN32_WINNT &h0602  
+#IfnDef UNICODE
+   #Define UNICODE
+#EndIf   
+#IfnDef _WIN32_WINNT
+   #Define _WIN32_WINNT &h0602  
+#EndIf
 
 #include once "windows.bi"
 #include once "Afx\CWindow.inc"

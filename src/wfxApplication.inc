@@ -157,7 +157,8 @@ end function
       If pStatusBar AndAlso pStatusBar->##msg Then pStatusBar->##msg(*pStatusBar, e)
    #EndIf
    ' Mouse doubleclicks are handled through LBN_DBLCLK notifications
-   #If(#msg <> "OnMouseDoubleClick")  
+   ' ListBox Clicks are handled through LBN_SELCHANGE
+   #If(#msg <> "OnMouseDoubleClick" AndAlso #msg <> "OnClick")  
       If pListBox AndAlso pListBox->##msg Then pListBox->##msg(*pListBox, e)
    #EndIf
    If pButton AndAlso pButton->##msg Then pButton->##msg(*pButton, e)
@@ -538,78 +539,40 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
       
   
       case WM_COMMAND
-         pForm = Application.GetpFormObject(hWin)
+         ' wParam: LOWORD contains the button's control identifier. 
+         '         HIWORD specifies the notification code.
+         ' lParam: Handle to the button.
+         ' Determine the pointer based on the Window handle generating the notification.
          Dim As Long lNotification = Hiword(wParam)
-         Select Case lNotification
-            Case BN_CLICKED, STN_CLICKED
-               ' wParam: LOWORD contains the button's control identifier. 
-               '         HIWORD specifies the notification code.
-               ' lParam: Handle to the button.
-               ' Determine the pointer based on the Window handle generating the notification.
-               pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
-               if pNode then 
-                  pCtrl = cast(wfxControl ptr, pNode->pData)
-                  select case pNode->CtrlType 
-                     Case ControlType.Label
-                        pLabel = Cast(wfxLabel Ptr, pNode->pData)
-                        If pLabel AndAlso pLabel->OnClick Then pLabel->OnClick(*pLabel, e)
-                     Case ControlType.Button
-                        pButton = cast(wfxButton ptr, pNode->pData)
-                        if pButton andalso pButton->OnClick then pButton->OnClick(*pButton, e)
-                     CASE ControlType.CheckBox
-                        pCheckBox = cast(wfxCheckBox ptr, pNode->pData)
-                        if pCheckBox andalso pCheckBox->OnClick then pCheckBox->OnClick(*pCheckBox, e)
-                     Case ControlType.OptionButton
-                        pOption = Cast(wfxOptionButton Ptr, pNode->pData)
-                        If pOption AndAlso pOption->OnClick Then pOption->OnClick(*pOption, e)
-                  End Select
-               end if
-
-            Case STN_DBLCLK
-               ' wParam: LOWORD contains the button's control identifier. 
-               '         HIWORD specifies the notification code.
-               ' lParam: Handle to the button.
-               ' Determine the pointer based on the Window handle generating the notification.
-               pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
-               If pNode Then 
+         pForm = Application.GetpFormObject(hWin)
+         pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
+         
+         If pNode Then
+            Select Case pNode->CtrlType 
+               Case ControlType.Label
                   pLabel = Cast(wfxLabel Ptr, pNode->pData)
-                  If pLabel AndAlso pLabel->OnMouseDoubleClick Then pLabel->OnMouseDoubleClick(*pLabel, e)
-               End If
-                        
-            Case EN_CHANGE
-               ' wParam: LOWORD contains the textbox's control identifier. 
-               '         HIWORD specifies the notification code.
-               ' lParam: Handle to the textbox.
-               ' Determine the pointer based on the Window handle generating the notification.
-               pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
-               If pNode Then 
+                  If pLabel AndAlso lNotification = STN_CLICKED AndAlso pLabel->OnClick Then pLabel->OnClick(*pLabel, e)
+                  If pLabel AndAlso lNotification = STN_DBLCLK AndAlso pLabel->OnMouseDoubleClick Then pLabel->OnMouseDoubleClick(*pLabel, e)
+               Case ControlType.Button
+                  pButton = Cast(wfxButton Ptr, pNode->pData)
+                  If pButton AndAlso lNotification = BN_CLICKED AndAlso pButton->OnClick Then pButton->OnClick(*pButton, e)
+               Case ControlType.CheckBox
+                  pCheckBox = Cast(wfxCheckBox Ptr, pNode->pData)
+                  If pCheckBox AndAlso pCheckBox->OnClick Then pCheckBox->OnClick(*pCheckBox, e)
+               Case ControlType.OptionButton
+                  pOption = Cast(wfxOptionButton Ptr, pNode->pData)
+                  If pOption AndAlso pOption->OnClick Then pOption->OnClick(*pOption, e)
+               Case ControlType.TextBox
                   pTextBox = Cast(wfxTextBox Ptr, pNode->pData)
-                  If pTextBox AndAlso pTextBox->OnTextChanged Then pTextBox->OnTextChanged(*pTextBox, e)
-               End If
-
-            Case LBN_DBLCLK
-               ' wParam: LOWORD contains the listbox's control identifier. 
-               '         HIWORD specifies the notification code.
-               ' lParam: Handle to the listbox.
-               ' Determine the pointer based on the Window handle generating the notification.
-               pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
-               if pNode then 
-                  pListBox = cast(wfxListBox ptr, pNode->pData)
-                  if pListBox andalso pListBox->OnMouseDoubleClick then pListBox->OnMouseDoubleClick(*pListBox, e)
-               end if
-                     
-            case LBN_SELCHANGE
-               ' wParam: LOWORD contains the listbox's control identifier. 
-               '         HIWORD specifies the notification code.
-               ' lParam: Handle to the listbox.
-               ' Determine the pointer based on the Window handle generating the notification.
-               pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
-               if pNode then 
-                  pListBox = cast(wfxListBox ptr, pNode->pData)
-                  if pListBox andalso pListBox->OnClick then pListBox->OnClick(*pListBox, e)
-               end if
-         END SELECT
- 
+                  If pTextBox AndAlso lNotification = EN_CHANGE AndAlso pTextBox->OnTextChanged Then pTextBox->OnTextChanged(*pTextBox, e)
+               Case ControlType.ListBox
+                  pListBox = Cast(wfxListBox Ptr, pNode->pData)
+                  If pListBox AndAlso lNotification = LBN_DBLCLK AndAlso pListBox->OnMouseDoubleClick Then pListBox->OnMouseDoubleClick(*pListBox, e)
+                  If pListBox AndAlso lNotification = LBN_SELCHANGE AndAlso pListBox->OnClick Then pListBox->OnClick(*pListBox, e)
+            End Select
+         End If
+         
+         
       case WM_NOTIFY
          pForm = Application.GetpFormObject(hWin)
          Dim pNMHDR As NMHDR Ptr = Cast(NMHDR Ptr, lParam)

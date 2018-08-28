@@ -286,7 +286,8 @@ end property
 property wfxControl.Text( byref nValue as wstring )
    if this.hWindow then 
       AfxSetWindowText(this.hWindow, nValue)
-   end if   
+      AfxRedrawWindow(this.hWindow)
+   End If   
    _Text = nValue
 end property
 
