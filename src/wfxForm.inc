@@ -60,13 +60,69 @@ property wfxForm.WindowState( byval nValue as FormWindowState )
    end if   
 end property
 
-property wfxForm.BorderStyle() as FormBorderStyle
-   property = _BorderStyle
-end property
+Property wfxForm.BorderStyle() As FormBorderStyle
+   Dim As Long wsStyle, wsExStyle
+   If this.hWindow Then 
+      wsStyle = AfxGetWindowStyle(this.hWindow)
+      wsExStyle = AfxGetWindowExStyle(this.hWindow)
+      If (wsStyle And (Not WS_BORDER)) Then
+         _BorderStyle = FormBorderStyle.None
+      ElseIf (wsStyle And (WS_BORDER Or WS_THICKFRAME)) AndAlso (wsExStyle And WS_EX_TOOLWINDOW) Then
+         _BorderStyle = FormBorderStyle.SizableToolWindow
+      ElseIf (wsStyle And (WS_BORDER Or WS_DLGFRAME)) AndAlso (wsExStyle And WS_EX_TOOLWINDOW) Then
+         _BorderStyle = FormBorderStyle.FixedToolWindow
+      ElseIf (wsStyle And (WS_BORDER Or WS_THICKFRAME Or WS_DLGFRAME)) AndAlso (wsExStyle And WS_EX_WINDOWEDGE) Then
+         _BorderStyle = FormBorderStyle.FixedToolWindow
+      ElseIf (wsStyle And (WS_BORDER Or WS_DLGFRAME)) AndAlso (wsExStyle And (WS_EX_WINDOWEDGE Or WS_EX_CLIENTEDGE)) Then
+         _BorderStyle = FormBorderStyle.Fixed3D
+      ElseIf (wsStyle And (WS_BORDER Or WS_DLGFRAME)) AndAlso (wsExStyle And WS_EX_WINDOWEDGE) Then
+         _BorderStyle = FormBorderStyle.FixedSingle
+      ElseIf (wsStyle And (WS_BORDER Or WS_DLGFRAME)) AndAlso (wsExStyle And WS_EX_DLGMODALFRAME) Then
+         _BorderStyle = FormBorderStyle.FixedDialog
+      End If   
+   End If
+   Property = _BorderStyle
+End Property
 
-property wfxForm.BorderStyle( byval nValue as FormBorderStyle )
+Property wfxForm.BorderStyle( ByVal nValue As FormBorderStyle )
+   If this.hWindow Then 
+      AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
+      AfxRemoveWindowExStyle(this.hWindow, WS_EX_WINDOWEDGE)
+      AfxRemoveWindowExStyle(this.hWindow, WS_EX_DLGMODALFRAME)
+      AfxRemoveWindowExStyle(this.hWindow, WS_EX_TOOLWINDOW)
+      AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
+      AfxRemoveWindowStyle(this.hWindow, WS_THICKFRAME)
+      AfxRemoveWindowStyle(this.hWindow, WS_DLGFRAME)
+      Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
+      Dim As Long wsExStyle = AfxGetWindowExStyle(this.hWindow)
+      Select Case nValue
+         Case FormBorderStyle.None
+            wsStyle   = wsStyle And (Not WS_BORDER)
+         Case FormBorderStyle.SizableToolWindow
+            wsExStyle = wsExStyle Or WS_EX_TOOLWINDOW
+            wsStyle   = wsStyle Or WS_BORDER Or WS_THICKFRAME
+         Case FormBorderStyle.FixedToolWindow
+            wsStyle   = wsStyle Or WS_BORDER Or WS_DLGFRAME
+            wsExStyle = wsExStyle Or WS_EX_TOOLWINDOW
+         Case FormBorderStyle.Sizable
+            wsStyle   = wsStyle Or WS_THICKFRAME Or WS_DLGFRAME Or WS_BORDER	
+            wsExStyle = wsExStyle Or WS_EX_WINDOWEDGE
+         Case FormBorderStyle.Fixed3D
+            wsStyle   = wsStyle Or WS_BORDER Or WS_DLGFRAME
+            wsExStyle = wsExStyle Or WS_EX_WINDOWEDGE Or WS_EX_CLIENTEDGE
+         Case FormBorderStyle.FixedSingle
+            wsStyle   = wsStyle Or WS_BORDER Or WS_DLGFRAME
+            wsExStyle = wsExStyle Or WS_EX_WINDOWEDGE
+         Case FormBorderStyle.FixedDialog
+            wsStyle   = wsStyle Or WS_BORDER Or WS_DLGFRAME
+            wsExStyle = wsExStyle Or WS_EX_DLGMODALFRAME
+      End Select     
+      AfxAddWindowStyle(this.hWindow, wsStyle)
+      AfxAddWindowExStyle(this.hWindow, wsExStyle)
+      SetWindowPos( this.hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER Or SWP_NOMOVE Or SWP_NOSIZE Or SWP_DRAWFRAME)
+   End If
    _BorderStyle = nValue
-end property
+End Property
 
 property wfxForm.StartPosition() as FormStartPosition
    property = _StartPosition
@@ -84,6 +140,13 @@ property wfxForm.MinimizeBox() as boolean
 end property
 
 property wfxForm.MinimizeBox( byval nValue as boolean )
+   if this.pWindow->hWindow THEN
+      If nValue Then
+         AfxAddWindowStyle(this.hWindow, WS_MINIMIZEBOX)
+      Else
+         AfxRemoveWindowStyle(this.hWindow, WS_MINIMIZEBOX)
+      End If   
+   End If
    _MinimizeBox = nValue
 end property
 
@@ -95,6 +158,13 @@ property wfxForm.MaximizeBox() as boolean
 end property
 
 property wfxForm.MaximizeBox( byval nValue as boolean )
+   if this.pWindow->hWindow THEN
+      If nValue Then
+         AfxAddWindowStyle(this.hWindow, WS_MAXIMIZEBOX)
+      Else
+         AfxRemoveWindowStyle(this.hWindow, WS_MAXIMIZEBOX)
+      End If   
+   End If
    _MaximizeBox = nValue
 end property
 
@@ -106,6 +176,13 @@ property wfxForm.ControlBox() as boolean
 end property
 
 property wfxForm.ControlBox( byval nValue as boolean )
+   if this.pWindow->hWindow THEN
+      If nValue Then
+         AfxAddWindowStyle(this.hWindow, WS_SYSMENU)
+      Else
+         AfxRemoveWindowStyle(this.hWindow, WS_SYSMENU)
+      End If   
+   End If
    _ControlBox = nValue
 end property
 
@@ -134,10 +211,20 @@ Property wfxForm.KeyPreview( ByVal nValue As boolean )
 End Property
 
 property wfxForm.ShowInTaskBar() as boolean
-   property = _ShowInTaskBar
+   if this.pWindow->hWindow THEN
+      _ShowInTaskBar = (AfxGetWindowExStyle(this.pWindow->hWindow) And WS_EX_APPWINDOW)
+   End If
+   Property = _ShowInTaskBar
 end property
 
 property wfxForm.ShowInTaskBar( byval nValue as boolean )
+   if this.pWindow->hWindow THEN
+      If nValue Then
+         AfxAddWindowExStyle(this.hWindow, WS_EX_APPWINDOW)
+      Else
+         AfxRemoveWindowExStyle(this.hWindow, WS_EX_APPWINDOW)
+      End If   
+   End If
    _ShowInTaskBar = nValue
 end property
 
@@ -233,6 +320,8 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       exit function
    END IF
 
+   dim e as wfxEventArgs 
+
    ' If this form is being shown modal then save the current control focus 
    ' so that it can be restored when the modal form closes.
    Dim As HWnd hWndParentFocus 
@@ -244,6 +333,10 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    
    ' Add the form to the Application Form collection
    Application.Forms.Add(ControlType.Form, @this)
+
+   ' Allow the user to set/initialize properties of the form and controls prior
+   ' to it be created. This essentially builds on the Form's constructor code generation.
+   If this.OnInitialize Then this.OnInitialize(this, *(@e))
 
    Dim pCtrl As wfxControl Ptr
    dim pCtrlFocus as wfxControl ptr
@@ -351,8 +444,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    ' it has been defined. Need to do it here rather than in WM_CREATE because
    ' the Window handle is only assigned to the form object AFTER the WM_CREATE 
    ' finishes.
-   dim e as wfxEventArgs 
-   if this.OnLoad then this.OnLoad(this, *(@e))
+   If this.OnLoad Then this.OnLoad(this, *(@e))
    If this.OnResize Then this.OnResize(this, *(@e))
 
    ' Position the window on the screen (do after Load to ensure that

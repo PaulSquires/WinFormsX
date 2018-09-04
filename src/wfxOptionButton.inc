@@ -68,13 +68,13 @@ property wfxOptionButton.Checked( byval nValue as boolean )
    _Checked = nValue
 end property
 
-Property wfxOptionButton.Index() As Long
-   Property = _Index
-End Property
-
-Property wfxOptionButton.Index( ByVal nValue As Long )
-   _Index = nValue
-End Property
+'Property wfxOptionButton.Index() As Long
+'   Property = _Index
+'End Property
+'
+'Property wfxOptionButton.Index( ByVal nValue As Long )
+'   _Index = nValue
+'End Property
 
 Property wfxOptionButton.StartGroup() As boolean
    if this.hWindow then 
@@ -134,7 +134,7 @@ Function wfxOptionButton.Show(ByVal hWndParent As HWnd = 0) As Long
          dwStyle, _                        ' // Control style
          dwExStyle, _                      ' // Extended style
           0, _                             ' // Pointer to custom data
-         Cast(WNDPROC, @wfxApplication.SubclassProc), _   ' // Address of the window callback procedure
+         Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), _   ' // Address of the window callback procedure
          _CtrlID, _                        ' // The subclass ID
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )

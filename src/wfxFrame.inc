@@ -64,7 +64,7 @@ Function wfxFrame.Show(ByVal hWndParent As HWnd = 0) As Long
          dwStyle, _                        ' // Control style
          dwExStyle, _                      ' // Extended style
          0, _                              ' // Pointer to custom data
-         Cast(WNDPROC, @wfxApplication.SubclassProc), _   ' // Address of the window callback procedure
+         Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), _   ' // Address of the window callback procedure
          _CtrlID, _                        ' // The subclass ID
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )

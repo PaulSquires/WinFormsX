@@ -84,7 +84,8 @@ Type wfxForm Extends wfxControl
       
       OnAllEvents        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnLoad             as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-      OnActivated        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+      OnInitialize       As Function( ByRef sender As wfxForm, ByRef e As EventArgs ) As LRESULT
+      OnActivated        As Function( ByRef sender As wfxForm, ByRef e As EventArgs ) As LRESULT
       OnDeactivate       as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnShown            as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnFormClosing      as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT

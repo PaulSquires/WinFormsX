@@ -26,8 +26,8 @@ Type wfxOptionButton Extends wfxControl
       Declare Property Checked( ByVal nValue As boolean )
       Declare Property StartGroup() As boolean
       Declare Property StartGroup( ByVal nValue As boolean )
-      Declare Property Index() As Long
-      Declare Property Index( ByVal nValue As long )
+'      Declare Property Index() As Long
+'      Declare Property Index( ByVal nValue As long )
       Declare Property GroupName() As CWSTR
       Declare Property GroupName( ByRef nValue As WString )
       Declare Function GetTextAlignStyleValue( ByVal nValue As ButtonAlignment ) As Long
