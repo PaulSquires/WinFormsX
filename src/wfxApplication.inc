@@ -124,23 +124,27 @@ end function
    Dim pLabel      As wfxLabel Ptr
    Dim pButton     As wfxButton Ptr
    Dim pTextBox    As wfxTextBox Ptr
+   Dim pMaskedEdit As wfxMaskedEdit Ptr
    Dim pCheckBox   As wfxCheckBox Ptr
    Dim pOption     As wfxOptionButton Ptr
    Dim pListBox    As wfxListBox Ptr
+   dim pComboBox   as wfxComboBox ptr
    Dim pStatusBar  As wfxStatusBar Ptr
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
       pCtrl = Cast(wfxControl Ptr, pNode->pData)
       Select Case pNode->CtrlType 
-         Case ControlType.Form:         pForm      = Cast(wfxForm Ptr, pNode->pData)
-         Case ControlType.Label:        pLabel     = Cast(wfxLabel Ptr, pNode->pData)
-         Case ControlType.Button:       pButton    = Cast(wfxButton Ptr, pNode->pData)
-         Case ControlType.TextBox:      pTextBox   = Cast(wfxTextBox Ptr, pNode->pData)
-         Case ControlType.CheckBox:     pCheckBox  = Cast(wfxCheckBox Ptr, pNode->pData)
-         Case ControlType.OptionButton: pOption    = Cast(wfxOptionButton Ptr, pNode->pData)
-         Case ControlType.ListBox:      pListBox   = Cast(wfxListBox Ptr, pNode->pData)
-         Case ControlType.StatusBar:    pStatusBar = Cast(wfxStatusBar Ptr, pNode->pData)
+         Case ControlType.Form:         pForm       = Cast(wfxForm Ptr, pNode->pData)
+         Case ControlType.Label:        pLabel      = Cast(wfxLabel Ptr, pNode->pData)
+         Case ControlType.Button:       pButton     = Cast(wfxButton Ptr, pNode->pData)
+         Case ControlType.TextBox:      pTextBox    = Cast(wfxTextBox Ptr, pNode->pData)
+         Case ControlType.MaskedEdit:   pMaskedEdit = Cast(wfxMaskedEdit Ptr, pNode->pData)
+         Case ControlType.CheckBox:     pCheckBox   = Cast(wfxCheckBox Ptr, pNode->pData)
+         Case ControlType.OptionButton: pOption     = Cast(wfxOptionButton Ptr, pNode->pData)
+         Case ControlType.ListBox:      pListBox    = Cast(wfxListBox Ptr, pNode->pData)
+         Case ControlType.ComboBox:     pComboBox   = Cast(wfxComboBox Ptr, pNode->pData)
+         Case ControlType.StatusBar:    pStatusBar  = Cast(wfxStatusBar Ptr, pNode->pData)
       End Select
    End If   
 #EndMacro
@@ -158,11 +162,14 @@ end function
    #EndIf
    ' Mouse doubleclicks are handled through LBN_DBLCLK notifications
    ' ListBox Clicks are handled through LBN_SELCHANGE
+   ' ComboBox Clicks are handled through CBN_SELCHANGE
    #If(#msg <> "OnMouseDoubleClick" AndAlso #msg <> "OnClick")  
       If pListBox AndAlso pListBox->##msg Then pListBox->##msg(*pListBox, e)
+      If pComboBox AndAlso pComboBox->##msg Then pComboBox->##msg(*pComboBox, e)
    #EndIf
    If pButton AndAlso pButton->##msg Then pButton->##msg(*pButton, e)
    If pTextBox AndAlso pTextBox->##msg Then pTextBox->##msg(*pTextBox, e)
+   If pMaskedEdit AndAlso pMaskedEdit->##msg Then pMaskedEdit->##msg(*pMaskedEdit, e)
    If pCheckBox AndAlso pCheckBox->##msg Then pCheckBox->##msg(*pCheckBox, e)
    If pOption AndAlso pOption->##msg Then pOption->##msg(*pOption, e)
 #EndMacro
@@ -558,17 +565,27 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   If pButton AndAlso lNotification = BN_CLICKED AndAlso pButton->OnClick Then pButton->OnClick(*pButton, e)
                Case ControlType.CheckBox
                   pCheckBox = Cast(wfxCheckBox Ptr, pNode->pData)
-                  If pCheckBox AndAlso pCheckBox->OnClick Then pCheckBox->OnClick(*pCheckBox, e)
+                  If pCheckBox AndAlso lNotification = BN_CLICKED AndAlso pCheckBox->OnClick Then pCheckBox->OnClick(*pCheckBox, e)
                Case ControlType.OptionButton
                   pOption = Cast(wfxOptionButton Ptr, pNode->pData)
-                  If pOption AndAlso pOption->OnClick Then pOption->OnClick(*pOption, e)
+                  If pOption AndAlso lNotification = BN_CLICKED AndAlso pOption->OnClick Then pOption->OnClick(*pOption, e)
                Case ControlType.TextBox
                   pTextBox = Cast(wfxTextBox Ptr, pNode->pData)
                   If pTextBox AndAlso lNotification = EN_CHANGE AndAlso pTextBox->OnTextChanged Then pTextBox->OnTextChanged(*pTextBox, e)
+               Case ControlType.MaskedEdit
+                  pMaskedEdit = Cast(wfxMaskedEdit Ptr, pNode->pData)
+                  If pMaskedEdit AndAlso lNotification = EN_CHANGE AndAlso pMaskedEdit->OnTextChanged Then pMaskedEdit->OnTextChanged(*pMaskedEdit, e)
                Case ControlType.ListBox
                   pListBox = Cast(wfxListBox Ptr, pNode->pData)
                   If pListBox AndAlso lNotification = LBN_DBLCLK AndAlso pListBox->OnMouseDoubleClick Then pListBox->OnMouseDoubleClick(*pListBox, e)
                   If pListBox AndAlso lNotification = LBN_SELCHANGE AndAlso pListBox->OnClick Then pListBox->OnClick(*pListBox, e)
+               Case ControlType.ComboBox
+                  pComboBox = Cast(wfxComboBox Ptr, pNode->pData)
+                  If pComboBox AndAlso lNotification = CBN_DBLCLK AndAlso pComboBox->OnMouseDoubleClick Then pComboBox->OnMouseDoubleClick(*pComboBox, e)
+                  If pComboBox AndAlso lNotification = CBN_SELCHANGE AndAlso pComboBox->OnClick Then pComboBox->OnClick(*pComboBox, e)
+                  If pComboBox AndAlso lNotification = CBN_DROPDOWN AndAlso pComboBox->OnDropDown Then pComboBox->OnDropDown(*pComboBox, e)
+                  If pComboBox AndAlso lNotification = CBN_CLOSEUP AndAlso pComboBox->OnDropDownClosed Then pComboBox->OnDropDownClosed(*pComboBox, e)
+                  If pComboBox AndAlso lNotification = CBN_EDITCHANGE AndAlso pComboBox->OnTextChanged Then pComboBox->OnTextChanged(*pComboBox, e)
             End Select
          End If
          

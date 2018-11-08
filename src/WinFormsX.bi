@@ -12,6 +12,7 @@
 #include once "windows.bi"
 #include once "Afx\CWindow.inc"
 #Include Once "Afx\CXpButton.inc"
+#Include Once "Afx\CMaskedEdit.inc"
 
 using Afx
 
@@ -29,10 +30,12 @@ namespace WinFormsX
 #include once "wfxLabel.bi"
 #Include Once "wfxFrame.bi"
 #Include Once "wfxTextBox.bi"
-#include once "wfxCheckBox.bi"
+#Include Once "wfxMaskedEdit.bi"
+#Include Once "wfxCheckBox.bi"
 #include once "wfxOptionButton.bi"
 #Include Once "wfxListbox.bi"
-#include once "wfxStatusBar.bi"
+#Include Once "wfxComboBox.bi"
+#Include Once "wfxStatusBar.bi"
 #Include Once "wfxApplication.bi"
 
 #Include Once "wfxSize.inc"
@@ -42,10 +45,12 @@ namespace WinFormsX
 #Include Once "wfxControl.inc"
 #include once "wfxButton.inc"
 #include once "wfxListbox.inc"
-#include once "wfxCheckBox.inc"
+#Include Once "wfxComboBox.inc"
+#Include Once "wfxCheckBox.inc"
 #Include Once "wfxOptionButton.inc"
 #include once "wfxTextBox.inc"
-#include once "wfxLabel.inc"
+#Include Once "wfxMaskedEdit.inc"
+#Include Once "wfxLabel.inc"
 #include once "wfxFrame.inc"
 #Include Once "wfxStatusBar.inc"
 #include once "wfxForm.inc"

@@ -21,6 +21,8 @@ enum ControlType
    TrackBar
    Treeview
    Frame
+   MaskedEdit
+   ComboBox
 End Enum
 
 Enum FontStyles
@@ -142,6 +144,12 @@ Enum ListSelectionMode
    MultiSimple
    MultiExtended
 END ENUM
+
+enum ComboBoxStyle
+   Simple = 1
+   DropDown
+   DropDownList
+end enum
 
 
 type EventArgs as wfxEventArgs    ' forward reference
