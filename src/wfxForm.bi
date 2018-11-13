@@ -30,8 +30,9 @@ Type wfxForm Extends wfxControl
       _MinimumWidth    as Long = 0
       _MaximumHeight   as Long = 0
       _MaximumWidth    as Long = 0
-      _AcceptButton as wfxButton ptr
-      _CancelButton as wfxButton ptr
+      _AcceptButton    as wfxButton ptr
+      _CancelButton    as wfxButton ptr
+      _wfxMainMenuPtr  as wfxMainMenu ptr
       
    Public:           
       Controls         As wfxLList
@@ -71,6 +72,8 @@ Type wfxForm Extends wfxControl
       Declare Property AcceptButton( byval nValue as wfxButton ptr )
       Declare Property CancelButton() As wfxButton ptr
       Declare Property CancelButton( byval nValue as wfxButton ptr )
+      Declare Property MainMenu() As wfxMainMenu 
+      Declare Property MainMenu( byval nValue as wfxMainMenu ptr )
 
       declare function GetNextCtrlID() as Long     
       declare function Close() as Long

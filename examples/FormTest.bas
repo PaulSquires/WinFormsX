@@ -35,7 +35,7 @@ declare function Form1_Resize( byref sender as wfxForm, byref e as EventArgs ) a
 declare function Form1_KeyDown( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_KeyPress( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
 declare function Form1_KeyUp( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-
+    
 ''          
 ''  Define the form (no child controls for this test)
 ''

@@ -220,9 +220,11 @@ end property
 property wfxForm.ShowInTaskBar( byval nValue as boolean )
    if this.pWindow->hWindow THEN
       If nValue Then
+         AfxRemoveWindowExStyle(this.hWindow, WS_EX_TOOLWINDOW)
          AfxAddWindowExStyle(this.hWindow, WS_EX_APPWINDOW)
       Else
          AfxRemoveWindowExStyle(this.hWindow, WS_EX_APPWINDOW)
+         AfxAddWindowExStyle(this.hWindow, WS_EX_TOOLWINDOW)
       End If   
    End If
    _ShowInTaskBar = nValue
@@ -274,6 +276,14 @@ END PROPERTY
 
 Property wfxForm.CancelButton( byval nValue as wfxButton ptr )
    _CancelButton = nValue
+END PROPERTY
+
+Property wfxForm.MainMenu() As wfxMainMenu 
+   property = *(_wfxMainMenuPtr)
+END PROPERTY
+
+Property wfxForm.MainMenu( byval nValue as wfxMainMenu ptr )
+   _wfxMainMenuPtr = nValue
 END PROPERTY
 
 

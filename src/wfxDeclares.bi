@@ -23,6 +23,7 @@ enum ControlType
    Frame
    MaskedEdit
    ComboBox
+   MainMenu
 End Enum
 
 Enum FontStyles
