@@ -18,75 +18,323 @@ constructor wfxMainMenu()
    this.CtrlType = ControlType.MainMenu
 end constructor
 
+destructor wfxMainMenu()
+end destructor
 
-Function wfxMainMenu.Item( ByVal nIndex As Long ) ByRef As wfxMenuItem
-   if _IsLoading then
-      return this.Items.ByIndex(nIndex)
-   else
-      this._TempItem.hWindow = this.hWindow
-      this._TempItem.Index = nIndex
-      return this._TempItem
-   end if
-   return this.Items.ByIndex(nIndex)
+Function wfxMainMenu.MenuItem( ByVal nIndex As Long ) ByRef As wfxMenuItem
+   return this.MenuItems.ByIndex(nIndex)
 END function
 
-function wfxMainMenu.Items byref As wfxMenuItemsCollection
+function wfxMainMenu.MenuItems byref As wfxMenuItemsCollection
    return this._ItemsCollection
 END function
+
+property wfxMainMenu.Handle() as HMENU
+   property = _Handle
+END PROPERTY
+
+property wfxMainMenu.Handle( ByVal nValue As HMENU) 
+   _Handle = nValue
+END PROPERTY
+
+Property wfxMainMenu.IsLoading() As boolean
+   property = _IsLoading
+END PROPERTY
+
+property wfxMainMenu.IsLoading( ByVal nValue As boolean) 
+   _IsLoading = nValue
+END PROPERTY
+
+
+function wfxMainMenu.GetByPopupMenuHandle_Internal( byval hPopupMenu as HMENU, _
+                                                    byval pMenuItem as _wfxMenuItem ptr _
+                                                    ) as _wfxMenuItem ptr
+   dim pSubMenuItem as wfxMenuItem ptr
+   dim pFoundMenuItem as wfxMenuItem ptr
+   For i As Long = 0 To pMenuItem->MenuItems.Count - 1
+      pSubMenuItem = @pMenuItem->MenuItem(i)
+      if pSubMenuItem->PopupMenuHandle = hPopupMenu then return pSubMenuItem
+      if pSubMenuItem->IsParent then
+         pFoundMenuItem = this.GetByPopupMenuHandle_Internal( hPopupMenu, pSubMenuItem )
+         if pFoundMenuItem then return pFoundMenuItem
+      end if   
+   Next
+   function = 0
+end function
+
+Function wfxMainMenu.ByPopupMenuHandle( ByVal hPopupMenu As HMENU ) ByRef As wfxMenuItem
+   dim pMenuItem as wfxMenuItem ptr
+   dim pFoundMenuItem as wfxMenuItem ptr
+   For i As Long = 0 To this.MenuItems.Count - 1
+      pMenuItem = @this.MenuItem(i)
+      if pMenuItem->PopupMenuHandle = hPopupMenu then 
+         pFoundMenuItem = pMenuItem: exit for
+      end if
+      pFoundMenuItem = this.GetByPopupMenuHandle_Internal( hPopupMenu, pMenuItem) 
+      if pFoundMenuItem then exit for
+   Next
+   if pFoundMenuItem then return *(pFoundMenuItem)
+END function
+
+function wfxMainMenu.GetByMenuID_Internal( byval nMenuID as long, _
+                                           byval pMenuItem as _wfxMenuItem ptr _
+                                           ) as _wfxMenuItem ptr
+   dim pSubMenuItem as wfxMenuItem ptr
+   dim pFoundMenuItem as wfxMenuItem ptr
+   For i As Long = 0 To pMenuItem->MenuItems.Count - 1
+      pSubMenuItem = @pMenuItem->MenuItem(i)
+      if pSubMenuItem->MenuID = nMenuID then return pSubMenuItem
+      if pSubMenuItem->IsParent then
+         pFoundMenuItem = this.GetByMenuID_Internal( nMenuID, pSubMenuItem )
+         if pFoundMenuItem then return pFoundMenuItem
+      end if   
+   Next
+   function = 0
+end function
+
+Function wfxMainMenu.ByMenuID( ByVal nMenuID As Long ) ByRef As wfxMenuItem
+   dim pMenuItem as wfxMenuItem ptr
+   dim pFoundMenuItem as wfxMenuItem ptr
+   For i As Long = 0 To this.MenuItems.Count - 1
+      pMenuItem = @this.MenuItem(i)
+      if pMenuItem->MenuID = nMenuID then 
+         pFoundMenuItem = pMenuItem: exit for
+      end if
+      pFoundMenuItem = this.GetByMenuID_Internal( nMenuID, pMenuItem) 
+      if pFoundMenuItem then exit for
+   Next
+   if pFoundMenuItem then return *(pFoundMenuItem)
+END function
+
+function wfxMainMenu.GetByMenuName_Internal( byref wszMenuName_ucase as WString, _
+                                             byval pMenuItem as _wfxMenuItem ptr _
+                                             ) as _wfxMenuItem ptr
+   dim pSubMenuItem as wfxMenuItem ptr
+   dim pFoundMenuItem as wfxMenuItem ptr
+   For i As Long = 0 To pMenuItem->MenuItems.Count - 1
+      pSubMenuItem = @pMenuItem->MenuItem(i)
+      if ucase(pSubMenuItem->Name) = wszMenuName_ucase then return pSubMenuItem
+      if pSubMenuItem->IsParent then
+         pFoundMenuItem = this.GetByMenuName_Internal( wszMenuName_ucase, pSubMenuItem )
+         if pFoundMenuItem then return pFoundMenuItem
+      end if   
+   Next
+   function = 0
+end function
+
+Function wfxMainMenu.ByMenuName( byref wszMenuName as WString ) ByRef As wfxMenuItem
+   dim pMenuItem as wfxMenuItem ptr
+   dim pFoundMenuItem as wfxMenuItem ptr
+   dim wszMenuName_ucase as CWSTR = ucase(wszMenuName)
+   For i As Long = 0 To this.MenuItems.Count - 1
+      pMenuItem = @this.MenuItem(i)
+      if ucase(pMenuItem->Name) = wszMenuName_ucase then 
+         pFoundMenuItem = pMenuItem: exit for
+      end if
+      pFoundMenuItem = this.GetByMenuName_Internal( wszMenuName_ucase, pMenuItem) 
+      if pFoundMenuItem then exit for
+   Next
+   if pFoundMenuItem then return *(pFoundMenuItem)
+END function
+
+
+function wfxMainMenu.CreateMenuStructure_Internal( byval hSubMenu as HMENU, _
+                                                   byref tMenuItem as _wfxMenuItem _
+                                                   ) as long
+   ' Internal function that recursive creates all of the menu items. It takes into
+   ' account that submenus can exist for each MenuItem.
+   dim as long NumItems = tMenuItem.MenuItems.Count 
+   dim as long fState
+   dim wszText as wstring * MAX_PATH
+
+   tMenuItem.MenuParent = @this
+   tMenuItem.MenuID = this.Parent->GetNextCtrlID
+
+   wszText = tMenuItem.Text 
+   if len(tMenuItem.Shortcut) then wszText = wszText & wchr(9) & tMenuItem.Shortcut
+
+   fState = fState or iif(tMenuItem.Checked, MFS_CHECKED, MFS_UNCHECKED)
+   fState = fState or iif(tMenuItem.Grayed, MFS_GRAYED, MFS_ENABLED)
+   
+   dim as MENUITEMINFO itemInfo
+   with itemInfo
+      .cbSize     = sizeof(MENUITEMINFO)
+      .fMask      = MIIM_ID or MIIM_FTYPE or MIIM_STATE or MIIM_STRING or MIIM_SUBMENU
+      .fType      = iif(wszText = "-", MFT_SEPARATOR, MFT_STRING)
+      .fState     = fState
+      .wID        = tMenuItem.MenuID
+      .dwTypeData = @wszText
+      .hSubMenu   = iif( NumItems > 0, CreatePopupMenu, null)
+   end with
+
+   if len(tMenuItem.Shortcut) then 
+      dim pWindow as CWindow ptr = AfxCWindowPtr(this.hWindow) 
+      if pWindow then
+         ' Parse the shortcut string into format suitable for accelerator
+         dim as CWSTR wszShortcut = tMenuItem.Shortcut
+         dim as CWSTR wszKey, wszSt
+         dim as long nShiftState = FVIRTKEY
+         dim as long nKey, NumParses
+         
+         If Right(wszShortcut,2) = "++" Then wszShortcut = AfxStrReplace(wszShortcut, "++", "+PLUS")
+         If Right(wszShortcut,2) = "+-" Then wszShortcut = AfxStrReplace(wszShortcut, "+-", "+MINUS")
+
+         ' Determine how many Parses (could have a Shortcut like Ctrl+Shift+B etc..)
+         NumParses = AfxStrParseCount( wszShortcut, "+" )
+         If NumParses = 0 Then
+            ' No '+' key was found, therefore must be a regular function key. e.g. F1, F2, F3 etc..   
+            wszKey = Trim(wszShortcut)  
+         Else
+            For i as long = 1 To NumParses 
+               wszSt = Trim(AfxStrParse(wszShortcut, i, "+"))  ' e.g.  CTRL
+               select case UCase(wszSt)
+                  case "CTRL":   nShiftState = nShiftState Or FCONTROL
+                  case "SHIFT":  nShiftState = nShiftState Or FSHIFT
+                  case "ALT":    nShiftState = nShiftState Or FALT
+                  CASE ELSE
+                     wszKey = wszSt
+               end select
+            Next                                           
+         End If
+         Select Case ucase(**wszKey)
+            Case "PLUS":  nKey = VK_OEM_PLUS
+            Case "MINUS": nKey = VK_OEM_MINUS
+            case "INS":   nKey = VK_INSERT
+            case "DEL":   nKey = VK_DELETE
+            case "TAB":   nKey = VK_TAB
+            case "LEFT":  nKey = VK_LEFT
+            case "RIGHT": nKey = VK_RIGHT
+            case "UP":    nKey = VK_UP
+            case "DOWN":  nKey = VK_DOWN
+            case "HOME":  nKey = VK_HOME
+            case "END":   nKey = VK_END
+            case "PGUP":  nKey = VK_PRIOR
+            case "PGDN":  nKey = VK_NEXT
+            case "SPACE": nKey = VK_SPACE
+            Case "F1":    nKey = VK_F1
+            Case "F2":    nKey = VK_F2
+            Case "F3":    nKey = VK_F3
+            Case "F4":    nKey = VK_F4
+            Case "F5":    nKey = VK_F5
+            Case "F6":    nKey = VK_F6
+            Case "F7":    nKey = VK_F7
+            Case "F8":    nKey = VK_F8
+            Case "F9":    nKey = VK_F9
+            Case "F10":   nKey = VK_F10
+            Case "F11":   nKey = VK_F11
+            Case "F12":   nKey = VK_F12
+         End Select      
+         if nKey then
+            pWindow->AddAccelerator(nShiftState, nKey, tMenuItem.MenuID)
+         else   
+            pWindow->AddAccelerator(nShiftState, wszKey, tMenuItem.MenuID)
+         end if
+      end if
+   end if
+
+   if itemInfo.hSubMenu then 
+      tMenuItem.IsParent = true
+      tMenuItem.PopupMenuHandle = itemInfo.hSubMenu
+   end if
+
+   InsertMenuItem(hSubMenu, tMenuItem.MenuID, false, @itemInfo)
+
+   For i As Long = 0 To NumItems - 1
+      ' Make sure that the mani menu handle propagates down through all of the MenuItems
+      this.CreateMenuStructure_Internal(itemInfo.hSubMenu, tMenuItem.MenuItem(i))
+   Next
+   
+   function = 0
+end function
 
 
 function wfxMainMenu.Show(byval hWndParent as hwnd = 0) as long
 
-   dim wszClassName as wstring * MAX_PATH
    
    ' If the parent form has not been created yet then simply exit. We will
    ' create this control when the form is created.
    if hWndParent = 0 THEN exit function
 
-   dim as MENUITEMINFO itemInfo
-   
-   dim as HMENU hMenu = CreateMenu()
-   
-   with itemInfo
-      .cbSize   = sizeof(MENUITEMINFO)
-      .fMask    = MIIM_FTYPE or MIIM_STATE or MIIM_STRING
-      .fType    = MFT_STRING
-      .fState   = MFS_ENABLED
-      .hSubMenu = null
-   end with
+   this.hWindow = hWndParent    ' Form handle of window owning this mainmenu
+   this.Handle = CreateMenu()
+   this.IsLoading = true
 
-   itemInfo.dwTypeData = @wstr("File")
-   InsertMenuItem(hMenu, this.Parent->GetNextCtrlID, false, @itemInfo)
+   ' Set the text for the MainMenu items that display across the top of the form
+   For i As Long = 0 To this.MenuItems.Count - 1
+      this.CreateMenuStructure_Internal(this.Handle, this.MenuItem(i))
+   Next
    
-   itemInfo.dwTypeData = @wstr("Edit")
-   InsertMenuItem(hMenu, this.Parent->GetNextCtrlID, false, @itemInfo)
+   ' Create the keyboard accelerator table. The table will only successfully
+   ' create if one or more accelerator keys had alreayd been added to the pWindow.
+   dim pWindow as CWindow ptr = AfxCWindowPtr(this.hWindow) '(hWndParent)
+   if pWindow then pWindow->CreateAcceleratorTable
 
-   itemInfo.dwTypeData = @wstr("View")
-   InsertMenuItem(hMenu, this.Parent->GetNextCtrlID, false, @itemInfo)
-
-   itemInfo.dwTypeData = @wstr("Help")
-   InsertMenuItem(hMenu, this.Parent->GetNextCtrlID, false, @itemInfo)
-   
-   SetMenu(hWndParent, hMenu)
+   SetMenu(hWndParent, this.Handle)
    DrawMenuBar(hWndParent)
-   
-   
-'   ' Set the hWindow for the collection
-'   this.Items.hWindow = this.hWindow
-   _IsLoading = false
+
+   ' Store the hWindow in the form's linked list in order to allow
+   ' for fast lookups via GetControlByHandle.
+   dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
+   if pNode then pNode->hWindow = cast(hwnd, this.Handle)
+
+   this.IsLoading = false
 
    function = 0
 END FUNCTION
 
 
 '' MENUITEM
-property wfxMenuItem.hWindow() as hwnd
-   property = _hWindow
+constructor wfxMenuItem( ByRef wszText     As WString = "", _
+                         ByRef wszName     As WString = "", _ 
+                         Byref wszShortcut As WString = "", _
+                         ByVal bChecked    As boolean = false, _
+                         ByVal bGrayed     As boolean = false _
+                         )
+   _Text     = wszText
+   _Name     = wszName
+   _Shortcut = wszShortcut
+   _Checked  = bChecked
+   _Grayed   = bGrayed
+end constructor
+
+destructor wfxMenuItem
+   
+end destructor
+
+Function wfxMenuItem.MenuItem( ByVal nIndex As Long ) ByRef As wfxMenuItem
+   return this.MenuItems.ByIndex(nIndex)
+END function
+
+function wfxMenuItem.MenuItems byref As wfxMenuItemsCollection
+   return this._ItemsCollection
+END function
+
+property wfxMenuItem.Handle() as HMENU
+   if this.MenuParent then
+      _Handle = this.MenuParent->Handle
+   end if
+   property = _Handle
 END PROPERTY
 
-property wfxMenuItem.hWindow( ByVal nValue As hwnd) 
-   _hWindow = nValue
+property wfxMenuItem.Handle( ByVal nValue As HMENU) 
+   _Handle = nValue
 END PROPERTY
+
+property wfxMenuItem.PopupMenuHandle() as HMENU
+   property = _PopupMenuHandle
+END PROPERTY
+
+property wfxMenuItem.PopupMenuHandle( ByVal nValue As HMENU) 
+   _PopupMenuHandle = nValue
+END PROPERTY
+
+Property wfxMenuItem.MenuParent() As wfxMainMenu ptr
+   property = _MenuParent
+end property
+
+Property wfxMenuItem.MenuParent( Byval pValue As wfxMainMenu ptr)
+   _MenuParent = pValue
+end property
 
 property wfxMenuItem.Index() as long
    property = _Index
@@ -96,113 +344,170 @@ property wfxMenuItem.Index( ByVal nValue As long)
    _Index = nValue
 END PROPERTY
 
+property wfxMenuItem.MenuID() as long
+   property = _MenuID
+End Property
+
+property wfxMenuItem.MenuID( ByVal nValue As long) 
+   _MenuID = nValue
+END PROPERTY
+
+property wfxMenuItem.Shortcut() as CWSTR
+   property = _Shortcut
+End Property
+
+property wfxMenuItem.Shortcut( Byref wszValue As WString ) 
+   _Shortcut = wszValue
+END PROPERTY
+
+Property wfxMenuItem.IsParent() As boolean
+   if this.Handle then 
+      _IsParent = AfxIsMenuItemPopup(this.Handle, this.MenuID, false ) 
+   end if
+   property = _IsParent
+END PROPERTY
+
+property wfxMenuItem.IsParent( ByVal nValue As boolean) 
+   _IsParent = nValue
+END PROPERTY
+
 Property wfxMenuItem.Selected() As boolean
-   if this.hWindow then 
+   if this.Handle then 
    end if
    property = _Selected
 END PROPERTY
 
 property wfxMenuItem.Selected( ByVal nValue As boolean) 
-   if this.hWindow then 
+   if this.Handle then 
    end if
    _Selected = nValue
 END PROPERTY
 
+Property wfxMenuItem.Checked() As boolean
+   if this.Handle then
+      if this.MenuParent->IsLoading = false then
+         _Checked = AfxIsMenuItemChecked(this.Handle, this.MenuID, false)
+      end if
+   end if
+   property = _Checked
+END PROPERTY
+
+property wfxMenuItem.Checked( ByVal nValue As boolean) 
+   if this.Handle then
+      if this.MenuParent->IsLoading = false then
+         dim as long fState = iif(nValue, MFS_CHECKED, MFS_UNCHECKED)
+         AfxSetMenuItemState(this.Handle, this.MenuID, fState, false)
+         if AfxIsMenuItemPopup(this.Handle, this.MenuID, false ) then
+            AfxRedrawWindow(this.MenuParent->hWindowParent)
+         end if   
+      end if
+   end if
+   _Checked = nValue
+END PROPERTY
+
+Property wfxMenuItem.Grayed() As boolean
+   if this.Handle then
+      if this.MenuParent->IsLoading = false then
+         _Grayed = AfxIsMenuItemGrayed(this.Handle, this.MenuID, false)
+      end if
+   end if
+   property = _Grayed
+END PROPERTY
+
+property wfxMenuItem.Grayed( ByVal nValue As boolean) 
+   if this.Handle then
+      if this.MenuParent->IsLoading = false then
+         dim as long fState = iif(nValue, MFS_GRAYED, MFS_ENABLED)
+         AfxSetMenuItemState(this.Handle, this.MenuID, fState, false)
+         if AfxIsMenuItemPopup(this.Handle, this.MenuID, false ) then
+            AfxRedrawWindow(this.MenuParent->hWindowParent)
+         end if   
+      end if
+   end if
+   _Grayed = nValue
+END PROPERTY
+
 property wfxMenuItem.Text() as CWSTR
-   if this.hWindow then 
-      'DIM cbLen AS LONG = SendMessage(this.hWindow, LB_GETTEXTLEN, _Index, 0)
-      'IF cbLen THEN 
-      '   _Text = space(cbLen * 2)
-      '   SendMessage( this.hWindow, LB_GETTEXT, _Index, CAST(LPARAM, _Text.vptr))
-      'end if   
-   end if   
-   property = _Text
+   if this.Handle then
+      if this.MenuParent->IsLoading = false then
+         dim as CWSTR wszTemp = AfxGetMenuItemText( this.Handle, this.MenuID, false )
+         ' Filter out any keyboard accelerator
+         _Text = AfxStrParse(wszTemp, 1, wchr(9))
+      end if   
+   end if
+   property = _Text 
 end property
 
 property wfxMenuItem.Text( byref wszValue as wstring )
-   if this.hWindow then 
-'      dim as long nCurSel = SendMessage( this.hWindow, LB_GETCURSEL, 0, 0)
-'      SendMessage( this.hWindow, LB_DELETESTRING, _Index, 0)
-'      dim as long nCount = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0)
-'      _Index = SendMessage( this.hWindow, LB_INSERTSTRING, iif(_Index > nCount - 1, -1, _Index), CAST(LPARAM, @wszValue))
-'      SendMessage( this.hWindow, LB_SETCURSEL, nCurSel, 0)
-   end if   
+   if this.Handle then
+      if this.MenuParent->IsLoading = false then
+         AfxSetMenuItemText( this.Handle, this.MenuID, wszValue, false )
+         if AfxIsMenuItemPopup(this.Handle, this.MenuID, false ) then
+            AfxRedrawWindow(this.MenuParent->hWindowParent)
+         end if   
+      end if
+   end if
    _Text = wszValue
 end property
 
-property wfxMenuItem.Data32() as long
-   if this.hWindow then 
-   '   _Data32 = SendMessage( this.hWindow, LB_GETITEMDATA, _Index, 0)
-   end if
-   property = _Data32
+property wfxMenuItem.Name() as CWSTR
+   property = _Name
 end property
 
-property wfxMenuItem.Data32( byVal nValue as long)
-   if this.hWindow then 
-   '   SendMessage( this.hWindow, LB_SETITEMDATA, _Index, CAST(LPARAM, nValue))
-   end if
-   _Data32 = nValue
+property wfxMenuItem.Name( byref wszValue as wstring )
+   _Name = wszValue
 end property
 
 
 '' MENUITEMS COLLECTION
 constructor wfxMenuItemsCollection
-   '
 END CONSTRUCTOR
 
 destructor wfxMenuItemsCollection
    this.Clear
 end destructor
 
-property wfxMenuItemsCollection.hWindow() as hwnd
-   property = _hWindow
+property wfxMenuItemsCollection.Handle() as HMENU
+   property = _Handle
 end property
 
-property wfxMenuItemsCollection.hWindow( byVal nValue as hwnd)
-   _hWindow = nValue
+property wfxMenuItemsCollection.Handle( byVal nValue as HMENU)
+   _Handle = nValue
 end property
 
 function wfxMenuItemsCollection.Count() as Long
-   if this.hWindow then
-      function = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0 )
-   else
-      function = _Collection.Size
-   end if
+   function = _Collection.Size
 end function
 
-Function wfxMenuItemsCollection.SelectedCount() As Long
-   If this.hWindow Then
-      Function = SendMessage( this.hWindow, LB_GETSELCOUNT, 0, 0 )
-   Else
-      Dim As Long nSelCount = 0
-      For i As Long = 0 To this.Count - 1
-         If this.ByIndex(i).Selected Then
-            nSelCount = nSelCount + 1
-         End If
-      Next    
-      Function = nSelCount
-   End If
-End Function
-
-Function wfxMenuItemsCollection.Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
-   If this.hWindow Then
-      Dim As Long idx = SendMessage( this.hWindow, LB_ADDSTRING, 0, Cast(LPARAM, @wszValue) )
-      SendMessage( this.hWindow, LB_SETITEMDATA, idx, CAST(LPARAM, nValue))
-      Function = idx
+Function wfxMenuItemsCollection.Add( ByRef tMenuItem As _wfxMenuItem ) as long
+   If this.Handle Then
+      ' TODO: wfxMenuItemsCollection.Add
    Else
       Dim pData As wfxMenuItem Ptr = New wfxMenuItem
-      pData->hWindow = this.hWindow
-      pData->Index = (this.Count - 1) + 1
-      pData->Text = wszValue
-      pData->Data32 = nValue
-      _Collection.Add( ControlType.ListBox, pData ) 
+      ' Need to do a deep copy because the MenuItem structure contains the collection
+      ' class that has manually allocated elements.
+      pData->Handle   = this.Handle
+      pData->Index    = (this.Count - 1) + 1
+      pData->Selected = false
+      pData->Text     = tMenuItem.Text
+      pData->Name     = tMenuItem.Name
+      pData->MenuID   = tMenuItem.MenuID
+      pData->Shortcut = tMenuItem.Shortcut
+      pData->Checked  = tMenuItem.Checked
+      pData->Grayed   = tMenuItem.Grayed
+      ' Copy the existing MenuItem collection to the newly created MenuItem
+      for i as long = 0 to tMenuItem.MenuItems.Count - 1
+         pData->MenuItems.Add(tMenuItem.MenuItem(i))
+      next
+      ' Add this new MenuItem to the collection
+      _Collection.Add( ControlType.MainMenu, pData ) 
       function = pData->Index
    END IF
 end function
 
 function wfxMenuItemsCollection.Remove( byval nIndex as long ) as long
-   if this.hWindow then
-      function = SendMessage( this.hWindow, LB_DELETESTRING, nIndex, 0)
+   if this.Handle then
+      ' TODO: wfxMenuItemsCollection.Remove
    else
       dim pItem as wfxMenuItem ptr
       dim pNode as wfxLListNode ptr
@@ -235,8 +540,8 @@ function wfxMenuItemsCollection.ByIndex( byval nIndex as long ) byref as wfxMenu
 end function
 
 function wfxMenuItemsCollection.Clear() as long
-   if this.hWindow then
-      SendMessage( this.hWindow, LB_RESETCONTENT, 0, 0)
+   if this.Handle then
+      DestroyMenu(this.Handle)
    else
       ' Deallocate elements in the Items collection.
       dim pNode as wfxLListNode ptr = _Collection.get_first

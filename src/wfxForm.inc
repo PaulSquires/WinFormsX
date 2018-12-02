@@ -210,25 +210,25 @@ Property wfxForm.KeyPreview( ByVal nValue As boolean )
    _KeyPreview = nValue
 End Property
 
-property wfxForm.ShowInTaskBar() as boolean
-   if this.pWindow->hWindow THEN
-      _ShowInTaskBar = (AfxGetWindowExStyle(this.pWindow->hWindow) And WS_EX_APPWINDOW)
-   End If
-   Property = _ShowInTaskBar
-end property
-
-property wfxForm.ShowInTaskBar( byval nValue as boolean )
-   if this.pWindow->hWindow THEN
-      If nValue Then
-         AfxRemoveWindowExStyle(this.hWindow, WS_EX_TOOLWINDOW)
-         AfxAddWindowExStyle(this.hWindow, WS_EX_APPWINDOW)
-      Else
-         AfxRemoveWindowExStyle(this.hWindow, WS_EX_APPWINDOW)
-         AfxAddWindowExStyle(this.hWindow, WS_EX_TOOLWINDOW)
-      End If   
-   End If
-   _ShowInTaskBar = nValue
-end property
+'property wfxForm.ShowInTaskBar() as boolean
+'   if this.pWindow->hWindow THEN
+'      _ShowInTaskBar = (AfxGetWindowExStyle(this.pWindow->hWindow) And WS_EX_APPWINDOW)
+'   End If
+'   Property = _ShowInTaskBar
+'end property
+'
+'property wfxForm.ShowInTaskBar( byval nValue as boolean )
+'   if this.pWindow->hWindow THEN
+'      If nValue Then
+'         AfxRemoveWindowExStyle(this.hWindow, WS_EX_TOOLWINDOW)
+'         AfxAddWindowExStyle(this.hWindow, WS_EX_APPWINDOW)
+'      Else
+'         AfxRemoveWindowExStyle(this.hWindow, WS_EX_APPWINDOW)
+'         AfxAddWindowExStyle(this.hWindow, WS_EX_TOOLWINDOW)
+'      End If   
+'   End If
+'   _ShowInTaskBar = nValue
+'end property
 
 property wfxForm.MaximumHeight() as long
    property = _MaximumHeight
@@ -278,13 +278,14 @@ Property wfxForm.CancelButton( byval nValue as wfxButton ptr )
    _CancelButton = nValue
 END PROPERTY
 
-Property wfxForm.MainMenu() As wfxMainMenu 
-   property = *(_wfxMainMenuPtr)
-END PROPERTY
+'Property wfxForm.MainMenu() As wfxMainMenu 
+'   if _wfxMainMenuPtr = 0 then exit property
+'   property = *(_wfxMainMenuPtr)
+'END PROPERTY
 
-Property wfxForm.MainMenu( byval nValue as wfxMainMenu ptr )
-   _wfxMainMenuPtr = nValue
-END PROPERTY
+'Property wfxForm.MainMenu( byval nValue as wfxMainMenu ptr )
+'   _wfxMainMenuPtr = nValue
+'END PROPERTY
 
 
 property wfxForm.ClientSize() as wfxSize
@@ -402,9 +403,9 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
          dwExStyle = dwExStyle or WS_EX_DLGMODALFRAME
    end select     
 
-   If this.ShowInTaskBar Then
-      dwExStyle = dwExStyle Or WS_EX_APPWINDOW
-   End If
+'   If this.ShowInTaskBar Then
+'      dwExStyle = dwExStyle Or WS_EX_APPWINDOW
+'   End If
    
    ' Determine if the WS_VISIBLE style is set. Save that value in order to
    ' prevent the form moving on screen when the subsequent StartPosition 

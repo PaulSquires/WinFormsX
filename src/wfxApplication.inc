@@ -130,6 +130,7 @@ end function
    Dim pListBox    As wfxListBox Ptr
    dim pComboBox   as wfxComboBox ptr
    Dim pStatusBar  As wfxStatusBar Ptr
+   Dim pMainMenu   As wfxMainMenu Ptr
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
@@ -145,6 +146,7 @@ end function
          Case ControlType.ListBox:      pListBox    = Cast(wfxListBox Ptr, pNode->pData)
          Case ControlType.ComboBox:     pComboBox   = Cast(wfxComboBox Ptr, pNode->pData)
          Case ControlType.StatusBar:    pStatusBar  = Cast(wfxStatusBar Ptr, pNode->pData)
+         Case ControlType.MainMenu:     pMainMenu   = Cast(wfxMainMenu Ptr, pNode->pData)
       End Select
    End If   
 #EndMacro
@@ -545,14 +547,58 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          End If
       
   
+      CASE WM_INITMENUPOPUP
+         ' wParam: A handle to the drop-down menu or submenu.
+         ' lParam: The low-order word specifies the zero-based relative position of 
+         '         the menu item that opens the drop-down menu or submenu.
+         '         The high-order word indicates whether the drop-down menu is the 
+         '         window menu. If the menu is the window menu, this parameter 
+         '         is TRUE; otherwise, it is FALSE.
+         pForm = Application.GetpFormObject(hWin)
+         if pForm then pNode = pForm->Controls.search_controltype(ControlType.MainMenu)
+         if pNode then pMainMenu = cast(wfxMainMenu ptr, pNode->pData)
+         if pMainMenu andalso pMainMenu->OnPopup then 
+            dim byref iMenuItem as wfxMenuItem = pMainMenu->ByPopupMenuHandle(cast(HMENU, wParam))
+            pMainMenu->OnPopup(iMenuItem, e)
+         end if
+         
       case WM_COMMAND
          ' wParam: LOWORD contains the button's control identifier. 
          '         HIWORD specifies the notification code.
          ' lParam: Handle to the button.
          ' Determine the pointer based on the Window handle generating the notification.
+
+         '
+         ' Message 
+         ' Source        wParam (high word)   wParam (low word)      lParam
+         ' ------------------------------------------------------------------------
+         ' Menu          0                    Menu identifier        0
+         '                                    (IDM_*) 
+         ' Accelerator   1                    Accelerator 
+         '                                    identifier (IDM_*)     0
+         ' Control       Control-defined      Control identifier     Handle to the  
+         '               notification code                           control window
+         '
+
          Dim As Long lNotification = Hiword(wParam)
          pForm = Application.GetpFormObject(hWin)
-         pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
+
+         ' Handle the different types of notifications
+         if (lNotification = 0 or lNotification = 1) andalso (lParam = 0) then
+            ' Menu notification or accelerator key
+            if pForm then pNode = pForm->Controls.search_controltype(ControlType.MainMenu)
+            if pNode then pMainMenu = cast(wfxMainMenu ptr, pNode->pData)
+            if pMainMenu andalso pMainMenu->OnClick then 
+               ' Get the MenuItem that is being opened based on MenuID
+               ' Need to search all menus and submenus until we find a match.
+               dim byref iMenuItem as wfxMenuItem = pMainMenu->ByMenuID(loword(wParam))
+               pMainMenu->OnClick(iMenuItem, e)
+            end if
+         else
+            ' Control 
+            pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
+         end if
+         
          
          If pNode Then
             Select Case pNode->CtrlType 

@@ -13,6 +13,7 @@
 #include once "Afx\CWindow.inc"
 #Include Once "Afx\CXpButton.inc"
 #Include Once "Afx\CMaskedEdit.inc"
+#Include Once "Afx\AfxMenu.inc"
 
 using Afx
 

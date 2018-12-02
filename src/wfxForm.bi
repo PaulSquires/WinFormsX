@@ -20,7 +20,7 @@ Type wfxForm Extends wfxControl
       _MinimizeBox     as boolean = true
       _MaximizeBox     as boolean = true
       _ControlBox      as boolean = true
-      _ShowInTaskBar   as Boolean = true
+      '_ShowInTaskBar   as Boolean = true
       _ClientSize      as wfxSize 
       _NextCtrlID      as long    = 100
       _IsMainForm      as boolean = false 
@@ -36,6 +36,7 @@ Type wfxForm Extends wfxControl
       
    Public:           
       Controls         As wfxLList
+      MainMenu         as wfxMainMenu
       
       pWindow As CWindow Ptr
       Declare Property WindowState() As FormWindowState
@@ -66,14 +67,14 @@ Type wfxForm Extends wfxControl
       Declare Property MaximumWidth() as long
       Declare Property KeyPreview() As boolean
       Declare Property KeyPreview( ByVal nValue As boolean )
-      Declare Property ShowInTaskBar() As boolean
-      Declare Property ShowInTaskBar( ByVal nValue As boolean )
+      'Declare Property ShowInTaskBar() As boolean
+      'Declare Property ShowInTaskBar( ByVal nValue As boolean )
       Declare Property AcceptButton() As wfxButton ptr
       Declare Property AcceptButton( byval nValue as wfxButton ptr )
       Declare Property CancelButton() As wfxButton ptr
       Declare Property CancelButton( byval nValue as wfxButton ptr )
-      Declare Property MainMenu() As wfxMainMenu 
-      Declare Property MainMenu( byval nValue as wfxMainMenu ptr )
+      'Declare Property MainMenu() As wfxMainMenu 
+      'Declare Property MainMenu( byval nValue as wfxMainMenu ptr )
 
       declare function GetNextCtrlID() as Long     
       declare function Close() as Long

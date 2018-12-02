@@ -11,80 +11,115 @@
 '    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
 '    GNU General Public License for more details.
 
+type _wfxMainMenu as wfxMainMenu
+type _wfxMenuItem as wfxMenuItem
 
-type wfxMenuItem
-   private:
-      _hWindow     as hwnd
-      _Index       as Long
-      _Text        as CWSTR
-      _Data32      as Long 
-      _Selected    as boolean
-     
-   public:
-      Declare Property hWindow() As hwnd
-      Declare Property hWindow( ByVal nValue As hwnd)
-      Declare Property Index() As long
-      Declare Property Index( ByVal nValue As long)
-      Declare Property Selected() As boolean
-      Declare Property Selected( ByVal nValue As boolean)
-      declare property Text() as CWSTR
-      declare property Text( byref wszValue as wstring )
-      Declare Property Data32() As long
-      Declare Property Data32( ByVal nValue As long)
-END TYPE
 
 type wfxMenuItemsCollection
    private:
-      _hWindow     as hwnd
+      _Handle     as HMENU
       _Collection As wfxLList
       
    public:
-      Declare Property hWindow() As hwnd
-      Declare Property hWindow( ByVal nValue As hwnd)
+      Declare Property Handle() As HMENU
+      Declare Property Handle( ByVal nValue As HMENU)
       Declare function Clear() as long 
       Declare function Count() as long 
-      Declare Function SelectedCount() As Long
       Declare Function Remove( ByVal nIndex As Long ) As Long 
-      Declare Function Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
-      declare function ByIndex( byval nIndex as long ) byref as wfxMenuItem
-      Declare Constructor
-      declare destructor 
+      declare Function Add( ByRef tMenuItem As _wfxMenuItem ) As Long
+      declare function ByIndex( byval nIndex as long ) byref as _wfxMenuItem
+      Declare Constructor()
+      declare destructor() 
+END TYPE
+
+
+type wfxMenuItem 
+   private:
+      _Handle          as HMENU
+      _PopupMenuHandle as HMENU
+      _MenuParent      as _wfxMainMenu ptr
+      _Index           as Long
+      _Selected        as boolean
+      _Text            as CWSTR
+      _Name            as CWSTR
+      _MenuID          as Long
+      _Shortcut        as CWSTR
+      _Checked         as boolean
+      _Grayed          as boolean
+      _IsParent        as boolean
+      _ItemsCollection as wfxMenuItemsCollection
+     
+   public:
+      declare constructor( ByRef wszText     As WString = "", _
+                           ByRef wszName     As WString = "", _ 
+                           Byref wszShortcut As WString = "", _
+                           ByVal bChecked    As boolean = false, _
+                           ByVal bGrayed     As boolean = false )
+      declare destructor()
+      Declare Function MenuItem( ByVal nIndex As Long) ByRef As wfxMenuItem
+      declare function MenuItems byref As wfxMenuItemsCollection
+      Declare Property Handle() As HMENU   ' mainmenu handle
+      Declare Property Handle( ByVal nValue As HMENU)
+      Declare Property PopupMenuHandle() As HMENU   ' menuitem handle to child popup menu
+      Declare Property PopupMenuHandle( ByVal nValue As HMENU)
+      Declare Property MenuParent() As _wfxMainMenu ptr
+      Declare Property MenuParent( Byval pValue As _wfxMainMenu ptr)
+      Declare Property Index() As long
+      Declare Property Index( ByVal nValue As long)
+      Declare Property IsParent() As boolean
+      Declare Property IsParent( byval nValue as boolean)
+      Declare Property Selected() As boolean
+      Declare Property Selected( ByVal nValue As boolean)
+      
+      declare property Text() as CWSTR
+      declare property Text( byref wszValue as wstring )
+      declare property Name() as CWSTR
+      declare property Name( byref wszValue as wstring )
+      Declare Property MenuID() As long
+      Declare Property MenuID( ByVal nValue As long)
+      Declare Property Checked() As boolean
+      Declare Property Checked( ByVal nValue As boolean)
+      Declare Property Grayed() As boolean
+      Declare Property Grayed( ByVal nValue As boolean)
+      Declare Property Shortcut() As CWSTR
+      Declare Property Shortcut( byref wszValue as wstring)
+
 END TYPE
 
 Type wfxMainMenu Extends wfxControl
    private:
-      _TempItem As wfxMenuItem
+      _Handle as HMENU = 0
       _SelectedItem as wfxMenuItem
       _SelectedIndex as Long = -1
       _ItemsCollection as wfxMenuItemsCollection
-      _IsLoading as Boolean = true   ' internal
+      _IsLoading as Boolean   ' private
       
    Public:
-      Declare Function Item( ByVal nIndex As Long) ByRef As wfxMenuItem
-      declare function Items byref As wfxMenuItemsCollection
+      Declare Function MenuItem( ByVal nIndex As Long) ByRef As wfxMenuItem
+      declare function MenuItems byref As wfxMenuItemsCollection
+      Declare Property Handle() As HMENU
+      Declare Property Handle( ByVal nValue As HMENU)
+      Declare Property IsLoading() As boolean
+      Declare Property IsLoading( ByVal nValue As boolean)
       Declare Property SelectedItem(byref as wfxMenuItem) 
       Declare Property SelectedItem() byref as wfxMenuItem
       Declare Property SelectedIndex() As long
       Declare Property SelectedIndex( ByVal nValue As long)
+      declare function CreateMenuStructure_Internal(byval hSubMenu as HMENU, byref tMenuItem as _wfxMenuItem) as long
+      declare function ByMenuID( byval nMenuID as long ) byref as _wfxMenuItem
+      declare function GetByMenuID_Internal( byval nMenuID as long, byval pMenuItem as _wfxMenuItem ptr) as _wfxMenuItem ptr
+      declare function ByMenuName( byref wszMenuName as wstring ) byref as _wfxMenuItem
+      declare function GetByMenuName_Internal( byref wszMenuName as wstring, byval pMenuItem as _wfxMenuItem ptr) as _wfxMenuItem ptr
+      declare function ByPopupMenuHandle( byval hPopupMenu as HMENU ) byref as _wfxMenuItem
+      declare function GetByPopupMenuHandle_Internal( byval hPopupMenu as HMENU, byval pMenuItem as _wfxMenuItem ptr) as _wfxMenuItem ptr
       
       Declare Constructor()
+      declare destructor()
       declare function Show(byval hWndParent as hwnd = 0) as long override
 
-      OnAllEvents        as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnDestroy          as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnClick            as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnMouseMove        as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnMouseDown        as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnMouseUp          as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnMouseDoubleClick as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnMouseEnter       as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnMouseHover       as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnMouseLeave       as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnGotFocus         as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnLostFocus        as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnKeyDown          as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnKeyUp            as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnKeyPress         as function( byref sender as wfxMainMenu, byref e as EventArgs ) as LRESULT
-      OnDropFiles        As Function( ByRef sender As wfxMainMenu, ByRef e As EventArgs ) As LRESULT
+      ' Events are generated by WinFBE
+      OnAllEvents        as function( byref sender as wfxMenuItem, byref e as EventArgs ) as LRESULT
+      OnClick            as function( byref sender as wfxMenuItem, byref e as EventArgs ) as LRESULT
+      OnPopup            as function( byref sender as wfxMenuItem, byref e as EventArgs ) as LRESULT
 End Type
 
