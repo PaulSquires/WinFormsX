@@ -25,6 +25,10 @@ Type wfxButton Extends wfxControl
       _TextBackColorDown As COLORREF = Colors.SystemControl
       _ToggleMode        As boolean = False
       _ToggleState       As boolean = False
+      _Image             as CWSTR
+      _ImageWidth        as Long = 16
+      _ImageHeight       as Long = 16
+      _ImageScaling      as ImageScale = ImageScale.HighDPI
       
    Public:
       declare Property BackColor( ByVal nValue As COLORREF )
@@ -49,6 +53,14 @@ Type wfxButton Extends wfxControl
       Declare Property ThemeSupport( ByVal nValue As boolean )
       Declare Property TextAlign() As ButtonAlignment
       Declare Property TextAlign( ByVal nValue As ButtonAlignment )
+      declare property Image() as CWSTR
+      declare property Image( byref cwzValue as wstring )
+      declare property ImageScaling( byval nValue as ImageScale )
+      declare property ImageScaling() as ImageScale
+      declare property ImageWidth( byval nValue as Long )
+      declare property ImageWidth() as Long
+      declare property ImageHeight( byval nValue as Long )
+      declare property ImageHeight() as Long
       declare function Show(byval hWndParent as hwnd = 0) as long override
       Declare Constructor( ByRef wszName As WString = "" )
       Declare Destructor()

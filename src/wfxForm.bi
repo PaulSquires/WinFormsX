@@ -33,6 +33,7 @@ Type wfxForm Extends wfxControl
       _AcceptButton    as wfxButton ptr
       _CancelButton    as wfxButton ptr
       _wfxMainMenuPtr  as wfxMainMenu ptr
+      _Icon            as CWSTR
       
    Public:           
       Controls         As wfxLList
@@ -75,6 +76,8 @@ Type wfxForm Extends wfxControl
       Declare Property CancelButton( byval nValue as wfxButton ptr )
       'Declare Property MainMenu() As wfxMainMenu 
       'Declare Property MainMenu( byval nValue as wfxMainMenu ptr )
+      declare property Icon() as CWSTR
+      declare property Icon( byref cwzValue as wstring )
 
       declare function GetNextCtrlID() as Long     
       declare function Close() as Long

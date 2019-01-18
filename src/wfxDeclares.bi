@@ -93,6 +93,15 @@ Enum ImageLayout
    Zoom
 END ENUM
 
+enum ImageScale
+   None = 1
+   HighDPI
+   AutoSize
+   FitWidth
+   FitHeight   
+   Stretch
+end enum
+
 enum ButtonAlignment
    BottomCenter = 1
    BottomLeft   

@@ -119,7 +119,7 @@ Property wfxForm.BorderStyle( ByVal nValue As FormBorderStyle )
       End Select     
       AfxAddWindowStyle(this.hWindow, wsStyle)
       AfxAddWindowExStyle(this.hWindow, wsExStyle)
-      SetWindowPos( this.hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER Or SWP_NOMOVE Or SWP_NOSIZE Or SWP_DRAWFRAME)
+      AfxRedrawNonClientArea(this.hWindow)
    End If
    _BorderStyle = nValue
 End Property
@@ -287,6 +287,22 @@ END PROPERTY
 '   _wfxMainMenuPtr = nValue
 'END PROPERTY
 
+property wfxForm.Icon() as CWSTR
+   property = _Icon
+end property
+
+property wfxForm.Icon( byref cwzValue as wstring )
+   if this.pWindow->hWindow THEN
+      If len(cwzValue) Then
+         dim hIcon as HANDLE
+         hIcon = AfxGdipIconFromRes(this.pWindow->InstanceHandle, cwzValue)
+         SendMessage( this.hWindow, WM_SETICON, CAST(WPARAM, ICON_BIG), CAST(LPARAM, hIcon))
+         SendMessage( this.hWindow, WM_SETICON, CAST(WPARAM, ICON_SMALL), CAST(LPARAM, hIcon))
+      End If   
+   End If
+   AfxRedrawNonClientArea(this.hWindow)
+   _Icon = cwzValue
+end property
 
 property wfxForm.ClientSize() as wfxSize
    if this.pWindow->hWindow THEN
@@ -415,11 +431,14 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
  
    '  Create the main window based on properties set
    this.hWindow = this.pWindow->Create( hWndParent, _
-                         this.Text, _
-                         @wfxApplication.WndProc, _
-                         nLeft, nTop, nWidth, nHeight, _
-                         dwStyle, dwExStyle ) 
+                        this.Text, _
+                        @wfxApplication.WndProc, _
+                        nLeft, nTop, nWidth, nHeight, _
+                        dwStyle, dwExStyle ) 
 
+   ' Set the Form icons. hWindow must be valid.
+   this.Icon = _Icon
+   
    ' Should we enable drag and drop files
    if this.AllowDrop then DragAcceptFiles(this.hWindow, CTRUE)
 
