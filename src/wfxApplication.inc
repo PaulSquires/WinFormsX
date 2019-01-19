@@ -122,6 +122,8 @@ end function
    Dim pCtrl       As wfxControl Ptr
    Dim pForm       As wfxForm Ptr
    Dim pLabel      As wfxLabel Ptr
+   Dim pFrame      As wfxFrame Ptr
+   Dim pPictureBox As wfxPictureBox Ptr
    Dim pButton     As wfxButton Ptr
    Dim pTextBox    As wfxTextBox Ptr
    Dim pMaskedEdit As wfxMaskedEdit Ptr
@@ -138,6 +140,8 @@ end function
       Select Case pNode->CtrlType 
          Case ControlType.Form:         pForm       = Cast(wfxForm Ptr, pNode->pData)
          Case ControlType.Label:        pLabel      = Cast(wfxLabel Ptr, pNode->pData)
+         Case ControlType.Frame:        pFrame      = Cast(wfxFrame Ptr, pNode->pData)
+         Case ControlType.PictureBox:   pPictureBox = Cast(wfxPictureBox Ptr, pNode->pData)
          Case ControlType.Button:       pButton     = Cast(wfxButton Ptr, pNode->pData)
          Case ControlType.TextBox:      pTextBox    = Cast(wfxTextBox Ptr, pNode->pData)
          Case ControlType.MaskedEdit:   pMaskedEdit = Cast(wfxMaskedEdit Ptr, pNode->pData)
@@ -504,6 +508,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
              return 0
           End If	 
 
+      
       case WM_ACTIVATE
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
@@ -515,6 +520,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             END IF
          END IF
 
+      
       Case WM_CLOSE
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
@@ -527,6 +533,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             DestroyWindow(hWin)
          End If   
           
+      
       Case WM_DESTROY
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
@@ -554,14 +561,17 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          '         The high-order word indicates whether the drop-down menu is the 
          '         window menu. If the menu is the window menu, this parameter 
          '         is TRUE; otherwise, it is FALSE.
-         pForm = Application.GetpFormObject(hWin)
-         if pForm then pNode = pForm->Controls.search_controltype(ControlType.MainMenu)
-         if pNode then pMainMenu = cast(wfxMainMenu ptr, pNode->pData)
-         if pMainMenu andalso pMainMenu->OnPopup then 
-            dim byref iMenuItem as wfxMenuItem = pMainMenu->ByPopupMenuHandle(cast(HMENU, wParam))
-            pMainMenu->OnPopup(iMenuItem, e)
+         if hiword( lParam ) = false then
+            pForm = Application.GetpFormObject(hWin)
+            if pForm then pNode = pForm->Controls.search_controltype(ControlType.MainMenu)
+            if pNode then pMainMenu = cast(wfxMainMenu ptr, pNode->pData)
+            if pMainMenu andalso pMainMenu->OnPopup then 
+               dim byref iMenuItem as wfxMenuItem = pMainMenu->ByPopupMenuHandle(cast(HMENU, wParam))
+               pMainMenu->OnPopup(iMenuItem, e)
+            end if
          end if
          
+      
       case WM_COMMAND
          ' wParam: LOWORD contains the button's control identifier. 
          '         HIWORD specifies the notification code.
@@ -639,6 +649,18 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
       case WM_NOTIFY
          pForm = Application.GetpFormObject(hWin)
          Dim pNMHDR As NMHDR Ptr = Cast(NMHDR Ptr, lParam)
+
+' TODO: Handle WN_NOTIFY from controls like CImageCtx
+'         ' Control 
+'         pNode = Application.GetControlByHandle( pNMHDR->hwndFrom )
+'         If pNode Then
+'            Select Case pNode->CtrlType 
+'               Case ControlType.Label
+'                  pLabel = Cast(wfxLabel Ptr, pNode->pData)
+'                  If pLabel AndAlso lNotification = STN_CLICKED AndAlso pLabel->OnClick Then pLabel->OnClick(*pLabel, e)
+'                  If pLabel AndAlso lNotification = STN_DBLCLK AndAlso pLabel->OnMouseDoubleClick Then pLabel->OnMouseDoubleClick(*pLabel, e)
+
+
          Select Case pNMHDR->code 
             Case NM_CLICK
                ' Process clicking on the panels in the statusbar
@@ -656,6 +678,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                end if
          end select
                
+      
       Case WM_MOVING, WM_SIZING
          ' wParam: This parameter is not used.
          ' lParam: A pointer to a RECT structure with the current position of the window in screen coordinates. 
@@ -670,6 +693,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             end if
          END IF
 
+      
       Case WM_SIZE
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
@@ -681,6 +705,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                SendMessage(pStatusBar->hWindow, uMsg, wParam, lParam)
             END IF
          END IF
+      
       
       Case WM_CTLCOLORSTATIC, WM_CTLCOLOREDIT, WM_CTLCOLORBTN, WM_CTLCOLORLISTBOX 
          ' wParam: HDC of the control. 
@@ -696,6 +721,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             end if   
          end if
          
+      
       case WM_ERASEBKGND
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
@@ -705,6 +731,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             return true
          end if   
 
+      
       Case WM_MOVE
          pForm = Application.GetpFormObject(hWin)
          If pForm AndAlso pForm->OnMove Then pForm->OnMove(*pForm, e)

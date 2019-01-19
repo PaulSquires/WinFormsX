@@ -12,7 +12,7 @@
 '    GNU General Public License for more details.
 
 ''
-''  Label Class
+''  Frame Class
 ''
 ''
 

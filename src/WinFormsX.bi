@@ -13,6 +13,7 @@
 #include once "Afx\CWindow.inc"
 #Include Once "Afx\CXpButton.inc"
 #Include Once "Afx\CMaskedEdit.inc"
+#Include Once "Afx\CImageCtx.inc"
 #Include Once "Afx\AfxMenu.inc"
 
 using Afx
@@ -31,6 +32,7 @@ namespace WinFormsX
 #include once "wfxForm.bi"
 #include once "wfxLabel.bi"
 #Include Once "wfxFrame.bi"
+#Include Once "wfxPictureBox.bi"
 #Include Once "wfxTextBox.bi"
 #Include Once "wfxMaskedEdit.bi"
 #Include Once "wfxCheckBox.bi"
@@ -54,6 +56,7 @@ namespace WinFormsX
 #Include Once "wfxMaskedEdit.inc"
 #Include Once "wfxLabel.inc"
 #include once "wfxFrame.inc"
+#include once "wfxPictureBox.inc"
 #Include Once "wfxStatusBar.inc"
 #Include Once "wfxMainMenu.inc"
 #include once "wfxForm.inc"

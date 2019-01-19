@@ -208,26 +208,20 @@ property wfxButton.Image( byref cwzValue as wstring )
    _Image = cwzValue
 end property
 
-property wfxButton.ImageScaling( byval nValue as ImageScale )
+property wfxButton.ImageHighDPI( byval nValue as boolean )
    If _XpButtonPtr Then 
-      select case nValue
-         case ImageScale.None
-            _XpButtonPtr->SetImageSize( 16, 16, true )
-         case ImageScale.HighDPI
-            _XpButtonPtr->SetImageSize( this.Parent->pWindow->ScaleX(_ImageWidth), _
-                                        this.Parent->pWindow->ScaleY(_ImageHeight), true )
-         case ImageScale.AutoSize
-            _XpButtonPtr->SetImageSize( _ImageWidth, _ImageHeight, true )
-         case ImageScale.FitWidth   
-         case ImageScale.FitHeight   
-         case ImageScale.Stretch
-      end select        
+      if nValue then 
+         _XpButtonPtr->SetImageSize( this.Parent->pWindow->ScaleX(_ImageWidth), _
+                                     this.Parent->pWindow->ScaleY(_ImageHeight), true )
+      else
+         _XpButtonPtr->SetImageSize( _ImageWidth, _ImageHeight, true )
+      end if
    end if
-   _ImageScaling = nValue
+   _ImageHighDPI = nValue
 end property
 
-property wfxButton.ImageScaling() as ImageScale
-   property = _ImageScaling
+property wfxButton.ImageHighDPI() as boolean
+   property = _ImageHighDPI
 end property
 
 property wfxButton.ImageWidth( byval nValue as Long )
@@ -256,6 +250,34 @@ property wfxButton.ImageHeight() as Long
       _ImageHeight = _XpButtonPtr->GetImageHeight()
    End If
    property = _ImageHeight
+end property
+
+property wfxButton.ImageMargin( byval nValue as Long )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetImageMargin( nValue )
+   End If
+   _ImageMargin = nValue
+end property
+
+property wfxButton.ImageMargin() as Long
+   If _XpButtonPtr Then 
+      _ImageMargin = _XpButtonPtr->GetImageMargin()
+   End If
+   property = _ImageMargin
+end property
+
+property wfxButton.TextMargin( byval nValue as Long )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetTextMargin( nValue )
+   End If
+   _TextMargin = nValue
+end property
+
+property wfxButton.TextMargin() as Long
+   If _XpButtonPtr Then 
+      _TextMargin = _XpButtonPtr->GetTextMargin()
+   End If
+   property = _TextMargin
 end property
 
 
@@ -314,7 +336,9 @@ Function wfxButton.Show(ByVal hWndParent As HWnd = 0) As Long
    this.Image        = _Image
    this.ImageWidth   = _ImageWidth
    this.ImageHeight  = _ImageHeight
-   this.ImageScaling = _ImageScaling
+   this.ImageHighDPI = _ImageHighDPI
+   this.ImageMargin  = _ImageMargin
+   this.TextMargin   = _TextMargin
    this.Enabled      = _Enabled
 
    function = 0

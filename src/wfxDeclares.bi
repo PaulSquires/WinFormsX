@@ -95,7 +95,6 @@ END ENUM
 
 enum ImageScale
    None = 1
-   HighDPI
    AutoSize
    FitWidth
    FitHeight   
