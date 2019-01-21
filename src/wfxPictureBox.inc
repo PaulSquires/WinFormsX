@@ -29,10 +29,22 @@ property wfxPictureBox.Image() as CWSTR
    property = _Image
 end property
 
+
 property wfxPictureBox.Image( byref cwzValue as wstring )
    If _ImageCtxPtr Then 
       If len(cwzValue) Then
- ?        _ImageCtxPtr->LoadImageFromResource( this.Parent->pWindow->InstanceHandle, cwzValue )
+         _ImageCtxPtr->LoadImageFromResource( this.Parent->pWindow->InstanceHandle, cwzValue )
+      
+         dim wszTempPath as wstring * MAX_PATH
+         GetTempPath( MAX_PATH, @wszTempPath )
+         dim wszTempFilename as wstring * MAX_PATH
+         GetTempFileName( @wszTempPath, "TMP", 0, @wszTempFilename )
+         Application.ExtractResourceToFile( this.Parent->pWindow->InstanceHandle, _
+                                            cwzValue, wszTempFilename, RT_RCDATA )
+
+         _ImageCtxPtr->LoadImageFromFile( wszTempFilename )
+         AfxDeleteFile( wszTempFilename )
+      
       End If    
    End If
    _Image = cwzValue
@@ -168,6 +180,8 @@ Function wfxPictureBox.Show(ByVal hWndParent As HWnd = 0) As Long
    this.ImageWidth   = _ImageWidth
    this.ImageHeight  = _ImageHeight
    this.ImageScaling = _ImageScaling
+   this.BackColor    = _BackColor
+   this.BackColorHot = _BackColorHot
    this.Enabled      = _Enabled
 
    function = 0

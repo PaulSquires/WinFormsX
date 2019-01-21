@@ -113,6 +113,57 @@ Function wfxApplication.Run() As LRESULT
 end function
 
 ''
+''  Extract a resource to a file.
+''
+function wfxApplication.ExtractResourceToFile( byval hInstance as HINSTANCE, _
+                                               byref wszResourceName as wstring, _
+                                               byref wszFileName as wstring, _
+                                               byval lResourceType as LPWSTR _
+                                               ) as boolean
+   ' Default that the function is successful
+   dim AS LONG lResult = true
+   
+   ' // Find the resource and lock it
+   DIM hResource AS HRSRC = FindResourceW(hInstance, wszResourceName, CAST(LPCWSTR, lResourceType))
+   IF hResource = NULL THEN RETURN false
+   
+   DIM imageSize AS DWORD = SizeofResource(hInstance, hResource)
+   IF imageSize = 0 THEN RETURN false
+   
+   DIM pResourceData AS LPVOID = LockResource(LoadResource(hInstance, hResource))
+   IF pResourceData = NULL THEN RETURN false
+   
+   ' // Allocate memory to hold the image
+   DIM hGlobal AS HGLOBAL = GlobalAlloc(GMEM_MOVEABLE, imageSize)
+   IF hGlobal THEN
+      ' // Lock the memory
+      DIM pGlobalBuffer AS LPVOID = GlobalLock(hGlobal)
+      IF pGlobalBuffer THEN
+         
+         ' // Copy the image from the resource file to global memory
+         memcpy pGlobalBuffer, pResourceData, imageSize
+
+         AfxDeleteFile( wszFileName )
+         dim as long f = freefile
+         if open( wszFileName, for binary, as #f ) = 0 then
+            dim pBuffer as byte ptr = pGlobalBuffer
+            put #f, , pBuffer[0], imagesize        
+            close #f
+         else
+            return true
+         end if
+         ' // Unlock the memory
+         GlobalUnlock pGlobalBuffer
+      END IF
+      ' // Free the memory
+      GlobalFree hGlobal
+   END IF
+
+   function = lResult
+end function
+
+
+''
 ''
 ''   M A C R O S
 ''

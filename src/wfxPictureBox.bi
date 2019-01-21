@@ -20,12 +20,12 @@
 Type wfxPictureBox Extends wfxControl
    private:
       _ImageCtxPtr As CImageCtx Ptr
-      _BackColor      as COLORREF = Colors.SystemControl
       _Image          as CWSTR
       _ImageWidth     as Long = 0
       _ImageHeight    as Long = 0
       _ImageScaling   as ImageScale = ImageScale.AutoSize
-      _BackColorHot   as COLORREF = Colors.SystemControl
+      _BackColor      as COLORREF = Colors.SystemWindow
+      _BackColorHot   as COLORREF = Colors.SystemWindow
    
    Public:
       declare property Image() as CWSTR
