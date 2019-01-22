@@ -27,17 +27,17 @@ Type wfxFrame Extends wfxControl
       Declare Property UseMnemonic( ByVal nValue As boolean )
       declare function Show(byval hWndParent as hwnd = 0) as long override
 
-      OnAllEvents        as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnDestroy          as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnClick            as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnMouseMove        as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnMouseDown        as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnMouseUp          as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnMouseDoubleClick as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnMouseEnter       as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnMouseHover       as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnMouseLeave       as function( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-      OnDropFiles        As Function( ByRef sender As wfxLabel, ByRef e As EventArgs ) As LRESULT
+      OnAllEvents        as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnDestroy          as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnClick            as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnMouseMove        as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnMouseDown        as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnMouseUp          as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnMouseDoubleClick as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnMouseEnter       as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnMouseHover       as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnMouseLeave       as function( byref sender as wfxFrame, byref e as EventArgs ) as LRESULT
+      OnDropFiles        As Function( ByRef sender As wfxFrame, ByRef e As EventArgs ) As LRESULT
 
 End Type
 

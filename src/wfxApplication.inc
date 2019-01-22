@@ -112,6 +112,7 @@ Function wfxApplication.Run() As LRESULT
    return 0
 end function
 
+
 ''
 ''
 ''   M A C R O S
@@ -157,7 +158,8 @@ end function
 
 #Macro WINFORMSX_HANDLE_MESSAGE(msg)    
    ' Bypass controls that do not handle focus or keyboard input
-   #If( #msg <> "OnGotFocus" AndAlso #msg <> "OnLostFocus" AndAlso #msg <> "OnKeyDown" AndAlso #msg <> "OnKeyUp" AndAlso #msg <> "OnKeyPress" )  
+   #If( #msg <> "OnGotFocus" AndAlso #msg <> "OnLostFocus" AndAlso _
+        #msg <> "OnKeyDown" AndAlso #msg <> "OnKeyUp" AndAlso #msg <> "OnKeyPress" )  
       #If(#msg <> "OnDestroy")  ' OnDestroy is FormClosed for forms.
          If pForm AndAlso pForm->##msg Then pForm->##msg(*pForm, e)
       #EndIf
@@ -165,8 +167,10 @@ end function
          If pLabel AndAlso pLabel->##msg Then pLabel->##msg(*pLabel, e)
       #EndIf
       If pStatusBar AndAlso pStatusBar->##msg Then pStatusBar->##msg(*pStatusBar, e)
+      If pPictureBox AndAlso pPictureBox->##msg Then pPictureBox->##msg(*pPictureBox, e)
+      If pFrame AndAlso pFrame->##msg Then pFrame->##msg(*pFrame, e)
    #EndIf
-   ' Mouse doubleclicks are handled through LBN_DBLCLK notifications
+   ' ListBox doubleclicks are handled through LBN_DBLCLK notifications
    ' ListBox Clicks are handled through LBN_SELCHANGE
    ' ComboBox Clicks are handled through CBN_SELCHANGE
    #If(#msg <> "OnMouseDoubleClick" AndAlso #msg <> "OnClick")  
@@ -223,6 +227,7 @@ Function wfxApplication.SetEventArgs( ByVal uMsg   As UINT, _
          
    Function = 0
 End Function
+
  
 ''
 ''  wfxApplication get the pForm pointer object
@@ -647,36 +652,35 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          
          
       case WM_NOTIFY
-         pForm = Application.GetpFormObject(hWin)
          Dim pNMHDR As NMHDR Ptr = Cast(NMHDR Ptr, lParam)
+         if pNMHDR = 0 then exit function
+         Dim As Long lNotification = pNMHDR->code
+         
+         pNode = Application.GetControlByHandle( pNMHDR->hwndFrom )
+         
+         If pNode Then
 
-' TODO: Handle WN_NOTIFY from controls like CImageCtx
-'         ' Control 
-'         pNode = Application.GetControlByHandle( pNMHDR->hwndFrom )
-'         If pNode Then
-'            Select Case pNode->CtrlType 
-'               Case ControlType.Label
-'                  pLabel = Cast(wfxLabel Ptr, pNode->pData)
-'                  If pLabel AndAlso lNotification = STN_CLICKED AndAlso pLabel->OnClick Then pLabel->OnClick(*pLabel, e)
-'                  If pLabel AndAlso lNotification = STN_DBLCLK AndAlso pLabel->OnMouseDoubleClick Then pLabel->OnMouseDoubleClick(*pLabel, e)
-
-
-         Select Case pNMHDR->code 
-            Case NM_CLICK
-               ' Process clicking on the panels in the statusbar
-               if pForm then
-                  pNode = pForm->Controls.search_controltype(ControlType.StatusBar)
-                  if pNode then 
-                     pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
-                     if pStatusBar then
-                        Dim lpnm As NMMOUSE Ptr = Cast(NMMOUSE Ptr, pNMHDR)
-                        e.PanelClickIndex = lpnm->dwItemSpec  
-                        e.x = lpnm->pt.x: e.y = lpnm->pt.y
-                        if pStatusBar andalso pStatusBar->OnClick then pStatusBar->OnClick(*pStatusBar, e)
-                     end if
+            Select Case pNode->CtrlType 
+               Case ControlType.StatusBar
+                  ' Process clicking on the panels in the statusbar
+                  pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
+                  if pStatusBar then
+                     Dim lpnm As NMMOUSE Ptr = Cast(NMMOUSE Ptr, pNMHDR)
+                     e.PanelClickIndex = lpnm->dwItemSpec  
+                     e.x = lpnm->pt.x: e.y = lpnm->pt.y
+                     if pStatusBar andalso pStatusBar->OnClick then pStatusBar->OnClick(*pStatusBar, e)
                   end if
-               end if
-         end select
+                  
+               Case ControlType.PictureBox
+                  pPictureBox = Cast(wfxPictureBox Ptr, pNode->pData)
+                  If pPictureBox AndAlso lNotification = NM_CLICK AndAlso pPictureBox->OnClick Then pPictureBox->OnClick(*pPictureBox, e)
+                  If pPictureBox AndAlso lNotification = NM_DBLCLK AndAlso pPictureBox->OnMouseDoubleClick Then pPictureBox->OnMouseDoubleClick(*pPictureBox, e)
+                  
+            end select
+            
+         end if
+         
+            
                
       
       Case WM_MOVING, WM_SIZING
