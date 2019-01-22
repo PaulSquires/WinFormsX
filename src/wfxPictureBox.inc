@@ -41,7 +41,6 @@ property wfxPictureBox.Image( byref cwzValue as wstring )
          GetTempFileName( @wszTempPath, "TMP", 0, @wszTempFilename )
          AfxExtractResourceToFile( this.Parent->pWindow->InstanceHandle, _
                                    cwzValue, wszTempFilename, RT_RCDATA )
-
          _ImageCtxPtr->LoadImageFromFile( wszTempFilename )
          AfxDeleteFile( wszTempFilename )
       
