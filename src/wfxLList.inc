@@ -83,6 +83,19 @@ end function
 
 ''
 ''
+function wfxLList.search_controlID( byval nCtrlID as long ) as wfxLListNode ptr
+   ' Search the hWindow element for a match on incoming ControlID and
+   ' return the linked list list node.
+   dim pNode as wfxLListNode ptr = this.pNodeFirst
+   do until pNode = 0
+      if GetDlgCtrlID( pNode->hWindow ) = nCtrlID then return pNode
+      pNode = pNode->pNodeNext
+   LOOP
+   function = 0
+end function
+
+''
+''
 function wfxLList.search_controltype( byval nCtrlType as ControlType) as wfxLListNode ptr
    ' Search the ControlType element for a match on incoming nCtrlType and
    ' return the linked list list node.

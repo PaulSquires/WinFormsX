@@ -64,8 +64,10 @@ constructor TFORMMAIN
       .Text = "This is a Label"
       .SetBounds(5, 5, 150, 30)
       .TextAlign     = LabelAlignment.MiddleCenter
-      .BackColor     = Colors.Blue
+      .BackColor     = Colors.Red
       .ForeColor     = Colors.Yellow
+      .BackColorHot  = Colors.Pink
+      .ForeColorHot  = Colors.Blue
       .OnAllEvents   = @Form1_Label1_AllEvents
       .OnDestroy     = @Form1_Label1_Destroy
       .OnClick       = @Form1_Label1_Click
@@ -152,17 +154,17 @@ function Form1_Label1_MouseDoubleClick( byref sender as wfxLabel, byref e as Eve
 end function
 
 function Form1_Label1_MouseEnter( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label MouseEnter"
+'   sender.Text = "Label MouseEnter"
    function = 0
 end function
 
 function Form1_Label1_MouseHover( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label MouseHover"
+'   sender.Text = "Label MouseHover"
    function = 0
 end function
 
 function Form1_Label1_MouseLeave( byref sender as wfxLabel, byref e as EventArgs ) as LRESULT
-   sender.Text = "Label MouseLeave"
+'   sender.Text = "Label MouseLeave"
    function = 0
 end function
 

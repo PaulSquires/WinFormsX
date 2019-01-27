@@ -120,6 +120,9 @@ enum LabelAlignment
    TopCenter    
    TopLeft      
    TopRight     
+   BottomCenter 
+   BottomLeft   
+   BottomRight  
 end enum
 
 Enum CharacterCase

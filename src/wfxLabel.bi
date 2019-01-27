@@ -20,15 +20,24 @@
 
 Type wfxLabel Extends wfxControl
    private:
-      _TextAlign   As LabelAlignment = LabelAlignment.TopLeft
-      _UseMnemonic As Boolean = True    
-      _BorderStyle As ControlBorderStyle = ControlBorderStyle.None
+      _TextAlign     As LabelAlignment = LabelAlignment.TopLeft
+      _UseMnemonic   As Boolean = True    
+      _BorderStyle   As ControlBorderStyle = ControlBorderStyle.None
+      _BackColorHot  As COLORREF 
+      _ForeColorHot  As COLORREF 
+      _hBackBrushHot As HBRUSH 
       
    Public:
       Declare Constructor( byref wszName as wstring = "" )
+      Declare destructor
       Declare Function GetTextAlignStyleValue( ByVal nValue As LabelAlignment ) As Long
       Declare Property BorderStyle() As ControlBorderStyle
       Declare Property BorderStyle( ByVal nValue As ControlBorderStyle )
+      Declare Property hBackBrushHot() As HBRUSH   ' internal get
+      Declare Property BackColorHot() As COLORREF
+      Declare Property BackColorHot( ByVal nValue As COLORREF )
+      declare property ForeColorHot() as COLORREF
+      Declare Property ForeColorHot( ByVal nValue As COLORREF )
       Declare Property TextAlign() As LabelAlignment
       declare property TextAlign( byval nValue as LabelAlignment )
       Declare Property UseMnemonic() As boolean

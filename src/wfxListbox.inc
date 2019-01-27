@@ -18,10 +18,84 @@
 
 constructor wfxListBox( byref wszName as wstring = "" )
    this.CtrlType = ControlType.ListBox
-   this.Name = wszName
-   this.BackColor = Colors.SystemWindow
-   this.ForeColor = Colors.SystemWindowText
+   this.Name     = wszName
+   this.BackColor         = Colors.SystemWindow
+   this.ForeColor         = Colors.SystemWindowText
+   this.BackColorHot      = Colors.SystemWindow
+   this.ForeColorHot      = Colors.SystemWindowText
+   this.BackColorSelected = Colors.SystemHighlight
+   this.ForeColorSelected = Colors.SystemHighlightText
 end constructor
+
+destructor wfxListBox
+   DeleteObject(_hBackBrushHot)
+   DeleteObject(_hBackBrushSelected)
+end destructor
+
+
+
+Property wfxListBox.hBackBrushSelected() As HBRUSH
+   property = _hBackBrushSelected
+end property
+
+property wfxListBox.BackColorSelected() as COLORREF
+   property = _BackColorSelected
+end property
+
+property wfxListBox.BackColorSelected( byval nValue as COLORREF )
+   ' Create new back selected brush of the color has changed
+   if nValue <> _BackColorSelected THEN
+      DeleteObject(_hBackBrushSelected)
+      _hBackBrushSelected = CreateSolidBrush(nValue)
+   END IF
+   _BackColorSelected = nValue
+   if this.hWindow THEN this.Refresh
+end property
+
+Property wfxListBox.hBackBrushHot() As HBRUSH
+   property = _hBackBrushHot
+end property
+
+property wfxListBox.BackColorHot() as COLORREF
+   property = _BackColorHot
+end property
+
+property wfxListBox.BackColorHot( byval nValue as COLORREF )
+   ' Create new back hot brush of the color has changed
+   if nValue <> _BackColorHot THEN
+      DeleteObject(_hBackBrushHot)
+      _hBackBrushHot = CreateSolidBrush(nValue)
+   END IF
+   _BackColorHot = nValue
+   if this.hWindow THEN this.Refresh
+end property
+
+property wfxListBox.ForeColorHot() as COLORREF
+   property = _ForeColorHot
+end property
+
+property wfxListBox.ForeColorHot( byval nValue as COLORREF )
+   _ForeColorHot = nValue
+   if this.hWindow THEN this.Refresh
+end property
+
+property wfxListBox.ForeColorSelected() as COLORREF
+   property = _ForeColorSelected
+end property
+
+property wfxListBox.ForeColorSelected( byval nValue as COLORREF )
+   _ForeColorSelected = nValue
+   if this.hWindow THEN this.Refresh
+end property
+
+property wfxListBox.ItemHeight() as long
+   property = _ItemHeight
+end property
+
+property wfxListBox.ItemHeight( byval nValue as long )
+   _ItemHeight = nValue
+   if this.hWindow THEN this.Refresh
+end property
 
 
 Function wfxListBox.Item( ByVal nIndex As Long ) ByRef As wfxListBoxItem
@@ -269,7 +343,8 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    Dim As Long dwExStyle = 0
-   dim as long dwStyle = WS_HSCROLL OR WS_VSCROLL or LBS_HASSTRINGS OR LBS_NOTIFY
+   dim as long dwStyle = WS_HSCROLL OR WS_VSCROLL or LBS_HASSTRINGS OR _
+                         LBS_NOTIFY or LBS_OWNERDRAWFIXED
   
    if _ScrollAlwaysVisible then dwStyle = dwStyle or LBS_DISABLENOSCROLL
    if _IntegralHeight = false then dwStyle = dwStyle or LBS_NOINTEGRALHEIGHT

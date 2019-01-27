@@ -41,6 +41,7 @@ type wfxLList
       declare function search_data( byval pData as any ptr ) as wfxLListNode ptr
       declare function search_handle( byval hWindow as hwnd) as wfxLListNode ptr
       declare function search_controltype( byval nCtrlType as ControlType) as wfxLListNode ptr
+      declare function search_controlID( byval nCtrlID as long ) as wfxLListNode ptr
       declare function remove_bydata( byval pData as any ptr ) as wfxLListNode ptr
 END TYPE
 

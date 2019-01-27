@@ -67,7 +67,9 @@ constructor TFORMMAIN
       .Parent = @this
       .Name = "List"
       .SetBounds(10, 25, 200, 300)
-      .SelectionMode = ListBoxSelectionMode.MultiExtended
+      .SelectionMode = ListSelectionMode.MultiExtended
+      .BackColorHot  = colors.AliceBlue
+      .ForeColorHot  = colors.Ivory
       .OnAllEvents   = @Form1_List1_AllEvents
       .OnDestroy     = @Form1_List1_Destroy
       .OnClick       = @Form1_List1_Click
@@ -83,7 +85,7 @@ constructor TFORMMAIN
    
    ' Load 10 items into the ListBox
    dim as Long idx
-   for i as long = 0 to 9
+   for i as long = 1 to 10
      idx = this.List1.Items.Add
      this.List1.Item(idx).Text = "Listbox line:" & i
      this.List1.Item(idx).data32 = i
@@ -207,7 +209,7 @@ function Form1_List1_Click( byref sender as wfxListBox, byref e as EventArgs ) a
    ' label properties through use of the global shared Form1 variable (Form1.Label1).
    ? "List1 Click"
    
-   if Form1.List1.SelectionMode = ListBoxSelectionMode.One then
+   if Form1.List1.SelectionMode = ListSelectionMode.One then
       dim byref ListItem as wfxListBoxItem = Form1.List1.SelectedItem
       ? ListItem.Text, ListItem.Data32
    else
@@ -226,7 +228,7 @@ function Form1_cmdAdd_Click( byref sender as wfxButton, byref e as EventArgs ) a
    ? "Button Click: "; sender.Name
    ? "Add 10 lines to the Listbox"
    dim as Long idx
-   for i as long = 0 to 9
+   for i as long = 1 to 10
      idx = Form1.List1.Items.Add
      Form1.List1.Item(idx).Text = "Add Listbox line:" & idx
      Form1.List1.Item(idx).Data32 = idx

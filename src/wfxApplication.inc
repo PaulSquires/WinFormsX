@@ -468,6 +468,7 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          ' You can not stop the destroy process so do not honor any e.Handled that may have been set.
          e.Handled = False
          
+      
       Case WM_DROPFILES
          ' wParam: hDrop, a handle to an internal structure describing the dropped files. 
          '         Pass this handle DragFinish, DragQueryFile, or DragQueryPoint to retrieve 
@@ -475,8 +476,13 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          ' lParam: Must be zero.
          WINFORMSX_HANDLE_MESSAGE(OnDropFiles)
 
+      
       Case WM_MOUSEMOVE
          WINFORMSX_HANDLE_MESSAGE(OnMouseMove)
+         ' If this is a Label/ListBox then redraw so hot colors will be used
+         if pLabel then pLabel->Refresh
+         if pListBox then pListBox->Refresh
+         
          ' There is no such thing as a WM_MOUSEENTER message so we need to simulate it
          ' here by using a tracking variable and TRACKMOUSEEVENT.
          If pCtrl Then
@@ -494,6 +500,9 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
       Case WM_MOUSELEAVE
          If pCtrl Then pCtrl->IsTracking = False 
          WINFORMSX_HANDLE_MESSAGE(OnMouseLeave)
+         ' If this is a Label/ListBox then redraw so normal colors will be used
+         if pLabel then pLabel->Refresh
+         if pListBox then pListBox->Refresh
       
       Case WM_MOUSEHOVER
          WINFORMSX_HANDLE_MESSAGE(OnMouseHover)
@@ -672,6 +681,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   pLabel = Cast(wfxLabel Ptr, pNode->pData)
                   If pLabel AndAlso lNotification = STN_CLICKED AndAlso pLabel->OnClick Then pLabel->OnClick(*pLabel, e)
                   If pLabel AndAlso lNotification = STN_DBLCLK AndAlso pLabel->OnMouseDoubleClick Then pLabel->OnMouseDoubleClick(*pLabel, e)
+                  if pLabel then pLabel->Refresh
                Case ControlType.Button
                   pButton = Cast(wfxButton Ptr, pNode->pData)
                   If pButton AndAlso lNotification = BN_CLICKED AndAlso pButton->OnClick Then pButton->OnClick(*pButton, e)
@@ -691,6 +701,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   pListBox = Cast(wfxListBox Ptr, pNode->pData)
                   If pListBox AndAlso lNotification = LBN_DBLCLK AndAlso pListBox->OnMouseDoubleClick Then pListBox->OnMouseDoubleClick(*pListBox, e)
                   If pListBox AndAlso lNotification = LBN_SELCHANGE AndAlso pListBox->OnClick Then pListBox->OnClick(*pListBox, e)
+                  if pListBox then pListBox->Refresh
                Case ControlType.ComboBox
                   pComboBox = Cast(wfxComboBox Ptr, pNode->pData)
                   If pComboBox AndAlso lNotification = CBN_DBLCLK AndAlso pComboBox->OnMouseDoubleClick Then pComboBox->OnMouseDoubleClick(*pComboBox, e)
@@ -731,8 +742,6 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             
          end if
          
-            
-               
       
       Case WM_MOVING, WM_SIZING
          ' wParam: This parameter is not used.
@@ -762,7 +771,11 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          END IF
       
       
-      Case WM_CTLCOLORSTATIC, WM_CTLCOLOREDIT, WM_CTLCOLORBTN, WM_CTLCOLORLISTBOX 
+      Case WM_CTLCOLORSTATIC, WM_CTLCOLORLISTBOX 
+         ' WinFormsX Label and ListBox controls handle color using OwnerDraw via WM_DRAWITEM
+         
+     
+      case WM_CTLCOLOREDIT, WM_CTLCOLORBTN
          ' wParam: HDC of the control. 
          ' lParam: Handle to the control.
          ' Need to determine the child control handle that is sending the request to be painted.
@@ -791,6 +804,150 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          pForm = Application.GetpFormObject(hWin)
          If pForm AndAlso pForm->OnMove Then pForm->OnMove(*pForm, e)
 
+
+      case WM_MEASUREITEM
+         dim lpmis As MEASUREITEMSTRUCT Ptr = cast( MEASUREITEMSTRUCT Ptr, lParam )
+         if lpmis = 0 then exit function
+         if pForm = 0 then exit function
+         ' WM_MEASUREITEM is sent prior to valid hWindow so we need to manually
+         ' search all controls in the controls collection to get a matching CtrlID.
+         pNode = pForm->Controls.get_first
+         do until pNode = 0
+            if pNode->CtrlType = ControlType.ListBox then
+               ' Set the height of the List box items. 
+               pListBox = cast( wfxListBox ptr, pNode->pData )
+               if pListBox then
+                  lpmis->itemHeight = pListBox->Parent->pWindow->ScaleY( pListBox->ItemHeight )
+                  return true
+               end if
+            end if
+            pNode = pForm->Controls.get_next( pNode )
+         LOOP
+         
+         
+      case WM_DRAWITEM
+         Dim memDC as HDC      ' Double buffering
+         Dim hbit As HBITMAP   ' Double buffering
+         Dim As RECT rc
+         Dim wszText As WString * MAX_PATH
+
+         dim lpdis As DRAWITEMSTRUCT Ptr = cast( DRAWITEMSTRUCT Ptr, lParam )
+         if lpdis = 0 then exit function
+         
+         pNode = Application.GetControlByHandle( lpdis->hwndItem )
+         If pNode Then
+            pCtrl = cast(wfxControl ptr, pNode->pData)
+            SaveDC(lpdis->hDC)
+            if pCtrl = 0 then exit function
+             
+            if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
+               ( lpdis->itemAction = ODA_SELECT ) then
+
+               Select Case pNode->CtrlType 
+                  Case ControlType.Label   '' LABEL CONTROL
+                     pLabel = cast(wfxLabel ptr, pNode->pData)
+                     if pLabel = 0 then exit function
+                     GetClientRect( lpdis->hwndItem, @rc )
+                     
+                     memDC = CreateCompatibleDC( lpdis->hDC )
+                     hbit  = CreateCompatibleBitmap( lpdis->hDC, rc.right, rc.bottom )
+                     If hbit Then hbit = SelectObject( memDC, hbit )
+
+                     dim as HFONT _hFont = AfxGetWindowFont( lpdis->hwndItem )
+                     SelectObject( memDC, _hFont )
+                     
+                     dim as POINT pt
+                     GetCursorPos( @pt )
+                     MapWindowPoints( 0, lpdis->hwndItem, cast( POINT ptr, @pt ), 1 )
+                     dim as Boolean IsHot = PtInRect( @rc, pt )
+                     
+                     ' Paint the entire background
+                     FillRect( memDC, @rc, iif( IsHot, pLabel->hBackBrushHot, pLabel->hBackBrush) )
+
+                     ' Prepare and paint the text coloring
+                     SetBkColor( memDC, iif( IsHot, pLabel->BackColorHot, pLabel->BackColor) )   
+                     SetTextColor( memDC, iif( IsHot, pLabel->ForeColorHot, pLabel->ForeColor) )
+
+                     dim as long lFormat = pLabel->GetTextAlignStyleValue( pLabel->TextAlign )
+                     lFormat = lFormat or DT_SINGLELINE
+                     if pLabel->UseMnemonic = false then lFormat = lFormat or DT_NOPREFIX
+                     
+                     wszText = AfxGetWindowText( lpdis->hwndItem )
+                     DrawText( memDC, wszText, -1, Cast(lpRect, @lpdis->rcItem), lFormat )
+
+                     BitBlt lpdis->hDC, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY 
+
+                     ' Cleanup
+                     If hbit  Then DeleteObject SelectObject(memDC, hbit)
+                     If memDC Then DeleteDC memDC
+
+
+                  Case ControlType.ListBox   '' LISTBOX CONTROL
+                     If lpdis->itemID = -1 Then Exit Function
+                     pListBox = cast(wfxListBox ptr, pNode->pData)
+                     if pListBox = 0 then exit function
+                     
+                     dim as COLORREF clrBack, clrFore
+                     dim as HBRUSH hBrushBack
+                     
+                     rc = lpdis->rcItem
+                     dim as long nWidth  = rc.right-rc.left
+                     dim as long nHeight = rc.bottom-rc.top 
+
+                     memDC = CreateCompatibleDC( lpdis->hDC )
+                     hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
+                     If hbit Then hbit = SelectObject( memDC, hbit )
+
+                     dim as HFONT _hFont = AfxGetWindowFont( lpdis->hwndItem )
+                     SelectObject( memDC, _hFont )
+
+                     ' CLEAR BACKGROUND
+                     If (lpdis->itemState And ODS_SELECTED) Then     
+                        clrBack = pListBox->BackColorSelected 
+                        clrFore = pListBox->ForeColorSelected 
+                        hBrushBack = pListBox->hBackBrushSelected
+                     else
+                        clrBack = pListBox->BackColor 
+                        clrFore = pListBox->ForeColor 
+                        hBrushBack = pListBox->hBackBrush
+
+                        dim as POINT pt
+                        GetCursorPos( @pt )
+                        MapWindowPoints( 0, lpdis->hwndItem, cast( POINT ptr, @pt ), 1 )
+                        if PtInRect( @rc, pt ) then
+                           clrBack = pListBox->BackColorHot
+                           clrFore = pListBox->ForeColorHot
+                           hBrushBack = pListBox->hBackBrushHot
+                        end if   
+                     end if
+                     
+                     ' Paint the entire background
+                     ' Create our rect that works with the entire line
+                     SetRect(@rc, 0, 0, nWidth, nHeight)
+                     FillRect( memDC, @rc, hBrushBack )
+
+                     ' Prepare and paint the text coloring
+                     SetBkColor( memDC, clrBack )   
+                     SetTextColor( memDC, clrFore )
+
+                     wszText = AfxGetListBoxText( lpdis->hwndItem, lpdis->itemID )
+                     DrawText( memDC, wszText, -1, Cast(lpRect, @rc), _
+                               DT_LEFT Or DT_VCENTER or DT_SINGLELINE or DT_NOPREFIX )
+
+                     BitBlt lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, _
+                            nWidth, nHeight, memDC, 0, 0, SRCCOPY 
+
+                     ' Cleanup
+                     If hbit  Then DeleteObject SelectObject(memDC, hbit)
+                     If memDC Then DeleteDC memDC
+
+               end select
+
+            end if
+            RestoreDC(lpdis->hDC, -1)
+         end if
+         
+      
    End Select
    
    ' If the event was handled by the user then return true
@@ -814,6 +971,7 @@ static Function wfxApplication.SubclassProc ( _
                   ByVal dwRefData As DWORD_PTR _          ' // Pointer to reference data
                   ) As LRESULT
 
+
    Select Case uMsg
       Case WM_GETDLGCODE
          ' Do not filter any types of messages. We want the dialog box manager to be
@@ -831,6 +989,41 @@ static Function wfxApplication.SubclassProc ( _
          ' If the key was handled then the WndProc will return True.
          ' Return 0 to prevent beep
          If Application.HandleCommonMessages(hWin, uMsg, wParam, lParam) Then Return 0
+         
+      case WM_ERASEBKGND   
+         WINFORMSX_DIM_POINTERS
+         ' Only erase the bottom portion of the listbox that extends from the last item
+         ' to the bottom edge of the listbox. All other lines are already drawn. This helps
+         ' reduce screen flicker.
+         if pListBox then
+            dim as RECT rc: GetClientRect( hWin, @rc )
+            ' Caculate the top of the rectangle. This is basically 
+            
+            ' If the number of lines in the listbox is less than the number per page then 
+            ' calculate from last item to bottom of listbox, otherwise calculate based on
+            ' the mod of the lineheight to listbox height so we can color the partial line
+            ' that won't be displayed at the bottom of the list.
+            dim as long itemHeight = pListBox->Parent->pWindow->ScaleY(pListBox->ItemHeight)
+            dim as long NumItems = pListBox->Items.Count
+            dim as long ItemsPerPage = ( rc.bottom \ itemHeight )
+            dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
+            dim as long visible_rows = 0
+
+            if NumItems > 0 then
+               ItemsPerPage = (rc.bottom - rc.top) / itemHeight
+               dim as long bottom_index = (nTopIndex + ItemsPerPage) - 1
+               if bottom_index >= NumItems then bottom_index = NumItems - 1
+               visible_rows = (bottom_index - nTopIndex) + 1
+            end if
+
+            rc.top = visible_rows * itemHeight 
+            if rc.top < rc.bottom then
+               dim as HDC _hDC = cast(HDC, wParam)
+               FillRect( _hDC, @rc, pListBox->hBackBrush  )
+            end if
+
+            return TRUE
+         end if
          
       Case WM_DESTROY
          ' Handle any final Destroy messages for the control and then return

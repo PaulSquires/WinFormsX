@@ -23,7 +23,41 @@ constructor wfxLabel( byref wszName as wstring = "" )
    this.CtrlType = ControlType.Label
    this.Name = wszName
    this.BackColor = Colors.SystemControl
+   this.BackColorHot = Colors.SystemControl
+   this.ForeColorHot = this.ForeColor
 End Constructor
+
+destructor wfxLabel()
+   ' Destroy the backgroundhot brush
+   DeleteObject(_hBackBrushHot)
+End Destructor
+
+Property wfxLabel.hBackBrushHot() As HBRUSH
+   property = _hBackBrushHot
+end property
+
+property wfxLabel.BackColorHot() as COLORREF
+   property = _BackColorHot
+end property
+
+property wfxLabel.BackColorHot( byval nValue as COLORREF )
+   ' Create new back hot brush of the color has changed
+   if nValue <> _BackColorHot THEN
+      DeleteObject(_hBackBrushHot)
+      _hBackBrushHot = CreateSolidBrush(nValue)
+   END IF
+   _BackColorHot = nValue
+   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+end property
+
+property wfxLabel.ForeColorHot() as COLORREF
+   property = _ForeColorHot
+end property
+
+property wfxLabel.ForeColorHot( byval nValue as COLORREF )
+   _ForeColorHot = nValue
+   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+end property
 
 Property wfxLabel.BorderStyle() As ControlBorderStyle
    if this.hWindow then 
@@ -56,40 +90,30 @@ Property wfxLabel.BorderStyle( ByVal nValue As ControlBorderStyle )
 End Property
 
 Function wfxLabel.GetTextAlignStyleValue( ByVal nValue As LabelAlignment ) As Long
+   dim as long wsStyle 
    Select Case nValue
-      Case LabelAlignment.MiddleCenter: Return (SS_CENTER Or SS_CENTERIMAGE)
-      Case LabelAlignment.MiddleLeft:   Return (SS_LEFT   Or SS_CENTERIMAGE)
-      Case LabelAlignment.MiddleRight:  Return (SS_RIGHT  Or SS_CENTERIMAGE)
-      Case LabelAlignment.TopCenter:    Return (SS_CENTER)
-      Case LabelAlignment.TopLeft:      Return (SS_LEFT)
-      Case LabelAlignment.TopRight:     Return (SS_RIGHT)
+      Case LabelAlignment.BottomCenter: wsStyle = DT_CENTER Or DT_BOTTOM
+      Case LabelAlignment.BottomLeft:   wsStyle = DT_LEFT   Or DT_BOTTOM
+      Case LabelAlignment.BottomRight:  wsStyle = DT_RIGHT  Or DT_BOTTOM
+      Case LabelAlignment.MiddleCenter: wsStyle = DT_CENTER Or DT_VCENTER
+      Case LabelAlignment.MiddleLeft:   wsStyle = DT_LEFT   Or DT_VCENTER
+      Case LabelAlignment.MiddleRight:  wsStyle = DT_RIGHT  Or DT_VCENTER
+      Case LabelAlignment.TopCenter:    wsStyle = DT_CENTER Or DT_TOP
+      Case LabelAlignment.TopLeft:      wsStyle = DT_LEFT   Or DT_TOP
+      Case LabelAlignment.TopRight:     wsStyle = DT_RIGHT  Or DT_TOP
    End Select
-   Return 0   
+   Return wsStyle   
 End Function
 
-Property wfxLabel.TextAlign() As LabelAlignment
-   if this.hWindow then 
-      Dim As Long wsStyle = AfxGetWindowStyle(this.hWindow)
-      If wsStyle And (SS_CENTER Or SS_CENTERIMAGE)  Then Return LabelAlignment.MiddleCenter
-      If wsStyle And (SS_LEFT   Or SS_CENTERIMAGE)  Then Return LabelAlignment.MiddleLeft
-      If wsStyle And (SS_RIGHT  Or SS_CENTERIMAGE)  Then Return LabelAlignment.MiddleRight
-      If wsStyle And (SS_CENTER)                    Then Return LabelAlignment.TopCenter
-      If wsStyle And (SS_LEFT)                      Then Return LabelAlignment.TopLeft
-      If wsStyle And (SS_RIGHT)                     Then Return LabelAlignment.TopRight
-   Else
-      Return _TextAlign
-   End If   
+Property wfxLabel.TextAlign( ByVal nValue As LabelAlignment )
+   _TextAlign = nValue
+   if this.hWindow then this.Refresh
 end property
 
-property wfxLabel.TextAlign( byval nValue as LabelAlignment )
-   if this.hWindow then 
-      ' Remove the current alignment and set the new style
-      AfxRemoveWindowStyle(this.hWindow, this.GetTextAlignStyleValue(_TextAlign))
-      AfxAddWindowStyle(this.hWindow, this.GetTextAlignStyleValue(nValue))
-      this.Refresh
-   end if
-   _TextAlign = nValue
-end property
+Property wfxLabel.TextAlign() As LabelAlignment 
+   property = _TextAlign
+End Property
+
 
 Property wfxLabel.UseMnemonic() As boolean
    Property = _UseMnemonic
@@ -114,7 +138,7 @@ function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
    dim as long dwExStyle = 0
    Dim As Long dwStyle = WS_GROUP Or SS_NOTIFY 
 
-   if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE 
+   if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE or SS_OWNERDRAW
    If this.UseMnemonic = False Then dwStyle = dwStyle Or SS_NOPREFIX 
    
    _CtrlID = this.Parent->GetNextCtrlID()
