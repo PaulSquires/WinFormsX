@@ -821,8 +821,13 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      lFormat = lFormat or DT_SINGLELINE
                      if pLabel->UseMnemonic = false then lFormat = lFormat or DT_NOPREFIX
                      
+                     ' pad the drawing rectangle to allow left and right margins
+                     dim as RECT rcText = lpdis->rcItem
+                     rcText.left = rcText.left + pLabel->Parent->ScaleX(4) 
+                     rcText.right = rcText.right - pLabel->Parent->ScaleX(4) 
+                     
                      wszText = AfxGetWindowText( lpdis->hwndItem )
-                     DrawText( memDC, wszText, -1, Cast(lpRect, @lpdis->rcItem), lFormat )
+                     DrawText( memDC, wszText, -1, Cast(lpRect, @rcText), lFormat )
 
                      BitBlt lpdis->hDC, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY 
 
@@ -879,9 +884,16 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      SetBkColor( memDC, clrBack )   
                      SetTextColor( memDC, clrFore )
 
+                     dim as long lFormat = pListBox->GetTextAlignStyleValue( pListBox->TextAlign )
+                     lFormat = lFormat or DT_SINGLELINE or DT_NOPREFIX 
+
+                     ' pad the drawing rectangle to allow left and right margins
+                     dim as RECT rcText = rc
+                     rcText.left = rcText.left + pListBox->Parent->ScaleX(4) 
+                     rcText.right = rcText.right - pListBox->Parent->ScaleX(4) 
+
                      wszText = AfxGetListBoxText( lpdis->hwndItem, lpdis->itemID )
-                     DrawText( memDC, wszText, -1, Cast(lpRect, @rc), _
-                               DT_LEFT Or DT_VCENTER or DT_SINGLELINE or DT_NOPREFIX )
+                     DrawText( memDC, wszText, -1, Cast(lpRect, @rcText), lFormat )
 
                      BitBlt lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, _
                             nWidth, nHeight, memDC, 0, 0, SRCCOPY 

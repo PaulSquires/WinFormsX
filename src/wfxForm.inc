@@ -304,6 +304,7 @@ property wfxForm.Icon( byref cwzValue as wstring )
    _Icon = cwzValue
 end property
 
+
 property wfxForm.ClientSize() as wfxSize
    if this.pWindow->hWindow THEN
       _ClientSize.Width = this.pWindow->ClientWidth
@@ -320,6 +321,36 @@ property wfxForm.ClientSize( byval nWidth as long, byval nHeight as long )
       _ClientSize.Height = nHeight
    end if   
 end property
+
+
+function wfxForm.ScaleX( byval nValue as long ) as Long
+   if this.pWindow THEN
+      nValue = this.pWindow->ScaleX(nValue)
+   end if
+   return nValue
+end function       
+
+function wfxForm.ScaleY( byval nValue as long ) as Long
+   if this.pWindow THEN
+      nValue = this.pWindow->ScaleY(nValue)
+   end if
+   return nValue
+end function       
+
+function wfxForm.UnScaleX( byval nValue as long ) as Long
+   if this.pWindow THEN
+      nValue = this.pWindow->UnScaleX(nValue)
+   end if
+   return nValue
+end function       
+
+function wfxForm.UnScaleY( byval nValue as long ) as Long
+   if this.pWindow THEN
+      nValue = this.pWindow->UnScaleY(nValue)
+   end if
+   return nValue
+end function       
+
 
 function wfxForm.GetNextCtrlID() as Long     
    ' This function is internal to the class.

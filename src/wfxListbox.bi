@@ -57,6 +57,7 @@ END TYPE
 Type wfxListBox Extends wfxControl
    private:
       _TempItem As wfxListBoxItem
+      _TextAlign As LabelAlignment = LabelAlignment.MiddleLeft
       _AllowSelection As boolean 
       _BorderStyle As ControlBorderStyle = ControlBorderStyle.Fixed3D
       _ColumnWidth as long = 0
@@ -80,6 +81,9 @@ Type wfxListBox Extends wfxControl
       _ItemHeight as long = 28
       
    Public:
+      Declare Function GetTextAlignStyleValue( ByVal nValue As LabelAlignment ) As Long
+      Declare Property TextAlign() As LabelAlignment
+      declare property TextAlign( byval nValue as LabelAlignment )
       Declare Property hBackBrushHot() As HBRUSH   ' internal get
       Declare Property BackColorHot() As COLORREF
       Declare Property BackColorHot( ByVal nValue As COLORREF )

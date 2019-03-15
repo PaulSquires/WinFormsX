@@ -321,6 +321,10 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
       wszClassName = "TEXTBOX"
    end if   
    
+   if this.CtrlType = ControlType.RichEdit then
+      wszClassName = "RICHEDIT"
+   end if
+   
    _CtrlID = this.Parent->GetNextCtrlID()
 
    this.hWindow = this.Parent->pWindow->AddControl ( _

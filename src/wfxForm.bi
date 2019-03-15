@@ -70,6 +70,10 @@ Type wfxForm Extends wfxControl
       Declare Property KeyPreview( ByVal nValue As boolean )
       'Declare Property ShowInTaskBar() As boolean
       'Declare Property ShowInTaskBar( ByVal nValue As boolean )
+      declare function ScaleX( byval nValue as long ) as Long
+      declare function ScaleY( byval nValue as long ) as Long
+      declare function UnScaleX( byval nValue as long ) as Long
+      declare function UnScaleY( byval nValue as long ) as Long
       Declare Property AcceptButton() As wfxButton ptr
       Declare Property AcceptButton( byval nValue as wfxButton ptr )
       Declare Property CancelButton() As wfxButton ptr

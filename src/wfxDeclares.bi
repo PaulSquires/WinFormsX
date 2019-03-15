@@ -24,6 +24,7 @@ enum ControlType
    MaskedEdit
    ComboBox
    MainMenu
+   RichEdit
 End Enum
 
 Enum FontStyles

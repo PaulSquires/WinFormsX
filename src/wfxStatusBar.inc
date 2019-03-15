@@ -74,7 +74,7 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    dim as long dwExStyle = 0
-   dim as long dwStyle = WS_CLIPCHILDREN OR WS_CLIPSIBLINGS OR CCS_BOTTOM 
+   dim as long dwStyle = WS_CLIPCHILDREN OR WS_CLIPSIBLINGS OR CCS_BOTTOM or SBARS_TOOLTIPS
 
    if this.SizingGrip THEN dwStyle = dwStyle OR SBARS_SIZEGRIP
    if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
