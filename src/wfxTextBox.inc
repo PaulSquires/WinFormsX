@@ -325,7 +325,19 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
       wszClassName = "RICHEDIT"
    end if
    
+   select case _BorderStyle
+      Case ControlBorderStyle.None
+      Case ControlBorderStyle.Fixed3D
+         dwExStyle = dwExStyle or WS_EX_CLIENTEDGE
+      Case ControlBorderStyle.FixedSingle
+         dwStyle = dwStyle or WS_BORDER
+   end select
+
+   this.BorderStyle     = _BorderStyle
+
    _CtrlID = this.Parent->GetNextCtrlID()
+
+? "dwExStyle: "; dwExStyle
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
          wszClassName, _                   ' // Class name
@@ -353,7 +365,6 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
    this.ReadOnly        = _ReadOnly
    this.TextScrollBars  = _TextScrollBars
    this.TextAlign       = _TextAlign
-   this.BorderStyle     = _BorderStyle
    this.PasswordChar    = _PasswordChar
    this.MaxLength       = _MaxLength
    

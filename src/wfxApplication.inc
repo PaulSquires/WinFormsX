@@ -926,8 +926,8 @@ End Function
 static Function wfxApplication.SubclassProc ( _
                   ByVal hWin   As HWnd, _                 ' // Control window handle
                   ByVal uMsg   As UINT, _                 ' // Type of message
-                  ByVal wParam As WPARAM, _               ' // First message parameter
-                  ByVal lParam As LPARAM, _               ' // Second message parameter
+                  ByVal _wParam As WPARAM, _               ' // First message parameter
+                  ByVal _lParam As LPARAM, _               ' // Second message parameter
                   ByVal uIdSubclass As UINT_PTR, _        ' // The subclass ID
                   ByVal dwRefData As DWORD_PTR _          ' // Pointer to reference data
                   ) As LRESULT
@@ -944,12 +944,12 @@ static Function wfxApplication.SubclassProc ( _
            WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, _
            WM_SETFOCUS, WM_KILLFOCUS, _
            WM_MOUSELEAVE, WM_MOUSEHOVER
-         If Application.HandleCommonMessages(hWin, uMsg, wParam, lParam) Then Return 0
+         If Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) Then Return 0
 
       Case WM_KEYDOWN, WM_KEYUP, WM_CHAR
          ' If the key was handled then the WndProc will return True.
          ' Return 0 to prevent beep
-         If Application.HandleCommonMessages(hWin, uMsg, wParam, lParam) Then Return 0
+         If Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) Then Return 0
          
       case WM_ERASEBKGND   
          WINFORMSX_DIM_POINTERS
@@ -958,28 +958,29 @@ static Function wfxApplication.SubclassProc ( _
          ' reduce screen flicker.
          if pListBox then
             dim as RECT rc: GetClientRect( hWin, @rc )
-            ' Caculate the top of the rectangle. This is basically 
-            
             ' If the number of lines in the listbox is less than the number per page then 
             ' calculate from last item to bottom of listbox, otherwise calculate based on
             ' the mod of the lineheight to listbox height so we can color the partial line
             ' that won't be displayed at the bottom of the list.
-            dim as long itemHeight = pListBox->Parent->pWindow->ScaleY(pListBox->ItemHeight)
+            dim as RECT rcItem
+            SendMessage( hWin, LB_GETITEMRECT, 0, cast(LPARAM, @rcItem) )
+            dim as long itemHeight = rcItem.bottom - rcItem.top
             dim as long NumItems = pListBox->Items.Count
-            dim as long ItemsPerPage = ( rc.bottom \ itemHeight )
             dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
             dim as long visible_rows = 0
-
+            dim as long ItemsPerPage = 0
+            dim as long bottom_index = 0
+            
             if NumItems > 0 then
                ItemsPerPage = (rc.bottom - rc.top) / itemHeight
-               dim as long bottom_index = (nTopIndex + ItemsPerPage) - 1
+               bottom_index = (nTopIndex + ItemsPerPage) 
                if bottom_index >= NumItems then bottom_index = NumItems - 1
                visible_rows = (bottom_index - nTopIndex) + 1
             end if
 
             rc.top = visible_rows * itemHeight 
             if rc.top < rc.bottom then
-               dim as HDC _hDC = cast(HDC, wParam)
+               dim as HDC _hDC = cast(HDC, _wParam)
                FillRect( _hDC, @rc, pListBox->hBackBrush  )
             end if
 
@@ -989,13 +990,13 @@ static Function wfxApplication.SubclassProc ( _
       Case WM_DESTROY
          ' Handle any final Destroy messages for the control and then return
          ' here to remove the subclassing.
-         Application.HandleCommonMessages(hWin, uMsg, wParam, lParam) 
+         Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) 
          ' REQUIRED: Remove control subclassing
          RemoveWindowSubclass( hWin, @wfxApplication.SubclassProc, uIdSubclass )
    End Select
     
    ' For messages that we don't deal with
-   Function = DefSubclassProc(hWin, uMsg, wParam, lParam)
+   Function = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
 
 End Function
 
