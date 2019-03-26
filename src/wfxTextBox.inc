@@ -74,17 +74,19 @@ End Property
 
 Property wfxTextBox.BorderStyle( ByVal nValue As ControlBorderStyle )
    If this.hWindow Then 
-      AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
-      AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
       Dim As Long wsStyle
       Select Case nValue
          Case ControlBorderStyle.None
+            AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
+            AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
          Case ControlBorderStyle.Fixed3D
+            AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
             AfxAddWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
          Case ControlBorderStyle.FixedSingle
             AfxAddWindowStyle(this.hWindow, WS_BORDER)
+            AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
       End Select
-      SetWindowPos( this.hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER Or SWP_NOMOVE Or SWP_NOSIZE Or SWP_DRAWFRAME)
+      AfxRedrawNonClientArea( this.hWindow )
    End If
    _BorderStyle = nValue
 End Property
@@ -325,19 +327,7 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
       wszClassName = "RICHEDIT"
    end if
    
-   select case _BorderStyle
-      Case ControlBorderStyle.None
-      Case ControlBorderStyle.Fixed3D
-         dwExStyle = dwExStyle or WS_EX_CLIENTEDGE
-      Case ControlBorderStyle.FixedSingle
-         dwStyle = dwStyle or WS_BORDER
-   end select
-
-   this.BorderStyle     = _BorderStyle
-
    _CtrlID = this.Parent->GetNextCtrlID()
-
-? "dwExStyle: "; dwExStyle
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
          wszClassName, _                   ' // Class name
@@ -365,6 +355,7 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
    this.ReadOnly        = _ReadOnly
    this.TextScrollBars  = _TextScrollBars
    this.TextAlign       = _TextAlign
+   this.BorderStyle     = _BorderStyle
    this.PasswordChar    = _PasswordChar
    this.MaxLength       = _MaxLength
    

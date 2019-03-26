@@ -40,17 +40,19 @@ End Property
 
 Property wfxMaskedEdit.BorderStyle( ByVal nValue As ControlBorderStyle )
    If _MaskedEditPtr Then 
-      AfxRemoveWindowExStyle(_MaskedEditPtr->hWindow, WS_EX_CLIENTEDGE)
-      AfxRemoveWindowStyle(_MaskedEditPtr->hWindow, WS_BORDER)
       Dim As Long wsStyle
       Select Case nValue
          Case ControlBorderStyle.None
+            AfxRemoveWindowStyle(_MaskedEditPtr->hWindow, WS_BORDER)
+            AfxRemoveWindowExStyle(_MaskedEditPtr->hWindow, WS_EX_CLIENTEDGE)
          Case ControlBorderStyle.Fixed3D
+            AfxRemoveWindowStyle(_MaskedEditPtr->hWindow, WS_BORDER)
             AfxAddWindowExStyle(_MaskedEditPtr->hWindow, WS_EX_CLIENTEDGE)
          Case ControlBorderStyle.FixedSingle
             AfxAddWindowStyle(_MaskedEditPtr->hWindow, WS_BORDER)
+            AfxRemoveWindowExStyle(_MaskedEditPtr->hWindow, WS_EX_CLIENTEDGE)
       End Select
-      SetWindowPos( _MaskedEditPtr->hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER Or SWP_NOMOVE Or SWP_NOSIZE Or SWP_DRAWFRAME)
+      AfxRedrawNonClientArea( _MaskedEditPtr->hWindow )
    End If
    _BorderStyle = nValue
 End Property

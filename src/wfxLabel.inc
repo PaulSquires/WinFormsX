@@ -74,17 +74,19 @@ End Property
 
 Property wfxLabel.BorderStyle( ByVal nValue As ControlBorderStyle )
    if this.hWindow then 
-      AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
-      AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
       Dim As Long wsStyle
       Select Case nValue
          Case ControlBorderStyle.None
+            AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
+            AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
          Case ControlBorderStyle.Fixed3D
+            AfxRemoveWindowStyle(this.hWindow, WS_BORDER)
             AfxAddWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
          Case ControlBorderStyle.FixedSingle
             AfxAddWindowStyle(this.hWindow, WS_BORDER)
+            AfxRemoveWindowExStyle(this.hWindow, WS_EX_CLIENTEDGE)
       End Select
-      SetWindowPos( this.hWindow, 0, 0, 0, 0, 0, SWP_NOZORDER Or SWP_NOMOVE Or SWP_NOSIZE Or SWP_DRAWFRAME)
+      AfxRedrawNonClientArea( this.hWindow )
    End If
    _BorderStyle = nValue
 End Property
