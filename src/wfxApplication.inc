@@ -127,6 +127,7 @@ end function
    Dim pPictureBox As wfxPictureBox Ptr
    Dim pButton     As wfxButton Ptr
    Dim pTextBox    As wfxTextBox Ptr
+   Dim pRichEdit   As wfxRichEdit Ptr
    Dim pMaskedEdit As wfxMaskedEdit Ptr
    Dim pCheckBox   As wfxCheckBox Ptr
    Dim pOption     As wfxOptionButton Ptr
@@ -145,6 +146,7 @@ end function
          Case ControlType.PictureBox:   pPictureBox = Cast(wfxPictureBox Ptr, pNode->pData)
          Case ControlType.Button:       pButton     = Cast(wfxButton Ptr, pNode->pData)
          Case ControlType.TextBox:      pTextBox    = Cast(wfxTextBox Ptr, pNode->pData)
+         Case ControlType.RichEdit:     pRichEdit   = Cast(wfxRichEdit Ptr, pNode->pData)
          Case ControlType.MaskedEdit:   pMaskedEdit = Cast(wfxMaskedEdit Ptr, pNode->pData)
          Case ControlType.CheckBox:     pCheckBox   = Cast(wfxCheckBox Ptr, pNode->pData)
          Case ControlType.OptionButton: pOption     = Cast(wfxOptionButton Ptr, pNode->pData)
@@ -179,6 +181,7 @@ end function
    #EndIf
    If pButton AndAlso pButton->##msg Then pButton->##msg(*pButton, e)
    If pTextBox AndAlso pTextBox->##msg Then pTextBox->##msg(*pTextBox, e)
+   If pRichEdit AndAlso pRichEdit->##msg Then pRichEdit->##msg(*pRichEdit, e)
    If pMaskedEdit AndAlso pMaskedEdit->##msg Then pMaskedEdit->##msg(*pMaskedEdit, e)
    If pCheckBox AndAlso pCheckBox->##msg Then pCheckBox->##msg(*pCheckBox, e)
    If pOption AndAlso pOption->##msg Then pOption->##msg(*pOption, e)
@@ -200,20 +203,29 @@ Function wfxApplication.SetEventArgs( ByVal uMsg   As UINT, _
    e.lParam  = lParam
    e.Handled = False
    e.Cancel  = False    ' cancel a form close
-   e.Ctrl    = (GetKeyState(VK_CONTROL) And &H8000)
-   e.Shift   = (GetKeyState(VK_SHIFT) And &H8000)
-   e.ALT     = (GetKeyState(VK_MENU) And &H8000)
+   e.Ctrl    = iif( GetKeyState(VK_CONTROL) < 0, true, false )
+   e.Shift   = iif( GetKeyState(VK_SHIFT) < 0, true, false )
+   e.ALT     = iif( GetKeyState(VK_MENU) < 0, true, false )
 
+   dim as POINT pt
+   GetCursorPos( @pt )
+   e.x = pt.x
+   e.y = pt.y
+   
    Select Case uMsg
-      Case WM_MOUSEMOVE, _
-           WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, _
-           WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, _
-           WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
-         e.x = GET_X_LPARAM(lParam)
-         e.y = GET_Y_LPARAM(lParam)
+      Case WM_MOUSEMOVE
          e.LButton = (wParam And MK_LBUTTON)
          e.MButton = (wParam And MK_MBUTTON)
          e.RButton = (wParam And MK_RBUTTON)
+
+      case WM_LBUTTONDOWN, WM_LBUTTONUP, WM_LBUTTONDBLCLK
+         e.LButton = true
+
+      case WM_MBUTTONDOWN, WM_MBUTTONUP, WM_MBUTTONDBLCLK
+         e.MButton = true
+         
+      case WM_RBUTTONDOWN, WM_RBUTTONUP, WM_RBUTTONDBLCLK
+         e.RButton = true
 
       Case WM_KEYDOWN, WM_KEYUP
          e.KeyCode = wParam
@@ -470,6 +482,7 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          If uMsg = WM_LBUTTONUP Then
             If pForm AndAlso pForm->OnClick Then pForm->OnClick(*pForm, e)
             If pTextBox AndAlso pTextBox->OnClick Then pTextBox->OnClick(*pTextBox, e)
+            If pRichEdit AndAlso pRichEdit->OnClick Then pRichEdit->OnClick(*pRichEdit, e)
          End If
          
       Case WM_SETFOCUS
@@ -555,8 +568,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             ' Always let the WM_DESTROY complete
             e.Handled = False
             If pForm->pWindow Then 
-               ' Remove the form to the Application Form collection
-               Application.Forms.remove_bydata(pForm)
+               ' Delete the CWindow of the form.
                Delete pForm->pWindow
                pForm->pWindow = 0
                pForm->hWindow = 0
@@ -643,6 +655,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                Case ControlType.TextBox
                   pTextBox = Cast(wfxTextBox Ptr, pNode->pData)
                   If pTextBox AndAlso lNotification = EN_CHANGE AndAlso pTextBox->OnTextChanged Then pTextBox->OnTextChanged(*pTextBox, e)
+               Case ControlType.RichEdit
+                  pRichEdit = Cast(wfxRichEdit Ptr, pNode->pData)
+                  If pRichEdit AndAlso lNotification = EN_CHANGE AndAlso pRichEdit->OnTextChanged Then pRichEdit->OnTextChanged(*pRichEdit, e)
                Case ControlType.MaskedEdit
                   pMaskedEdit = Cast(wfxMaskedEdit Ptr, pNode->pData)
                   If pMaskedEdit AndAlso lNotification = EN_CHANGE AndAlso pMaskedEdit->OnTextChanged Then pMaskedEdit->OnTextChanged(*pMaskedEdit, e)
@@ -786,8 +801,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          pNode = Application.GetControlByHandle( lpdis->hwndItem )
          If pNode Then
             pCtrl = cast(wfxControl ptr, pNode->pData)
-            SaveDC(lpdis->hDC)
             if pCtrl = 0 then exit function
+            SaveDC(lpdis->hDC)
              
             if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
                ( lpdis->itemAction = ODA_SELECT ) then
@@ -983,7 +998,16 @@ static Function wfxApplication.SubclassProc ( _
                dim as HDC _hDC = cast(HDC, _wParam)
                FillRect( _hDC, @rc, pListBox->hBackBrush  )
             end if
-
+            ' If this is a multicolumn listbox then we need to fill in
+            ' the area to the right of the last visible row.
+            SendMessage( hWin, LB_GETITEMRECT, bottom_index, cast(LPARAM, @rcItem) )
+            if rcItem.right < rc.right then
+               dim as HDC _hDC = cast(HDC, _wParam)
+               GetClientRect( hWin, @rc )
+               rc.left = rcItem.right
+               FillRect( _hDC, @rc, pListBox->hBackBrush  )
+            end if
+            
             return TRUE
          end if
          

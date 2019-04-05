@@ -294,10 +294,20 @@ end property
 property wfxForm.Icon( byref cwzValue as wstring )
    if this.pWindow->hWindow THEN
       If len(cwzValue) Then
-         dim hIcon as HANDLE
-         hIcon = AfxGdipIconFromRes(this.pWindow->InstanceHandle, cwzValue)
-         SendMessage( this.hWindow, WM_SETICON, CAST(WPARAM, ICON_BIG), CAST(LPARAM, hIcon))
-         SendMessage( this.hWindow, WM_SETICON, CAST(WPARAM, ICON_SMALL), CAST(LPARAM, hIcon))
+         dim as HANDLE hIcon
+         dim as LRESULT ret
+         ' Attempt to use an Icon resource first and if that fails then attempt
+         ' to load an RCDATA resource.
+         hIcon = LoadImage( this.pWindow->InstanceHandle, cwzValue, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE ) 
+         if hIcon = 0 then
+            hIcon = AfxGdipIconFromRes( this.pWindow->InstanceHandle, cwzValue )
+         end if
+         ' Ensure that we destroy the old icon before setting the new icon. The WM_SETICON message
+         ' returns the handle to the previously set icon.
+         ret = SendMessage( this.hWindow, WM_SETICON, CAST(WPARAM, ICON_BIG), CAST(LPARAM, hIcon)) 
+         DestroyIcon( cast(HANDLE, ret) )
+         ret = SendMessage( this.hWindow, WM_SETICON, CAST(WPARAM, ICON_SMALL), CAST(LPARAM, hIcon))
+         DestroyIcon( cast(HANDLE, ret) )
       End If   
    End If
    AfxRedrawNonClientArea(this.hWindow)
@@ -469,7 +479,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
 
    ' Set the Form icons. hWindow must be valid.
    this.Icon = _Icon
-   
+ 
    ' Should we enable drag and drop files
    if this.AllowDrop then DragAcceptFiles(this.hWindow, CTRUE)
 

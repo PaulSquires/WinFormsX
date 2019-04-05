@@ -33,7 +33,7 @@ Type wfxForm Extends wfxControl
       _AcceptButton    as wfxButton ptr
       _CancelButton    as wfxButton ptr
       _wfxMainMenuPtr  as wfxMainMenu ptr
-      _Icon            as CWSTR
+      _Icon            as wstring * MAX_PATH
       
    Public:           
       Controls         As wfxLList

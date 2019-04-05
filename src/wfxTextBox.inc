@@ -59,19 +59,6 @@ Property wfxTextBox.TextAlign( ByVal nValue As TextAlignment )
    _TextAlign = nValue
 end property
 
-Property wfxTextBox.BorderStyle() As ControlBorderStyle
-   If this.hWindow Then 
-      If (AfxGetWindowExStyle(this.hWindow) And WS_EX_CLIENTEDGE) Then
-         _BorderStyle = ControlBorderStyle.Fixed3D
-      ElseIf (AfxGetWindowStyle(this.hWindow) And WS_BORDER) Then
-         _BorderStyle = ControlBorderStyle.FixedSingle
-      Else
-         _BorderStyle = ControlBorderStyle.None
-      End If   
-   End If
-   Property = _BorderStyle
-End Property
-
 Property wfxTextBox.BorderStyle( ByVal nValue As ControlBorderStyle )
    If this.hWindow Then 
       Dim As Long wsStyle
@@ -145,8 +132,7 @@ End Property
 
 Property wfxTextBox.ReadOnly( ByVal nValue As boolean )
    If this.hWindow Then 
-      AfxRemoveWindowStyle(this.hWindow, ES_READONLY)
-      If nValue Then AfxAddWindowStyle(this.hWindow, ES_READONLY)
+      SendMessage( this.hWindow, EM_SETREADONLY, nValue, 0 )
    End If
    _ReadOnly = nValue
 End Property
@@ -209,6 +195,17 @@ property wfxTextBox.WordWrap( byval nValue as boolean )
    end if
    _WordWrap = nValue
 end property
+
+Property wfxTextBox.CueBannerText() As CWSTR
+   Property = _CueBannerText
+End Property
+
+Property wfxTextBox.CueBannerText( ByRef nValue As WString )
+   If this.hWindow Then 
+      SendMessage(this.hWindow, EM_SETCUEBANNER, 1, CAST(LPARAM, @nValue))
+   End If
+   _CueBannerText = nValue      
+End Property
 
 Property wfxTextBox.PasswordChar() As CWSTR
    Dim As Long iChr = 0
@@ -324,6 +321,8 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
    end if   
    
    if this.CtrlType = ControlType.RichEdit then
+      dwStyle = dwStyle or ES_LEFT OR WS_HSCROLL OR WS_VSCROLL OR ES_AUTOHSCROLL OR _
+                           ES_AUTOVSCROLL OR ES_MULTILINE OR ES_WANTRETURN OR ES_SAVESEL
       wszClassName = "RICHEDIT"
    end if
    
@@ -357,6 +356,7 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
    this.TextAlign       = _TextAlign
    this.BorderStyle     = _BorderStyle
    this.PasswordChar    = _PasswordChar
+   this.CueBannerText   = _CueBannerText
    this.MaxLength       = _MaxLength
    
    ' Do not set the focus/selected here because doing so will also Activate the form and

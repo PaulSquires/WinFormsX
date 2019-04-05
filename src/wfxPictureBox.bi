@@ -20,7 +20,7 @@
 Type wfxPictureBox Extends wfxControl
    private:
       _ImageCtxPtr As CImageCtx Ptr
-      _Image          as CWSTR
+      _Image          as wstring * MAX_PATH
       _ImageWidth     as Long = 0
       _ImageHeight    as Long = 0
       _ImageScaling   as ImageScale = ImageScale.AutoSize

@@ -24,6 +24,7 @@ Type wfxTextBox Extends wfxControl
       _AcceptsTab      As boolean = False
       _ReadOnly        As boolean = False
       _PasswordChar    As CWSTR
+      _CueBannerText   As CWSTR
       _MaxLength       As Long = 32767
        
    Public:
@@ -33,6 +34,8 @@ Type wfxTextBox Extends wfxControl
       Declare Property BorderStyle( ByVal nValue As ControlBorderStyle )
       Declare Property TextScrollBars() As ScrollBars
       Declare Property TextScrollBars( ByVal nValue As ScrollBars )
+      Declare Property CueBannerText() As CWSTR
+      Declare Property CueBannerText( ByRef nValue As WString )
       Declare Property PasswordChar() As CWSTR
       Declare Property PasswordChar( ByRef nValue As WString )
       Declare Property Multiline() As boolean

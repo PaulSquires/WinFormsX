@@ -178,7 +178,9 @@ end property
 property wfxListBox.ColumnWidth( byval nValue as long )
    if this.hWindow then 
       ' if column width is zero it will cause a gpf
-      If nValue > 0 Then SendMessage( this.hWindow, LB_SETCOLUMNWIDTH, nValue, 0)
+      If nValue > 0 Then 
+         SendMessage( this.hWindow, LB_SETCOLUMNWIDTH, this.Parent->pWindow->ScaleX(nValue), 0)
+      end if
       this.Refresh
    end if
    _ColumnWidth = nValue
@@ -202,7 +204,7 @@ end property
 
 property wfxListBox.MultiColumn() as boolean
    If this.hWindow Then 
-      _MultiColumn = Iif( (AfxGetWindowStyle(this.hWindow)And LBS_MULTICOLUMN), True, False)
+      _MultiColumn = Iif( (AfxGetWindowStyle(this.hWindow) And LBS_MULTICOLUMN), True, False)
    End If
    Property = _MultiColumn
 end property
@@ -220,7 +222,7 @@ Property wfxListBox.AllowSelection() As boolean
    ' This is a Get only property. Set via SelectionMode.
    If this.hWindow Then 
       _AllowSelection = True
-      If (AfxGetWindowStyle(this.hWindow)And LBS_NOSEL) Then _AllowSelection = False
+      If (AfxGetWindowStyle(this.hWindow) And LBS_NOSEL) Then _AllowSelection = False
    End If
    Property = _AllowSelection
 End Property

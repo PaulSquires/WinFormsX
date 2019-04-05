@@ -15,6 +15,7 @@
 #Include Once "Afx\CMaskedEdit.inc"
 #Include Once "Afx\CImageCtx.inc"
 #Include Once "Afx\AfxMenu.inc"
+#Include Once "Afx\AfxRichEdit.inc"
 
 using Afx
 

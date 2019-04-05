@@ -134,11 +134,11 @@ End Property
 Property wfxComboBox.DropDownStyle() As ComboBoxStyle
    If this.hWindow Then 
       If (AfxGetWindowStyle(this.hWindow) And CBS_DROPDOWN ) Then
-         _BorderStyle = ComboBoxStyle.DropDown
+         _DropDownStyle = ComboBoxStyle.DropDown
       ElseIf (AfxGetWindowStyle(this.hWindow) And CBS_DROPDOWNLIST ) Then
-         _BorderStyle = ComboBoxStyle.DropDownList
+         _DropDownStyle = ComboBoxStyle.DropDownList
       ElseIf (AfxGetWindowStyle(this.hWindow) And CBS_SIMPLE ) Then
-         _BorderStyle = ComboBoxStyle.Simple
+         _DropDownStyle = ComboBoxStyle.Simple
       End If   
    End If
    Property = _DropDownStyle
@@ -162,6 +162,7 @@ Property wfxComboBox.DropDownStyle( ByVal nValue As ComboBoxStyle )
    End If
    _DropDownStyle = nValue
 End Property
+
 
 function wfxComboBox.Show(byval hWndParent as hwnd = 0) as long
 
@@ -190,6 +191,10 @@ function wfxComboBox.Show(byval hWndParent as hwnd = 0) as long
       Case ComboBoxStyle.DropDown:     dwStyle = dwStyle OR CBS_DROPDOWN 
       Case ComboBoxStyle.DropDownList: dwStyle = dwStyle OR CBS_DROPDOWNLIST 
    End Select
+   ' Need to give the combobox a height in order for dropdown lists to show.
+   if _DropDownStyle <> ComboBoxStyle.Simple then
+      this.Height = 100
+   end if
 
    _CtrlID = this.Parent->GetNextCtrlID()
 

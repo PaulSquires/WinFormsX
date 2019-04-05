@@ -161,7 +161,7 @@ end property
 
 property wfxControl.Visible() as Boolean
    if this.hWindow then 
-      _Enabled = IsWindowVisible(this.hWindow)
+      _Visible = IsWindowVisible(this.hWindow)
    end if
    property = _Visible 
 end property
@@ -292,6 +292,7 @@ property wfxControl.Text( byref nValue as wstring )
 end property
 
 property wfxControl.Parent() as wfxForm ptr
+   if _Parent = 0 then _Parent = cast( wfxForm ptr, @this )
    property = _Parent
 end property
  

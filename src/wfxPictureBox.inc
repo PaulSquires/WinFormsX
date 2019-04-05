@@ -33,17 +33,25 @@ end property
 property wfxPictureBox.Image( byref cwzValue as wstring )
    If _ImageCtxPtr Then 
       If len(cwzValue) Then
-         _ImageCtxPtr->LoadImageFromResource( this.Parent->pWindow->InstanceHandle, cwzValue )
+         ' Attempt to load the image directly from the resource file. If that
+         ' fails then try to extract the image to a temporary disk file and
+         ' load it from there.
+         if _ImageCtxPtr->LoadImageFromResource( this.Parent->pWindow->InstanceHandle, cwzValue ) = 0 then
       
-         dim wszTempPath as wstring * MAX_PATH
-         GetTempPath( MAX_PATH, @wszTempPath )
-         dim wszTempFilename as wstring * MAX_PATH
-         GetTempFileName( @wszTempPath, "TMP", 0, @wszTempFilename )
-         AfxExtractResourceToFile( this.Parent->pWindow->InstanceHandle, _
-                                   cwzValue, wszTempFilename, RT_RCDATA )
-         _ImageCtxPtr->LoadImageFromFile( wszTempFilename )
-         AfxDeleteFile( wszTempFilename )
-      
+            dim wszTempPath as wstring * MAX_PATH
+            GetTempPath( MAX_PATH, @wszTempPath )
+            dim wszTempFilename as wstring * MAX_PATH
+            GetTempFileName( @wszTempPath, "TMP", 0, @wszTempFilename )
+            
+            ' Attempt to extract the image resource. 
+            ' Returns FALSE on failure
+            if AfxExtractResourceToFile( this.Parent->pWindow->InstanceHandle, _
+                                      cwzValue, wszTempFilename, RT_RCDATA ) = false then
+            end if
+            
+            _ImageCtxPtr->LoadImageFromFile( wszTempFilename )
+            AfxDeleteFile( wszTempFilename )
+         end if
       End If    
    End If
    _Image = cwzValue
