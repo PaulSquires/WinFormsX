@@ -94,17 +94,18 @@ End Property
 Function wfxLabel.GetTextAlignStyleValue( ByVal nValue As LabelAlignment ) As Long
    dim as long wsStyle 
    Select Case nValue
-      Case LabelAlignment.BottomCenter: wsStyle = DT_CENTER Or DT_BOTTOM
-      Case LabelAlignment.BottomLeft:   wsStyle = DT_LEFT   Or DT_BOTTOM
-      Case LabelAlignment.BottomRight:  wsStyle = DT_RIGHT  Or DT_BOTTOM
-      Case LabelAlignment.MiddleCenter: wsStyle = DT_CENTER Or DT_VCENTER
-      Case LabelAlignment.MiddleLeft:   wsStyle = DT_LEFT   Or DT_VCENTER
-      Case LabelAlignment.MiddleRight:  wsStyle = DT_RIGHT  Or DT_VCENTER
-      Case LabelAlignment.TopCenter:    wsStyle = DT_CENTER Or DT_TOP
-      Case LabelAlignment.TopLeft:      wsStyle = DT_LEFT   Or DT_TOP
-      Case LabelAlignment.TopRight:     wsStyle = DT_RIGHT  Or DT_TOP
+      Case LabelAlignment.BottomCenter: wsStyle = DT_CENTER Or DT_BOTTOM  or DT_SINGLELINE
+      Case LabelAlignment.BottomLeft:   wsStyle = DT_LEFT   Or DT_BOTTOM  or DT_SINGLELINE
+      Case LabelAlignment.BottomRight:  wsStyle = DT_RIGHT  Or DT_BOTTOM  or DT_SINGLELINE
+      Case LabelAlignment.MiddleCenter: wsStyle = DT_CENTER Or DT_VCENTER or DT_SINGLELINE
+      Case LabelAlignment.MiddleLeft:   wsStyle = DT_LEFT   Or DT_VCENTER or DT_SINGLELINE
+      Case LabelAlignment.MiddleRight:  wsStyle = DT_RIGHT  Or DT_VCENTER or DT_SINGLELINE
+      Case LabelAlignment.TopCenter:    wsStyle = DT_CENTER Or DT_TOP     or DT_WORDBREAK 
+      Case LabelAlignment.TopLeft:      wsStyle = DT_LEFT   Or DT_TOP     or DT_WORDBREAK 
+      Case LabelAlignment.TopRight:     wsStyle = DT_RIGHT  Or DT_TOP     or DT_WORDBREAK 
    End Select
-   Return wsStyle   
+   wsStyle = wsStyle or DT_EXPANDTABS
+   Return wsStyle 
 End Function
 
 Property wfxLabel.TextAlign( ByVal nValue As LabelAlignment )

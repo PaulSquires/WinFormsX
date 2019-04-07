@@ -25,7 +25,7 @@ Type wfxButton Extends wfxControl
       _TextBackColorDown As COLORREF = Colors.SystemControl
       _ToggleMode        As boolean = False
       _ToggleState       As boolean = False
-      _Image             as CWSTR
+      _Image             as WSTRING * MAX_PATH
       _ImageWidth        as Long = 16
       _ImageHeight       as Long = 16
       _ImageHighDPI      as boolean = true

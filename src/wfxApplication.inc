@@ -833,8 +833,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      SetTextColor( memDC, iif( IsHot, pLabel->ForeColorHot, pLabel->ForeColor) )
 
                      dim as long lFormat = pLabel->GetTextAlignStyleValue( pLabel->TextAlign )
-                     lFormat = lFormat or DT_SINGLELINE
-                     if pLabel->UseMnemonic = false then lFormat = lFormat or DT_NOPREFIX
+                     if pLabel->UseMnemonic = false then lFormat = lFormat or DT_NOPREFIX 
                      
                      ' pad the drawing rectangle to allow left and right margins
                      dim as RECT rcText = lpdis->rcItem

@@ -96,11 +96,12 @@ Property wfxTextBox.CharacterCasing( ByVal nValue As CharacterCase )
    If this.hWindow Then 
       AfxRemoveWindowStyle(this.hWindow, ES_LOWERCASE)
       AfxRemoveWindowStyle(this.hWindow, ES_UPPERCASE)
-      Dim As Long wsStyle
       Select Case nValue
          Case CharacterCase.Normal
-         Case CharacterCase.Upper: wsStyle = ES_UPPERCASE
-         Case CharacterCase.Lower: wsStyle = ES_LOWERCASE
+         Case CharacterCase.Upper 
+            AfxAddWindowStyle(this.hWindow, ES_UPPERCASE)
+         Case CharacterCase.Lower
+            AfxAddWindowStyle(this.hWindow, ES_LOWERCASE)
       End Select
    End If
    _CharacterCasing = nValue
