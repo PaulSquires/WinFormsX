@@ -13,8 +13,8 @@
 
 
 Type wfxTextBox Extends wfxControl
-      _TextAlign   As TextAlignment = TextAlignment.Left
-      _BorderStyle As ControlBorderStyle = ControlBorderStyle.Fixed3D
+      _TextAlign       As TextAlignment = TextAlignment.Left
+      _BorderStyle     As ControlBorderStyle = ControlBorderStyle.Fixed3D
       _CharacterCasing As CharacterCase = CharacterCase.Normal
       _TextScrollBars  As ScrollBars = ScrollBars.None
       _HideSelection   As boolean = True
@@ -23,8 +23,8 @@ Type wfxTextBox Extends wfxControl
       _AcceptsReturn   As boolean = False
       _AcceptsTab      As boolean = False
       _ReadOnly        As boolean = False
-      _PasswordChar    As CWSTR
-      _CueBannerText   As CWSTR
+      _PasswordChar    As wstring * 10
+      _CueBannerText   As wstring * MAX_PATH
       _MaxLength       As Long = 32767
        
    Public:

@@ -985,25 +985,55 @@ static Function wfxApplication.SubclassProc ( _
             dim as long ItemsPerPage = 0
             dim as long bottom_index = 0
             
-            if NumItems > 0 then
-               ItemsPerPage = (rc.bottom - rc.top) / itemHeight
-               bottom_index = (nTopIndex + ItemsPerPage) 
-               if bottom_index >= NumItems then bottom_index = NumItems - 1
-               visible_rows = (bottom_index - nTopIndex) + 1
-            end if
+            if pListBox->MultiColumn = false then
+               if NumItems > 0 then
+                  ItemsPerPage = (rc.bottom - rc.top) / itemHeight
+                  bottom_index = (nTopIndex + ItemsPerPage) 
+                  if bottom_index >= NumItems then bottom_index = NumItems - 1
+                  visible_rows = (bottom_index - nTopIndex) + 1
+               end if
 
-            rc.top = visible_rows * itemHeight 
-            if rc.top < rc.bottom then
+               rc.top = visible_rows * itemHeight 
+               if rc.top < rc.bottom then
+                  dim as HDC _hDC = cast(HDC, _wParam)
+                  FillRect( _hDC, @rc, pListBox->hBackBrush  )
+               end if
+
+            else
+               ' Painting for multicolumn listbox.
+               ' Check if the last item in the listbox is visible within the listbox
+               ' client area. We now need to clear the space to the right of the column
+               ' that this item is appearing. If the last item is not visible, then that
+               ' means that the whole client area of thelistbox must already be covered
+               ' with listbox items and therefore no blank spaces need to be manually
+               ' painted.
                dim as HDC _hDC = cast(HDC, _wParam)
-               FillRect( _hDC, @rc, pListBox->hBackBrush  )
-            end if
-            ' If this is a multicolumn listbox then we need to fill in
-            ' the area to the right of the last visible row.
-            SendMessage( hWin, LB_GETITEMRECT, bottom_index, cast(LPARAM, @rcItem) )
-            if rcItem.right < rc.right then
-               dim as HDC _hDC = cast(HDC, _wParam)
+               dim as RECT rcIntersect
+               GetWindowRect( hWin, @rc )
+               SendMessage( hWin, LB_GETITEMRECT, NumItems - 1, cast(LPARAM, @rcItem) )
+               MapWindowPoints( hWin, null, cast( POINT ptr, @rcItem), 2 )
+               if IntersectRect( @rcIntersect, @rcItem, @rc ) then
+                  ' Get the client coordinates again...
+                  SendMessage( hWin, LB_GETITEMRECT, NumItems - 1, cast(LPARAM, @rcItem) )
+                  
+                  ' Paint the items in the column under the last item
+                  GetClientRect( hWin, @rc )
+                  rc.top = rcItem.bottom
+                  rc.left = rcItem.left
+                  FillRect( _hDC, @rc, pListBox->hBackBrush  )
+                  
+                  ' Paint everything to the right
+                  GetClientRect( hWin, @rc )
+                  rc.left = rcItem.right
+                  FillRect( _hDC, @rc, pListBox->hBackBrush  )
+               end if   
+               ' Always do the bottom gap painting
+               ' Paint the gap area between the bottom of the column lists and the
+               ' listbox bottom itself. Get the rect of the last item in the first column.
+               dim as long NumColItems = SendMessage( hWin, LB_GETLISTBOXINFO, 0, 0 )
+               SendMessage( hWin, LB_GETITEMRECT, nTopIndex + NumColItems - 1, cast(LPARAM, @rcItem) )
                GetClientRect( hWin, @rc )
-               rc.left = rcItem.right
+               rc.top = rcItem.bottom
                FillRect( _hDC, @rc, pListBox->hBackBrush  )
             end if
             
