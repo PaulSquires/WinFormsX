@@ -304,7 +304,19 @@ end property
 
 property wfxListBox.SelectedIndex( byval nValue as long )
    if this.hWindow then 
+      ' LB_SETCURSEL only works for single select listboxes.
       SendMessage( this.hWindow, LB_SETCURSEL, nValue, 0)
+      ' Deselect all items in a multiple select listbox if -1 is passed.
+      if nValue = -1 then
+         if (this.SelectionMode = ListSelectionMode.MultiSimple) orelse _
+            (this.SelectionMode = ListSelectionMode.MultiExtended) then
+            ' wParam: TRUE to select the range of items, or FALSE to deselect it.
+            ' lParam: The LOWORD specifies the zero-based index of the first item 
+            '         to select. The HIWORD specifies the zero-based index of the 
+            '         last item to select.
+            SendMessage( this.hWindow, LB_SELITEMRANGE, false, cast(LPARAM, MAKELONG( 0, this.items.count - 1)) )
+         end if
+      end if
    end if
    _SelectedIndex = nValue
 end property
@@ -516,6 +528,7 @@ end property
 property wfxListBoxItem.Data32() as long
    if this.hWindow then 
       _Data32 = SendMessage( this.hWindow, LB_GETITEMDATA, _Index, 0)
+      if _Data32 = LB_ERR then _Data32 = 0
    end if
    property = _Data32
 end property

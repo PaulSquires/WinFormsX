@@ -294,7 +294,7 @@ Function wfxButton.Show(ByVal hWndParent As HWnd = 0) As Long
    if hWndParent = 0 THEN exit function
       
    dim as long dwExStyle = 0
-   dim as long dwStyle = BS_PUSHBUTTON or _TextAlign 
+   dim as long dwStyle = BS_PUSHBUTTON OR BS_CENTER OR BS_VCENTER
    if this.TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
@@ -302,7 +302,7 @@ Function wfxButton.Show(ByVal hWndParent As HWnd = 0) As Long
 
    ' Use the custom control CXpButton instead of the standard Windows button control.
    _CtrlID = this.Parent->GetNextCtrlID()
-   _XpButtonPtr = New CXpButton(pWindow, _CtrlID, this.Text, this.Left, this.top, this.Width, this.height )
+   _XpButtonPtr = New CXpButton(pWindow, _CtrlID, this.Text, this.Left, this.top, this.Width, this.height, dwStyle )
    this.hWindow = _XpButtonPtr->hWindow
    SetWindowSubclass(this.hWindow, Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), _CtrlID, Cast(DWORD_PTR, 0))
 

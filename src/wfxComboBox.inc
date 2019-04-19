@@ -193,7 +193,7 @@ function wfxComboBox.Show(byval hWndParent as hwnd = 0) as long
    End Select
    ' Need to give the combobox a height in order for dropdown lists to show.
    if _DropDownStyle <> ComboBoxStyle.Simple then
-      this.Height = 100
+      this.Height = 200
    end if
 
    _CtrlID = this.Parent->GetNextCtrlID()

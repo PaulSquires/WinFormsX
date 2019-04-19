@@ -376,6 +376,7 @@ function wfxForm.Close() as Long
    function = 0
 end function
 
+
 ''
 ''
 function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal as boolean ) as long   
@@ -395,7 +396,6 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    Dim As HWnd hWndParentFocus 
    If IsFormModal Then hWndParentFocus = GetFocus()
 
-
    this.hWindowParent = hWndParent
    If this.pWindow = 0 Then this.pWindow = New CWindow()
    
@@ -404,7 +404,12 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
 
    ' Allow the user to set/initialize properties of the form and controls prior
    ' to it be created. This essentially builds on the Form's constructor code generation.
-   If this.OnInitialize Then this.OnInitialize(this, *(@e))
+   If this.OnInitialize Then 
+      this.OnInitialize(this, *(@e))
+      if e.Cancel = true then
+         this.Close: exit function
+      end if
+   end if
 
    Dim pCtrl As wfxControl Ptr
    dim pCtrlFocus as wfxControl ptr
@@ -414,12 +419,12 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    dim as long nWidth  = this.Width
    dim as long nHeight = this.Height
    Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
-   dim as long dwExStyle = 0
+   dim as long dwExStyle = WS_EX_CONTROLPARENT
    dim as Boolean IsVisible 
    
    dim pNode as wfxLListNode ptr
    
-   if this.IsMainForm THEN dwStyle = dwStyle or WS_POPUP
+   if this.IsMainForm THEN dwStyle = dwStyle or WS_POPUP 
    If IsFormModal Then dwStyle = dwStyle Or WS_POPUP
    this.IsModal = IsFormModal
       
@@ -432,11 +437,11 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       case FormWindowState.Minimized: dwStyle = dwStyle or WS_MINIMIZE
       case FormWindowState.Normal     ' no style needed
    end select  
-   
+    
    if this.MinimizeBox then dwStyle = dwStyle or WS_MINIMIZEBOX or WS_CAPTION 
    if this.MaximizeBox then dwStyle = dwStyle or WS_MAXIMIZEBOX or WS_CAPTION
    if this.ControlBox  THEN dwStyle = dwStyle or WS_SYSMENU or WS_CAPTION
-      
+       
    select case this.BorderStyle 
       case FormBorderStyle.None
          dwStyle   = dwStyle and (not WS_BORDER)
@@ -477,6 +482,12 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
                         nLeft, nTop, nWidth, nHeight, _
                         dwStyle, dwExStyle ) 
 
+   ' Ensure that window gets correctly placed into the taskbar (if applicable) by
+   ' calling ShowWindow with SW_SHOWDEFAULT initially specified.
+   if this.IsMainForm then
+      ShowWindow(this.hWindow, SW_SHOWDEFAULT)
+   end if
+   
    ' Set the Form icons. hWindow must be valid.
    this.Icon = _Icon
  
@@ -515,7 +526,12 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    ' it has been defined. Need to do it here rather than in WM_CREATE because
    ' the Window handle is only assigned to the form object AFTER the WM_CREATE 
    ' finishes.
-   If this.OnLoad Then this.OnLoad(this, *(@e))
+   If this.OnLoad Then 
+      this.OnLoad(this, *(@e))
+      if e.Cancel = true then
+         this.Close: exit function
+      end if
+   end if
    If this.OnResize Then this.OnResize(this, *(@e))
 
    ' Position the window on the screen (do after Load to ensure that
@@ -531,12 +547,13 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    ' adding the controls otherwise they may not initially paint correctly.
    if IsVisible THEN AfxAddWindowStyle(this.hWindow, WS_VISIBLE)
 
+   
    ShowWindow(this.hWindow, Iif(IsVisible, SW_SHOW, SW_HIDE))
    AfxRedrawWindow(this.hWindow)
-
-   ' Repaint all of the child controls because painted was clipped due to 
+   
+   ' Repaint all of the child controls because painting was clipped due to 
    ' non-visible Form. Also, set the focus/selected control which will also
-   ' cause the Activate message for the Form to fire. Use UpdateWindow rather
+   ' cause the Activate message for the Form to fire. Use RedrawWindow rather
    ' than simple Refresh because we need to ensure that the non-client areas
    ' of the window are also repainted correctly.
    pNode = this.Controls.get_first
@@ -570,10 +587,11 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       if this.OnShown then this.OnShown(this, *(@e))
    END IF
 
+   
    ' If this is a modal popup window so disable the parent window. The
    ' parent window will be re-enabled when this form is closed.
    If this.IsModal Then 
-      EnableWindow(hWndParent, False)
+      if hWndParent then EnableWindow(hWndParent, False)
 
       ' Message loop
       Dim As MSG uMsg 
@@ -599,12 +617,12 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
                Select Case uMsg.message
                   Case WM_KEYDOWN, WM_KEYUP, WM_CHAR
                      Select Case uMsg.wParam
-                        Case VK_TAB, VK_LEFT, VK_UP, VK_DOWN, VK_RIGHT, VK_PRIOR, VK_NEXT, VK_RETURN
+                        Case VK_TAB, VK_LEFT, VK_UP, VK_DOWN, VK_RIGHT, VK_PRIOR, VK_NEXT 
                            Dim pNode As wfxLListNode Ptr = Application.Forms.get_first
                            Do Until pNode = 0
                               If IsDialogMessage(pNode->hWindow, @uMsg) Then
                                  bIsDialogMessage = True: Exit Do
-                              End If   
+                              end if
                               pNode = Application.Forms.get_next(pNode)
                            Loop
                       End Select

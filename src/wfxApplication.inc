@@ -279,12 +279,14 @@ Function wfxApplication.PreprocessMessage( ByVal hWndForm As HWnd, _
    If pMsg->message = WM_KEYDOWN Then
       If pMsg->wParam = VK_RETURN Then
          pActiveForm = Application.GetpFormObject(hWndForm)
-         If pActiveForm AndAlso pActiveForm->AcceptButton Then
-            ' Simulates the user clicking a button. This message causes the button to receive the
-            ' WM_LBUTTONDOWN and WM_LBUTTONUP messages, and the button's parent window to receive a
-            ' BN_CLICKED notification code.
-            SendMessage(pActiveForm->AcceptButton->hWindow, BM_CLICK, 0, 0)
-            Return True
+         If pActiveForm andalso pActiveForm->AcceptButton then
+            if pActiveForm->AcceptButton Then
+               ' Simulates the user clicking a button. This message causes the button to receive the
+               ' WM_LBUTTONDOWN and WM_LBUTTONUP messages, and the button's parent window to receive a
+               ' BN_CLICKED notification code.
+               SendMessage(pActiveForm->AcceptButton->hWindow, BM_CLICK, 0, 0)
+               Return True
+            end if
          End If   
       ElseIf pMsg->wParam = VK_ESCAPE Then
          pActiveForm = Application.GetpFormObject(hWndForm)
@@ -458,6 +460,7 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
             End If
          End If
           
+      
       Case WM_MOUSELEAVE
          If pCtrl Then pCtrl->IsTracking = False 
          WINFORMSX_HANDLE_MESSAGE(OnMouseLeave)
@@ -465,17 +468,21 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          if pLabel then pLabel->Refresh
          if pListBox then pListBox->Refresh
       
+      
       Case WM_MOUSEHOVER
          WINFORMSX_HANDLE_MESSAGE(OnMouseHover)
             
+      
       Case WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
          WINFORMSX_HANDLE_MESSAGE(OnMouseDoubleClick)
          ' For Listboxes, the doubleclick is handled through the LBN_DBLCLK notification.
          ' Labels handle doubleclick through STN_DBLCLK notification.
          
+      
       Case WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN
          WINFORMSX_HANDLE_MESSAGE(OnMouseDown)
 
+      
       Case WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP
          WINFORMSX_HANDLE_MESSAGE(OnMouseUp)
          ' Forms and TextBoxes convert LBUTTONUP to simulate OnClick()
@@ -485,9 +492,11 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
             If pRichEdit AndAlso pRichEdit->OnClick Then pRichEdit->OnClick(*pRichEdit, e)
          End If
          
+      
       Case WM_SETFOCUS
          WINFORMSX_HANDLE_MESSAGE(OnGotFocus)
 
+      
       Case WM_KILLFOCUS
          WINFORMSX_HANDLE_MESSAGE(OnLostFocus)
 
@@ -556,7 +565,11 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                if e.Cancel THEN return true
             end if   
             ' Enables parent window keeping parent's zorder
-            If pForm->IsModal Then EnableWindow( pForm->hWindowParent, True)
+            If pForm->IsModal Then 
+               if pForm->hWindowParent then
+                  EnableWindow( pForm->hWindowParent, True)
+               end if
+            end if      
             DestroyWindow(hWin)
          End If   
           
@@ -952,6 +965,7 @@ static Function wfxApplication.SubclassProc ( _
          ' Do not filter any types of messages. We want the dialog box manager to be
          ' able to correctly handle TAB, arrows, and focus rectangles, etc.
          
+      
       Case WM_MOUSEMOVE, _
            WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK, _
            WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, _
@@ -960,11 +974,13 @@ static Function wfxApplication.SubclassProc ( _
            WM_MOUSELEAVE, WM_MOUSEHOVER
          If Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) Then Return 0
 
+      
       Case WM_KEYDOWN, WM_KEYUP, WM_CHAR
          ' If the key was handled then the WndProc will return True.
          ' Return 0 to prevent beep
          If Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) Then Return 0
          
+      
       case WM_ERASEBKGND   
          WINFORMSX_DIM_POINTERS
          ' Only erase the bottom portion of the listbox that extends from the last item
@@ -1040,6 +1056,7 @@ static Function wfxApplication.SubclassProc ( _
             return TRUE
          end if
          
+      
       Case WM_DESTROY
          ' Handle any final Destroy messages for the control and then return
          ' here to remove the subclassing.

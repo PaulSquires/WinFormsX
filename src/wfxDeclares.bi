@@ -140,8 +140,8 @@ Enum ScrollBars
 End Enum
 
 Enum CheckBoxState      
-   Checked = 1
-   Unchecked
+   Unchecked = 0   ' easier to do boolean ifchecked() type of tests
+   Checked 
    Indeterminate
 End Enum
    
