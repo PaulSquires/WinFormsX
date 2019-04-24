@@ -25,6 +25,11 @@ Constructor wfxMaskedEdit( ByRef wszName As WString = "" )
    this.ForeColor = Colors.SystemWindowText
 end constructor
 
+Destructor wfxMaskedEdit()
+   if _MaskedEditPtr then Delete _MaskedEditPtr
+   _MaskedEditPtr = 0
+End Destructor
+
 Property wfxMaskedEdit.BorderStyle() As ControlBorderStyle
    If _MaskedEditPtr Then 
       If (AfxGetWindowExStyle(_MaskedEditPtr->hWindow) And WS_EX_CLIENTEDGE) Then

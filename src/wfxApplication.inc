@@ -574,6 +574,32 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          End If   
           
       
+      
+      case WM_NCDESTROY
+         ' At this point all of the child controls and main form have been destroyed
+         pForm = Application.GetpFormObject(hWin)
+         If pForm Then 
+            ' Remove any previously added controls from this form. This would have been done
+            ' in the initial form constructor. We do it here because each time the form is
+            ' shown we need to re-initialize any of the defautl form properties.
+            dim pNode as wfxLListNode ptr = pForm->Controls.get_first
+            do until pNode = 0
+               ' Remove returns the next control in the list and deletes the node passed to it.
+               pNode = pForm->Controls.remove( pNode )
+            loop 
+               
+            ' Add the form to the Application Form collection if it does not already exist.
+            if Application.Forms.search_data( pForm ) = 0 then
+               Application.Forms.Add(ControlType.Form, pForm)
+            end if
+            
+            ' Re-Initialize the properties of the controls and the form itself so that the
+            ' user can continue to interact with fresh copy of the form in case they want
+            ' to show that form again.
+            pForm->InitializeComponent( pForm )
+         end if
+         
+         
       Case WM_DESTROY
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 

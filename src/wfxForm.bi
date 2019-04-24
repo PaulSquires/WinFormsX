@@ -40,6 +40,7 @@ Type wfxForm Extends wfxControl
       MainMenu         as wfxMainMenu
       
       pWindow As CWindow Ptr
+      declare function CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS HWND = NULL ) as POINT  'internal
       Declare Property WindowState() As FormWindowState
       Declare Property WindowState( ByVal nValue As FormWindowState )
       Declare Property StartPosition() As FormStartPosition
@@ -92,6 +93,8 @@ Type wfxForm Extends wfxControl
       declare function ShowDialog(byref frmParent as wfxForm) as Long
       declare function ShowDialog(byval frmParent as wfxForm ptr) as Long
       declare function CreateFormInternal( byval hWndParent as hwnd, byval IsModal as boolean ) as long   
+      
+      InitializeComponent as function( byval pForm as wfxForm ptr ) as LRESULT
       
       OnAllEvents        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnLoad             as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT

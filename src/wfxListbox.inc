@@ -178,10 +178,12 @@ end property
 property wfxListBox.ColumnWidth( byval nValue as long )
    if this.hWindow then 
       ' if column width is zero it will cause a gpf
-      If nValue > 0 Then 
-         SendMessage( this.hWindow, LB_SETCOLUMNWIDTH, this.Parent->pWindow->ScaleX(nValue), 0)
+      if this.Parent->pWindow then
+         If nValue > 0 Then 
+            SendMessage( this.hWindow, LB_SETCOLUMNWIDTH, this.Parent->pWindow->ScaleX(nValue), 0)
+         end if
+         this.Refresh
       end if
-      this.Refresh
    end if
    _ColumnWidth = nValue
 end property

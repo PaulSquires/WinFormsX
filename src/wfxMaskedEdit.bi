@@ -44,6 +44,7 @@ Type wfxMaskedEdit Extends wfxControl
 
       Declare Function Show(ByVal hWndParent As HWnd = 0) As Long Override
       Declare Constructor( byref wszName as wstring = "" )
+      Declare destructor
 
       OnAllEvents        as function( byref sender as wfxMaskedEdit, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxMaskedEdit, byref e as EventArgs ) as LRESULT

@@ -33,7 +33,7 @@ destructor wfxForm
 End Destructor 
          
 property wfxForm.WindowState() as FormWindowState
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       if IsIconic(this.pWindow->hWindow) THEN
          property = FormWindowState.Minimized
       elseif IsZoomed(this.pWindow->hWindow) THEN  
@@ -47,7 +47,7 @@ property wfxForm.WindowState() as FormWindowState
 end property
 
 property wfxForm.WindowState( byval nValue as FormWindowState )
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       dim nState as long 
       select case nValue 
          case FormWindowState.Minimized: nState = SW_SHOWMINIMIZED
@@ -133,14 +133,14 @@ property wfxForm.StartPosition( byval nValue as FormStartPosition )
 end property
 
 property wfxForm.MinimizeBox() as boolean
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       _MinimizeBox = (AfxGetWindowStyle(this.pWindow->hWindow) and WS_MINIMIZEBOX)
    end if
    property = _MinimizeBox
 end property
 
 property wfxForm.MinimizeBox( byval nValue as boolean )
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       If nValue Then
          AfxAddWindowStyle(this.hWindow, WS_MINIMIZEBOX)
       Else
@@ -151,14 +151,14 @@ property wfxForm.MinimizeBox( byval nValue as boolean )
 end property
 
 property wfxForm.MaximizeBox() as boolean
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       _MaximizeBox = (AfxGetWindowStyle(this.pWindow->hWindow) and WS_MAXIMIZEBOX)
    end if   
    property = _MaximizeBox
 end property
 
 property wfxForm.MaximizeBox( byval nValue as boolean )
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       If nValue Then
          AfxAddWindowStyle(this.hWindow, WS_MAXIMIZEBOX)
       Else
@@ -169,14 +169,14 @@ property wfxForm.MaximizeBox( byval nValue as boolean )
 end property
 
 property wfxForm.ControlBox() as boolean
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       _ControlBox = (AfxGetWindowStyle(this.pWindow->hWindow) and WS_SYSMENU)
    end if   
    property = _ControlBox
 end property
 
 property wfxForm.ControlBox( byval nValue as boolean )
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       If nValue Then
          AfxAddWindowStyle(this.hWindow, WS_SYSMENU)
       Else
@@ -292,7 +292,7 @@ property wfxForm.Icon() as CWSTR
 end property
 
 property wfxForm.Icon( byref cwzValue as wstring )
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       If len(cwzValue) Then
          dim as HANDLE hIcon
          dim as LRESULT ret
@@ -316,7 +316,7 @@ end property
 
 
 property wfxForm.ClientSize() as wfxSize
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       _ClientSize.Width = this.pWindow->ClientWidth
       _ClientSize.Height = this.pWindow->ClientHeight
    End If   
@@ -324,7 +324,7 @@ property wfxForm.ClientSize() as wfxSize
 end property
 
 property wfxForm.ClientSize( byval nWidth as long, byval nHeight as long ) 
-   if this.pWindow->hWindow THEN
+   if this.pWindow andalso this.pWindow->hWindow THEN
       this.pWindow->SetClientSize( nWidth, nHeight )
    else
       _ClientSize.Width = nWidth
@@ -377,6 +377,61 @@ function wfxForm.Close() as Long
 end function
 
 
+function wfxForm.CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS HWND = NULL ) as POINT
+
+   ' Incoming rc AS RECT        ' Form coordinates
+   DIM rcParent      AS RECT    ' Parent window coordinates
+   DIM rcWorkArea    AS RECT    ' Work area coordinates
+   DIM pt            AS POINT   ' x and y coordinates of centered window
+
+   ' Calculate the width and height of the Form (need to scale these coordinates)
+   DIM nWidth AS LONG = this.ScaleX( rc.Right - rc.Left )
+   DIM nHeight AS LONG = this.ScaleY( rc.Bottom - rc.Top )
+
+   ' Get the coordinates of the work area
+   IF SystemParametersInfoW(SPI_GETWORKAREA, SIZEOF(rcWorkArea), @rcWorkArea, 0) = 0 THEN
+      rcWorkArea.Right  = GetSystemMetrics(SM_CXSCREEN)
+      rcWorkArea.Bottom = GetSystemMetrics(SM_CYSCREEN)
+   END IF
+   
+   ' Get the coordinates of the parent window
+   IF hwndParent THEN
+      GetWindowRect( hwndParent, @rcParent )
+   ELSE
+      rcParent.Left   = rcWorkArea.Left
+      rcParent.Top    = rcWorkArea.Top
+      rcParent.Right  = rcWorkArea.Right
+      rcParent.Bottom = rcWorkArea.Bottom
+   END IF
+   
+   ' Calculate the width and height of the parent window
+   DIM nParentWidth AS LONG = rcParent.Right - rcParent.Left
+   DIM nParentHeight AS LONG = rcParent.Bottom - rcParent.Top
+   
+   ' Calculate the new x coordinate and adjust for work area
+   pt.x = rcParent.Left + ((nParentWidth - nWidth) \ 2)
+   IF (pt.x < rcWorkArea.Left) THEN
+      pt.x = rcWorkArea.Left
+   ELSEIF ((pt.x + nWidth) > rcWorkArea.Right) THEN
+      pt.x = rcWorkArea.Right - nWidth
+   END IF
+   
+   ' Calculate the new y coordinate and adjust for work area
+   pt.y = rcParent.Top  + ((nParentHeight - nHeight) \ 2)
+   IF (pt.y < rcWorkArea.Top) THEN
+      pt.y = rcWorkArea.Top
+   ELSEIF ((pt.y + nHeight) > rcWorkArea.Bottom) THEN
+      pt.y = rcWorkArea.Bottom - nHeight
+   END IF
+   
+   ' Need to unscale the result position point because pWindow->Create will scale it.
+   pt.x = this.UnScaleX( pt.x )
+   pt.y = this.UnScaleY( pt.y )
+   
+   function = pt
+END function
+
+
 ''
 ''
 function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal as boolean ) as long   
@@ -399,9 +454,6 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    this.hWindowParent = hWndParent
    If this.pWindow = 0 Then this.pWindow = New CWindow()
    
-   ' Add the form to the Application Form collection
-   Application.Forms.Add(ControlType.Form, @this)
-
    ' Allow the user to set/initialize properties of the form and controls prior
    ' to it be created. This essentially builds on the Form's constructor code generation.
    If this.OnInitialize Then 
@@ -418,12 +470,14 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    dim as long nTop    = this.Top
    dim as long nWidth  = this.Width
    dim as long nHeight = this.Height
-   Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+   
+   dim as RECT rc: SetRect( @rc, nLeft, nTop, nLeft + nWidth, nTop + nHeight)
+   dim as POINT pt = (nLeft, nTop)
+   
+   Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS 
    dim as long dwExStyle = WS_EX_CONTROLPARENT
-   dim as Boolean IsVisible 
    
-   dim pNode as wfxLListNode ptr
-   
+   if this.Visible then dwStyle = dwStyle or WS_VISIBLE
    if this.IsMainForm THEN dwStyle = dwStyle or WS_POPUP 
    If IsFormModal Then dwStyle = dwStyle Or WS_POPUP
    this.IsModal = IsFormModal
@@ -469,17 +523,21 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
 '      dwExStyle = dwExStyle Or WS_EX_APPWINDOW
 '   End If
    
-   ' Determine if the WS_VISIBLE style is set. Save that value in order to
-   ' prevent the form moving on screen when the subsequent StartPosition 
-   ' property is executed.
-   IsVisible = (dwStyle and WS_VISIBLE)
-   If IsVisible Then dwStyle = (dwStyle And Not WS_VISIBLE)
- 
+   ' Calculate the correct size and position of the form that we are about
+   ' to create. We do this because otherwise we would have to display the
+   ' form and move it resulting in unsighlty visual movement to the user.
+   select CASE this.StartPosition
+      CASE FormStartPosition.CenterParent
+         pt = this.CalculateStartPosition( rc, hWndParent )
+      CASE FormStartPosition.CenterScreen
+         pt = this.CalculateStartPosition( rc, 0 )
+   END SELECT
+   
    '  Create the main window based on properties set
    this.hWindow = this.pWindow->Create( hWndParent, _
                         this.Text, _
                         @wfxApplication.WndProc, _
-                        nLeft, nTop, nWidth, nHeight, _
+                        pt.x, pt.y, nWidth, nHeight, _
                         dwStyle, dwExStyle ) 
 
    ' Ensure that window gets correctly placed into the taskbar (if applicable) by
@@ -496,13 +554,9 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
 
    ' Store the hWindow in the application linked list in order to allow
    ' for fast lookups via GetControlByHandle.
+   dim pNode as wfxLListNode ptr
    pNode = Application.Forms.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
-   
-   ' Setting the ClientSize property will override the width/height of the form
-   if this.ClientSize.IsEmpty = false THEN
-      this.pWindow->SetClientSize( this.ClientSize.Width, this.ClientSize.Height )
-   END IF
    
    ' Create and show all of the child controls. Also track what control is being
    ' set as initially selected/focus
@@ -522,6 +576,11 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    LOOP
 
     
+   ' Setting the ClientSize property will override the width/height of the form
+   if this.ClientSize.IsEmpty = false THEN
+      this.pWindow->SetClientSize( this.ClientSize.Width, this.ClientSize.Height )
+   END IF
+   
    ' Form has been created but not yet shown. Fire the Load event now if 
    ' it has been defined. Need to do it here rather than in WM_CREATE because
    ' the Window handle is only assigned to the form object AFTER the WM_CREATE 
@@ -533,22 +592,9 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       end if
    end if
    If this.OnResize Then this.OnResize(this, *(@e))
-
-   ' Position the window on the screen (do after Load to ensure that
-   ' Activate and Move messages occur after Load)
-   select CASE this.StartPosition
-      CASE FormStartPosition.CenterParent
-         this.pWindow->Center(this.pWindow->hWindow, hWndParent)
-      CASE FormStartPosition.CenterScreen
-         this.pWindow->Center(this.pWindow->hWindow, HWND_DESKTOP)
-   END SELECT
    
-   ' Add the visible style back to the Form. Need to do this prior to 
-   ' adding the controls otherwise they may not initially paint correctly.
-   if IsVisible THEN AfxAddWindowStyle(this.hWindow, WS_VISIBLE)
 
-   
-   ShowWindow(this.hWindow, Iif(IsVisible, SW_SHOW, SW_HIDE))
+   ShowWindow(this.hWindow, Iif(this.Visible, SW_SHOW, SW_HIDE))
    AfxRedrawWindow(this.hWindow)
    
    ' Repaint all of the child controls because painting was clipped due to 
@@ -638,7 +684,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       Loop
 
       ' Set the focus back to the control that had focus prior to the modal window being displayed.
-      SetFocus hWndParentFocus 
+      if hWndParentFocus then SetFocus( hWndParentFocus )
       
    End If
    

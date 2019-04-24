@@ -29,28 +29,34 @@ property wfxPictureBox.Image() as CWSTR
    property = _Image
 end property
 
+Destructor wfxPictureBox()
+   if _ImageCtxPtr then Delete _ImageCtxPtr
+   _ImageCtxPtr = 0
+End Destructor
 
 property wfxPictureBox.Image( byref cwzValue as wstring )
    If _ImageCtxPtr Then 
       If len(cwzValue) Then
-         ' Attempt to load the image directly from the resource file. If that
-         ' fails then try to extract the image to a temporary disk file and
-         ' load it from there.
-         if _ImageCtxPtr->LoadImageFromResource( this.Parent->pWindow->InstanceHandle, cwzValue ) = 0 then
-      
-            dim wszTempPath as wstring * MAX_PATH
-            GetTempPath( MAX_PATH, @wszTempPath )
-            dim wszTempFilename as wstring * MAX_PATH
-            GetTempFileName( @wszTempPath, "TMP", 0, @wszTempFilename )
-            
-            ' Attempt to extract the image resource. 
-            ' Returns FALSE on failure
-            if AfxExtractResourceToFile( this.Parent->pWindow->InstanceHandle, _
-                                      cwzValue, wszTempFilename, RT_RCDATA ) = false then
+         if this.Parent->pWindow then
+            ' Attempt to load the image directly from the resource file. If that
+            ' fails then try to extract the image to a temporary disk file and
+            ' load it from there.
+            if _ImageCtxPtr->LoadImageFromResource( this.Parent->pWindow->InstanceHandle, cwzValue ) = 0 then
+         
+               dim wszTempPath as wstring * MAX_PATH
+               GetTempPath( MAX_PATH, @wszTempPath )
+               dim wszTempFilename as wstring * MAX_PATH
+               GetTempFileName( @wszTempPath, "TMP", 0, @wszTempFilename )
+               
+               ' Attempt to extract the image resource. 
+               ' Returns FALSE on failure
+               if AfxExtractResourceToFile( this.Parent->pWindow->InstanceHandle, _
+                                         cwzValue, wszTempFilename, RT_RCDATA ) = false then
+               end if
+               
+               _ImageCtxPtr->LoadImageFromFile( wszTempFilename )
+               AfxDeleteFile( wszTempFilename )
             end if
-            
-            _ImageCtxPtr->LoadImageFromFile( wszTempFilename )
-            AfxDeleteFile( wszTempFilename )
          end if
       End If    
    End If

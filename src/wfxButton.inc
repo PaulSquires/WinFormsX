@@ -11,7 +11,8 @@ constructor wfxButton( byref wszName as wstring = "" )
 End Constructor
 
 Destructor wfxButton()
-   Delete _XpButtonPtr
+   if _XpButtonPtr then Delete _XpButtonPtr
+   _XpButtonPtr = 0
 End Destructor
 
 Property wfxButton.ToggleMode() As boolean 
@@ -202,7 +203,9 @@ end property
 property wfxButton.Image( byref cwzValue as wstring )
    If _XpButtonPtr Then 
       If len(cwzValue) Then
-         _XpButtonPtr->SetImageFromRes( this.Parent->pWindow->InstanceHandle, cwzValue )
+         if this.Parent->pWindow then
+            _XpButtonPtr->SetImageFromRes( this.Parent->pWindow->InstanceHandle, cwzValue )
+         end if   
       End If    
    End If
    _Image = cwzValue
@@ -211,8 +214,10 @@ end property
 property wfxButton.ImageHighDPI( byval nValue as boolean )
    If _XpButtonPtr Then 
       if nValue then 
-         _XpButtonPtr->SetImageSize( this.Parent->pWindow->ScaleX(_ImageWidth), _
-                                     this.Parent->pWindow->ScaleY(_ImageHeight), true )
+         if this.Parent->pWindow then
+            _XpButtonPtr->SetImageSize( this.Parent->pWindow->ScaleX(_ImageWidth), _
+                                        this.Parent->pWindow->ScaleY(_ImageHeight), true )
+         end if
       else
          _XpButtonPtr->SetImageSize( _ImageWidth, _ImageHeight, true )
       end if

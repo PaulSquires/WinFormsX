@@ -20,10 +20,13 @@
 
 
 constructor wfxRichEdit( byref wszName as wstring = "" )
-   this.CtrlType = ControlType.RichEdit
-   this.Name = wszName
-   this.BackColor = Colors.SystemWindow
-   this.ForeColor = Colors.SystemWindowText
+   this.CtrlType       = ControlType.RichEdit
+   this.Name           = wszName
+   this.BackColor      = Colors.SystemWindow
+   this.ForeColor      = Colors.SystemWindowText
+   this.Multiline      = true
+   this.WordWrap       = true
+   this.AcceptsReturn  = true
 end constructor
 
 

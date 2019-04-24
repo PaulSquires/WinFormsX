@@ -184,7 +184,9 @@ end property
 
 property wfxControl.Left( byval nValue as long )
    if this.hWindow then 
-      this.Parent->pWindow->SetWindowPos(this.hWindow, 0, nValue, this.Top, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
+      if this.Parent->pWindow then
+         this.Parent->pWindow->SetWindowPos(this.hWindow, 0, nValue, this.Top, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
+      end if
    end if
    _Location.x = nValue
 end property
@@ -200,35 +202,45 @@ end property
 
 property wfxControl.Top( byval nValue as long )
    if this.hWindow then 
-      this.Parent->pWindow->SetWindowPos(this.hWindow, 0, this.Left, nValue, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
+      if this.Parent->pWindow then
+         this.Parent->pWindow->SetWindowPos(this.hWindow, 0, this.Left, nValue, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
+      end if
    end if
    _Location.y = nValue
 end property
 
 property wfxControl.Width() as LONG
    if this.hWindow then 
-      _Size.Width = this.Parent->pWindow->ControlWidth(this.hWindow)
+      if this.Parent->pWindow then
+         _Size.Width = this.Parent->pWindow->ControlWidth(this.hWindow)
+      end if
    end if
    property = _Size.Width
 end property
 
 property wfxControl.Width( byval nValue as long )
    if this.hWindow then 
-      this.Parent->pWindow->SetWindowPos(this.hWindow, 0, 0, 0, nValue, this.Height, SWP_NOZORDER or SWP_NOMOVE)
+      if this.Parent->pWindow then
+         this.Parent->pWindow->SetWindowPos(this.hWindow, 0, 0, 0, nValue, this.Height, SWP_NOZORDER or SWP_NOMOVE)
+      end if
    end if
    _Size.Width = nValue
 end property
 
 property wfxControl.Height() as LONG
    if this.hWindow then 
-      _Size.Height = this.Parent->pWindow->ControlHeight(this.hWindow)
+      if this.Parent->pWindow then
+         _Size.Height = this.Parent->pWindow->ControlHeight(this.hWindow)
+      end if
    end if
    property = _Size.Height
 end property
 
 property wfxControl.Height( byval nValue as long )
    if this.hWindow then 
-      this.Parent->pWindow->SetWindowPos(this.hWindow, 0, 0, 0, this.Width, nValue, SWP_NOZORDER or SWP_NOMOVE)
+      if this.Parent->pWindow then
+         this.Parent->pWindow->SetWindowPos(this.hWindow, 0, 0, 0, this.Width, nValue, SWP_NOZORDER or SWP_NOMOVE)
+      end if
    end if
    _Size.Height = nValue
 end property
@@ -243,7 +255,9 @@ end property
 
 property wfxControl.Size( byval nWidth as long, byval nHeight as long ) 
    if this.hWindow then 
-      this.Parent->pWindow->SetWindowPos(this.hWindow, 0, 0, 0, nWidth, nHeight, SWP_NOZORDER or SWP_NOMOVE)
+      if this.Parent->pWindow then
+         this.Parent->pWindow->SetWindowPos(this.hWindow, 0, 0, 0, nWidth, nHeight, SWP_NOZORDER or SWP_NOMOVE)
+      end if
    end if
    _Size.Width = nWidth
    _Size.Height = nHeight
@@ -259,7 +273,9 @@ end property
 
 property wfxControl.Location( byval xPos as long, byval yPos as long ) 
    if this.hWindow then 
-      this.Parent->pWindow->SetWindowPos(this.hWindow, 0, xPos, yPos, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
+      if this.Parent->pWindow then
+         this.Parent->pWindow->SetWindowPos(this.hWindow, 0, xPos, yPos, 0, 0, SWP_NOZORDER or SWP_NOSIZE)
+      end if   
    end if
    _Location.x = xPos
    _Location.y = yPos
@@ -267,7 +283,9 @@ end property
 
 function wfxControl.SetBounds( byval xPos as long, byval yPos as long, byval nWidth as long, byval nHeight as long ) as long
    if this.hWindow then 
-      this.Parent->pWindow->SetWindowPos(this.hWindow, 0, xPos, yPos, nWidth, nHeight, SWP_NOZORDER)
+      if this.Parent->pWindow then
+         this.Parent->pWindow->SetWindowPos(this.hWindow, 0, xPos, yPos, nWidth, nHeight, SWP_NOZORDER)
+      end if
    end if
    _Location.x  = xPos
    _Location.y  = yPos

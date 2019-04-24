@@ -44,6 +44,7 @@ Type wfxPictureBox Extends wfxControl
 
       declare function Show(byval hWndParent as hwnd = 0) as long override
       Declare Constructor( byref wszName as wstring = "" )
+      Declare destructor
 
       OnAllEvents        as function( byref sender as wfxPictureBox, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxPictureBox, byref e as EventArgs ) as LRESULT
