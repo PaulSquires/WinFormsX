@@ -477,7 +477,6 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS 
    dim as long dwExStyle = WS_EX_CONTROLPARENT
    
-   if this.Visible then dwStyle = dwStyle or WS_VISIBLE
    if this.IsMainForm THEN dwStyle = dwStyle or WS_POPUP 
    If IsFormModal Then dwStyle = dwStyle Or WS_POPUP
    this.IsModal = IsFormModal
@@ -540,12 +539,6 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
                         pt.x, pt.y, nWidth, nHeight, _
                         dwStyle, dwExStyle ) 
 
-   ' Ensure that window gets correctly placed into the taskbar (if applicable) by
-   ' calling ShowWindow with SW_SHOWDEFAULT initially specified.
-   if this.IsMainForm then
-      ShowWindow(this.hWindow, SW_SHOWDEFAULT)
-   end if
-   
    ' Set the Form icons. hWindow must be valid.
    this.Icon = _Icon
  
@@ -575,11 +568,18 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       pNode = this.Controls.get_next(pNode)
    LOOP
 
-    
    ' Setting the ClientSize property will override the width/height of the form
    if this.ClientSize.IsEmpty = false THEN
       this.pWindow->SetClientSize( this.ClientSize.Width, this.ClientSize.Height )
    END IF
+
+
+   ' Ensure that window gets correctly placed into the taskbar (if applicable) by
+   ' calling ShowWindow with SW_SHOWDEFAULT initially specified.
+   if this.IsMainForm then
+      ShowWindow(this.hWindow, SW_SHOWDEFAULT)
+   end if
+    
    
    ' Form has been created but not yet shown. Fire the Load event now if 
    ' it has been defined. Need to do it here rather than in WM_CREATE because
@@ -594,27 +594,28 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    If this.OnResize Then this.OnResize(this, *(@e))
    
 
-   ShowWindow(this.hWindow, Iif(this.Visible, SW_SHOW, SW_HIDE))
+   ShowWindow(this.hWindow, Iif(_Visible, SW_SHOW, SW_HIDE))
    AfxRedrawWindow(this.hWindow)
    
-   ' Repaint all of the child controls because painting was clipped due to 
-   ' non-visible Form. Also, set the focus/selected control which will also
-   ' cause the Activate message for the Form to fire. Use RedrawWindow rather
-   ' than simple Refresh because we need to ensure that the non-client areas
-   ' of the window are also repainted correctly.
+   ' The Shown event is only raised the first time a form is displayed; 
+   ' subsequently minimizing, maximizing, restoring, hiding, showing, or 
+   ' invalidating and repainting will not raise this event. 
+   if IsWindowVisible(this.hWindow) THEN
+      if this.OnShown then this.OnShown(this, *(@e))
+   END IF
+
+   ' Check for new focus control in case it was set in the OnLoad/OnShown event.
    pNode = this.Controls.get_first
    do until pNode = 0
       pCtrl = cast(wfxControl ptr, pNode->pData)
       if pCtrl then
-         pCtrl->Refresh
-         RedrawWindow( pCtrl->hWindow, Null, Null, RDW_FRAME or RDW_INVALIDATE or RDW_UPDATENOW)
-         ' Check for new focus control in case it was set in the OnLoad event.
          If pCtrl->Focused Then pCtrlFocus = pCtrl
       End If
       pNode = this.Controls.get_next(pNode)
    LOOP
 
-   ' Set the focus to the correct control
+   ' Set the focus/selected control which will also cause the Activate 
+   ' message for the Form to fire. 
    If pCtrlFocus Then 
       If pCtrlFocus->CtrlType = ControlType.TextBox Then
          Dim pTextBox As wfxTextBox Ptr = Cast(wfxTextBox Ptr, pCtrlFocus)
@@ -626,13 +627,6 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       SetFocus(pCtrlFocus->hWindow)
    End If
    
-   ' The Shown event is only raised the first time a form is displayed; 
-   ' subsequently minimizing, maximizing, restoring, hiding, showing, or 
-   ' invalidating and repainting will not raise this event. 
-   if IsWindowVisible(this.hWindow) THEN
-      if this.OnShown then this.OnShown(this, *(@e))
-   END IF
-
    
    ' If this is a modal popup window so disable the parent window. The
    ' parent window will be re-enabled when this form is closed.
