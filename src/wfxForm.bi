@@ -38,6 +38,7 @@ Type wfxForm Extends wfxControl
    Public:           
       Controls         As wfxLList
       MainMenu         as wfxMainMenu
+      StatusBar        as wfxStatusBar
       
       pWindow As CWindow Ptr
       declare function CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS HWND = NULL ) as POINT  'internal
@@ -93,6 +94,7 @@ Type wfxForm Extends wfxControl
       declare function ShowDialog(byref frmParent as wfxForm) as Long
       declare function ShowDialog(byval frmParent as wfxForm ptr) as Long
       declare function CreateFormInternal( byval hWndParent as hwnd, byval IsModal as boolean ) as long   
+      declare Function SizeStatusBar() As Long  ' internal function
       
       InitializeComponent as function( byval pForm as wfxForm ptr ) as LRESULT
       

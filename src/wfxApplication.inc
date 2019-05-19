@@ -103,15 +103,6 @@ Function wfxApplication.DoEvents() As LRESULT
    return 0
 end function
 
-''
-''  Begins running a standard wfxApplication message loop without a form.
-''
-Function wfxApplication.Run() As LRESULT
-' TODO: wfxApplication Run
-   sleep
-   return 0
-end function
-
 
 ''
 ''
@@ -373,6 +364,16 @@ Function wfxApplication.Run( Byref pForm As wfxForm ) As LRESULT
 end function
 
 
+''
+''  Begins running a standard wfxApplication message loop without a form.
+''
+Function wfxApplication.Run() As LRESULT
+' TODO: wfxApplication Run
+   sleep
+   return 0
+end function
+
+
 ''    
 ''  Generic function to retrieve control object via Windows handle
 ''
@@ -507,6 +508,7 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
    Return False
 
 End Function
+
 
 
 ''    
@@ -764,13 +766,11 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
       Case WM_SIZE
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
-            If pForm->OnResize Then pForm->OnResize(*pForm, e)
             ' If a StatusBar exists on this form then resize it.
-            pNode = pForm->Controls.search_controltype(ControlType.StatusBar)
-            if pNode then
-               pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
-               SendMessage(pStatusBar->hWindow, uMsg, wParam, lParam)
-            END IF
+            pForm->SizeStatusBar()
+            
+            ' Allow the user to respond to the size message
+            If pForm->OnResize Then pForm->OnResize(*pForm, e)
          END IF
       
       

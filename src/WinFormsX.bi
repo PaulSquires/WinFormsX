@@ -30,6 +30,7 @@ namespace WinFormsX
 #include once "wfxControl.bi"
 #include once "wfxButton.bi"
 #Include Once "wfxMainMenu.bi"
+#Include Once "wfxStatusBar.bi"
 #include once "wfxForm.bi"
 #include once "wfxLabel.bi"
 #Include Once "wfxFrame.bi"
@@ -41,7 +42,6 @@ namespace WinFormsX
 #include once "wfxOptionButton.bi"
 #Include Once "wfxListbox.bi"
 #Include Once "wfxComboBox.bi"
-#Include Once "wfxStatusBar.bi"
 #Include Once "wfxApplication.bi"
 
 #Include Once "wfxSize.inc"
@@ -60,8 +60,8 @@ namespace WinFormsX
 #Include Once "wfxLabel.inc"
 #include once "wfxFrame.inc"
 #include once "wfxPictureBox.inc"
-#Include Once "wfxStatusBar.inc"
 #Include Once "wfxMainMenu.inc"
+#Include Once "wfxStatusBar.inc"
 #include once "wfxForm.inc"
 
 

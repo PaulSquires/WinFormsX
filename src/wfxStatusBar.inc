@@ -105,31 +105,6 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
    ' Make sure the Panels collection also knows the window handle of the parent statusbar
    this.Panels.hWindow = this.hWindow
 
-   dim as single cx = this.Parent->pWindow->rxRatio
-   
-   ' Calculate and set the widths of the panels.
-   if this.Panels.Count then
-      dim as long nWidths(0 to this.Panels.Count - 1)
-      for i as long = 0 to this.Panels.Count - 1
-         if this.Panel(i).AutoSize = StatusBarPanelAutoSize.Spring then  
-            nWidths(i) = -1
-         else   
-            nWidths(i) = iif(i, nWidths(i-1), 0) + (this.Panel(i).Width * cx)
-         end if
-      NEXT
-      StatusBar_SetParts( this.hWindow, this.Panels.Count, @nWidths(0))
-   end if
-
-   ' Set the text for the panels. Need to do this after the widths are set.
-   for i as long = 0 to this.Panels.Count - 1
-      ' Get the panel text prior to assigning the statusbar handle otherwise the
-      ' library will try to retrieve the text from the actual window control and
-      ' that text hasn't even been assigned yet.
-      dim as CWSTR wszPanelText = this.Panel(i).Text
-      this.Panel(i).hWindow = this.hWindow
-      StatusBar_SetText(this.hWindow, i, wszPanelText, this.Panel(i).BorderStyle) 
-   next
-   
    function = 0
 END FUNCTION
 

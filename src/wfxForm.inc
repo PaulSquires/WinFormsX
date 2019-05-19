@@ -376,7 +376,8 @@ function wfxForm.Close() as Long
    function = 0
 end function
 
-
+''
+''
 function wfxForm.CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS HWND = NULL ) as POINT
 
    ' Incoming rc AS RECT        ' Form coordinates
@@ -431,6 +432,144 @@ function wfxForm.CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS H
    function = pt
 END function
 
+
+''    
+''  StatusBar resize procedure
+''
+Function wfxForm.SizeStatusBar() As Long
+
+   Dim pNode      As wfxLListNode Ptr
+   dim pStatusBar as wfxStatusBar ptr
+            
+   ' If a StatusBar exists on this form then resize it.
+   pNode = this.Controls.search_controltype(ControlType.StatusBar)
+   if pNode = 0 then exit function
+   
+   pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
+   if pStatusBar = 0 then exit function
+   
+   if this.pWindow = 0 then exit function
+   
+   dim rc as RECT 
+   GetClientRect( this.hWindow, @rc )
+   
+   dim as long nHeight = AfxGetWindowHeight( pStatusBar->hWindow )
+   SetWindowPos( pStatusBar->hWindow, 0, _
+                  0, rc.bottom - nHeight, rc.right, nHeight, _
+                  SWP_NOZORDER )
+
+   dim as single cx = this.pWindow->rxRatio
+   
+   ' Calculate and set the widths of the panels.
+   if pStatusBar->Panels.Count then
+      dim as long nWidths( 0 to pStatusBar->Panels.Count - 1 )
+      for i as long = 0 to pStatusBar->Panels.Count - 1
+         if pStatusBar->Panel(i).AutoSize = StatusBarPanelAutoSize.Spring then  
+            nWidths(i) = -1
+         else   
+            nWidths(i) = iif(i, nWidths(i-1), 0) + (pStatusBar->Panel(i).Width * cx)
+         end if
+      NEXT
+      StatusBar_SetParts( pStatusBar->hWindow, pStatusBar->Panels.Count, @nWidths(0))
+   end if
+
+   ' Set the text for the panels. Need to do this after the widths are set.
+   for i as long = 0 to pStatusBar->Panels.Count - 1
+      dim as CWSTR wszPanelText = pStatusBar->Panel(i).Text
+      pStatusBar->Panel(i).hWindow = pStatusBar->hWindow
+      StatusBar_SetText( pStatusBar->hWindow, i, wszPanelText, pStatusBar->Panel(i).BorderStyle ) 
+   next
+   
+
+   
+'   ' Size the panels in order to accommodate autosize
+'   dim as long lb = 0 
+'   dim as long ub = ubound(pDoc->PanelItems)
+'   dim as long nPanelWidth, nPanelMinWidth, nTotalWidths, nBorderStyle, iRightSide 
+'   Dim As Long rgParts(ub)
+'   Dim As Long rgPanelWidths(ub)
+'   dim as long iSpringIndex = -1
+'   dim as CWSTR wszAlign
+'   dim hIcon as HICON
+'   dim wszImageName as wstring * MAX_PATH
+    
+    
+'   for i as long = lb to ub
+       
+'      select case ucase( pDoc->PanelItems(i).wszBorderStyle )
+'         case "STATUSBARPANELBORDERSTYLE.NONE":   nBorderStyle = SBT_NOBORDERS
+'         case "STATUSBARPANELBORDERSTYLE.SUNKEN": nBorderStyle = 0
+'         case "STATUSBARPANELBORDERSTYLE.RAISED": nBorderStyle = SBT_POPOUT
+'      end select
+
+'      select case ucase( pDoc->PanelItems(i).wszAlignment )
+'         case "STATUSBARPANELALIGNMENT.LEFT":   wszAlign = ""
+'         case "STATUSBARPANELALIGNMENT.CENTER": wszAlign = chr(9)
+'         case "STATUSBARPANELALIGNMENT.RIGHT":  wszAlign = chr(9,9)
+'      end select
+       
+'      StatusBar_SetText( pDoc->hWndStatusBar, i, wszAlign & pDoc->PanelItems(i).wszText, nBorderStyle ) 
+'      if len( pDoc->PanelItems(i).wszToolTip ) then
+'         StatusBar_SetTipText( pDoc->hWndStatusBar, i, pDoc->PanelItems(i).wszToolTip )
+'      end if
+       
+'      select case ucase( pDoc->PanelItems(i).wszAutoSize )
+'         case "STATUSBARPANELAUTOSIZE.NONE"
+'            nPanelWidth    = val( pDoc->PanelItems(i).wszWidth )
+'            nPanelMinWidth = val( pDoc->PanelItems(i).wszMinWidth )
+'            if nPanelWidth < nPanelMinWidth then nPanelWidth = nPanelMinWidth
+'         case "STATUSBARPANELAUTOSIZE.CONTENTS"
+'            dim as HDC _hdc = GetDC(pDoc->hWndStatusBar)
+'            dim as SIZE _size 
+'            dim as HFONT oldfont = SelectObject( _hdc, pWindow->Font )
+'            dim as WString * MAX_PATH wszBuffer = " " & pDoc->PanelItems(i).wszText & " "
+'            GetTextExtentPoint32( _hdc, wszBuffer, len(wszBuffer), @_size)
+'            SelectObject( _hdc, oldfont )
+'            ReleaseDC( pDoc->hWndStatusBar, _hdc )
+'            nPanelWidth    = _size.cx
+'            nPanelMinWidth = val( pDoc->PanelItems(i).wszMinWidth )
+'            if nPanelWidth < nPanelMinWidth then nPanelWidth = nPanelMinWidth
+'         case "STATUSBARPANELAUTOSIZE.SPRING"
+'            nPanelWidth = 0
+'            iSpringIndex = i
+'      end select
+
+'      wszImageName = pDoc->PanelItems(i).pProp.wszPropValue
+'      hIcon = 0
+'      if len(wszImageName) then
+'         dim pImageType as IMAGES_TYPE ptr = GetImagesTypePtr(wszImageName)
+'         DestroyIcon( StatusBar_GetIcon( pDoc->hWndStatusBar, i ) )
+'         if pImageType then
+'            hIcon = AfxGdipIconFromFile( pImageType->wszFileName )
+'         end if
+'      end if
+
+'      ' If no hIcon defined then any previous icon will be removed
+'      StatusBar_SetIcon( pDoc->hWndStatusBar, i, hIcon ) 
+       
+'      rgPanelWidths(i) = pWindow->ScaleX(nPanelWidth)
+'      nTotalWidths = nTotalWidths + rgPanelWidths(i)
+       
+'   next
+
+'   if iSpringIndex <> -1 then rgPanelWidths(iSpringIndex) = rc.right - nTotalWidths
+    
+'   ' Set the right side panel measurments
+'   iRightSide = 0
+'   for i as long = lb to ub
+'      iRightSide = iRightSide + rgPanelWidths(i)   
+'      rgParts(i) = iRightSide
+'   next
+    
+'   If SendMessage( pDoc->hWndStatusBar, SB_SETPARTS, 5, Cast(LPARAM, @rgParts(0)) ) <> 0 Then
+'      SendMessage( pDoc->hWndStatusBar, SB_SIMPLE, False, 0 )
+'   End If
+
+'   ShowWindow( pDoc->hWndStatusBar, SW_SHOW )
+
+   function = 0 
+End Function
+                  
 
 ''
 ''
@@ -604,6 +743,11 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       if this.OnShown then this.OnShown(this, *(@e))
    END IF
 
+   
+   ' Resize any defined StatusBar
+   this.SizeStatusBar
+   
+   
    ' Check for new focus control in case it was set in the OnLoad/OnShown event.
    pNode = this.Controls.get_first
    do until pNode = 0
