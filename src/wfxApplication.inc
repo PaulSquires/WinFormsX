@@ -768,7 +768,10 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          If pForm Then 
             ' If a StatusBar exists on this form then resize it.
             pForm->SizeStatusBar()
-            
+
+            ' If a ToolBar exists on this form then resize it.
+            pForm->SizeToolBar()
+
             ' Allow the user to respond to the size message
             If pForm->OnResize Then pForm->OnResize(*pForm, e)
          END IF

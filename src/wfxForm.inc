@@ -434,6 +434,36 @@ END function
 
 
 ''    
+''  ToolBar resize procedure
+''
+Function wfxForm.SizeToolBar() As Long
+
+   Dim pNode    As wfxLListNode Ptr
+   dim pToolBar as wfxToolBar ptr
+            
+   ' If a ToolBar exists on this form then resize it.
+   pNode = this.Controls.search_controltype(ControlType.ToolBar)
+   if pNode = 0 then exit function
+   
+   pToolBar = cast(wfxToolBar ptr, pNode->pData)
+   if pToolBar = 0 then exit function
+   
+   if this.pWindow = 0 then exit function
+   
+   if pToolBar->hRebar then
+      dim rc as RECT 
+      GetClientRect( this.hWindow, @rc )
+      dim as long cx, cy
+      cx = rc.left - rc.right
+      cy = AfxGetWindowHeight( pToolBar->hRebar )
+      SendMessage pToolBar->hRebar, WM_SIZE, cx, cy
+   end if
+   
+   function = 0   
+end function
+
+
+''    
 ''  StatusBar resize procedure
 ''
 Function wfxForm.SizeStatusBar() As Long
@@ -464,108 +494,61 @@ Function wfxForm.SizeStatusBar() As Long
    if pStatusBar->Panels.Count then
       dim as long nWidths( 0 to pStatusBar->Panels.Count - 1 )
       for i as long = 0 to pStatusBar->Panels.Count - 1
+         dim as long nPanelWidth    = pStatusBar->Panel(i).Width * cx
+         dim as long nPanelMinWidth = pStatusBar->Panel(i).MinWidth * cx
+         
          if pStatusBar->Panel(i).AutoSize = StatusBarPanelAutoSize.Spring then  
-            nWidths(i) = -1
-         else   
-            nWidths(i) = iif(i, nWidths(i-1), 0) + (pStatusBar->Panel(i).Width * cx)
+            nPanelWidth = iif(i, rc.right - nWidths(i-1), rc.right)
+         elseif pStatusBar->Panel(i).AutoSize = StatusBarPanelAutoSize.Contents then  
+            dim as HDC _hdc = GetDC(pStatusBar->hWindow)
+            dim as SIZE _size 
+            dim as HFONT oldfont = SelectObject( _hdc, this.pWindow->Font )
+            dim as WString * MAX_PATH wszBuffer = " " & pStatusBar->Panel(i).Text & " "
+            GetTextExtentPoint32( _hdc, wszBuffer, len(wszBuffer), @_size)
+            SelectObject( _hdc, oldfont )
+            ReleaseDC( pStatusBar->hWindow, _hdc )
+            nPanelWidth = _size.cx
+            if nPanelWidth < nPanelMinWidth then nPanelWidth = nPanelMinWidth
+         elseif pStatusBar->Panel(i).AutoSize = StatusBarPanelAutoSize.None then  
+            if nPanelWidth < nPanelMinWidth then nPanelWidth = nPanelMinWidth
          end if
+         nWidths(i) = iif(i, nWidths(i-1), 0) + nPanelWidth
       NEXT
       StatusBar_SetParts( pStatusBar->hWindow, pStatusBar->Panels.Count, @nWidths(0))
    end if
 
-   ' Set the text for the panels. Need to do this after the widths are set.
+   ' Set the text/icons for the panels. Need to do this after the widths are set.
    for i as long = 0 to pStatusBar->Panels.Count - 1
       dim as CWSTR wszPanelText = pStatusBar->Panel(i).Text
+      select case pStatusBar->Panel(i).Alignment
+         case StatusBarPanelAlignment.Left:   ' do nothing
+         case StatusBarPanelAlignment.Center: wszPanelText = chr(9) & wszPanelText
+         case StatusBarPanelAlignment.Right:  wszPanelText = chr(9,9) & wszPanelText
+      end select
       pStatusBar->Panel(i).hWindow = pStatusBar->hWindow
       StatusBar_SetText( pStatusBar->hWindow, i, wszPanelText, pStatusBar->Panel(i).BorderStyle ) 
+
+      dim as CWSTR wszToolTip = pStatusBar->Panel(i).ToolTip
+      if len( wszToolTip ) then
+         StatusBar_SetTipText( pStatusBar->hWindow, i, wszToolTip )
+      end if
+   
+      dim wszImageName as wstring * MAX_PATH
+      wszImageName = pStatusBar->Panel(i).Icon
+   
+      if len(wszImageName) then
+         dim as HANDLE hIcon
+         ' Attempt to use an Icon resource first and if that fails then attempt
+         ' to load an RCDATA resource.
+         hIcon = LoadImage( this.pWindow->InstanceHandle, wszImageName, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE ) 
+         if hIcon = 0 then
+            hIcon = AfxGdipIconFromRes( this.pWindow->InstanceHandle, wszImageName)
+         end if
+         ' If no hIcon defined then any previous icon will be removed
+         DestroyIcon( StatusBar_GetIcon( pStatusBar->hWindow, i ) )
+         StatusBar_SetIcon( pStatusBar->hWindow, i, hIcon ) 
+      End If   
    next
-   
-
-   
-'   ' Size the panels in order to accommodate autosize
-'   dim as long lb = 0 
-'   dim as long ub = ubound(pDoc->PanelItems)
-'   dim as long nPanelWidth, nPanelMinWidth, nTotalWidths, nBorderStyle, iRightSide 
-'   Dim As Long rgParts(ub)
-'   Dim As Long rgPanelWidths(ub)
-'   dim as long iSpringIndex = -1
-'   dim as CWSTR wszAlign
-'   dim hIcon as HICON
-'   dim wszImageName as wstring * MAX_PATH
-    
-    
-'   for i as long = lb to ub
-       
-'      select case ucase( pDoc->PanelItems(i).wszBorderStyle )
-'         case "STATUSBARPANELBORDERSTYLE.NONE":   nBorderStyle = SBT_NOBORDERS
-'         case "STATUSBARPANELBORDERSTYLE.SUNKEN": nBorderStyle = 0
-'         case "STATUSBARPANELBORDERSTYLE.RAISED": nBorderStyle = SBT_POPOUT
-'      end select
-
-'      select case ucase( pDoc->PanelItems(i).wszAlignment )
-'         case "STATUSBARPANELALIGNMENT.LEFT":   wszAlign = ""
-'         case "STATUSBARPANELALIGNMENT.CENTER": wszAlign = chr(9)
-'         case "STATUSBARPANELALIGNMENT.RIGHT":  wszAlign = chr(9,9)
-'      end select
-       
-'      StatusBar_SetText( pDoc->hWndStatusBar, i, wszAlign & pDoc->PanelItems(i).wszText, nBorderStyle ) 
-'      if len( pDoc->PanelItems(i).wszToolTip ) then
-'         StatusBar_SetTipText( pDoc->hWndStatusBar, i, pDoc->PanelItems(i).wszToolTip )
-'      end if
-       
-'      select case ucase( pDoc->PanelItems(i).wszAutoSize )
-'         case "STATUSBARPANELAUTOSIZE.NONE"
-'            nPanelWidth    = val( pDoc->PanelItems(i).wszWidth )
-'            nPanelMinWidth = val( pDoc->PanelItems(i).wszMinWidth )
-'            if nPanelWidth < nPanelMinWidth then nPanelWidth = nPanelMinWidth
-'         case "STATUSBARPANELAUTOSIZE.CONTENTS"
-'            dim as HDC _hdc = GetDC(pDoc->hWndStatusBar)
-'            dim as SIZE _size 
-'            dim as HFONT oldfont = SelectObject( _hdc, pWindow->Font )
-'            dim as WString * MAX_PATH wszBuffer = " " & pDoc->PanelItems(i).wszText & " "
-'            GetTextExtentPoint32( _hdc, wszBuffer, len(wszBuffer), @_size)
-'            SelectObject( _hdc, oldfont )
-'            ReleaseDC( pDoc->hWndStatusBar, _hdc )
-'            nPanelWidth    = _size.cx
-'            nPanelMinWidth = val( pDoc->PanelItems(i).wszMinWidth )
-'            if nPanelWidth < nPanelMinWidth then nPanelWidth = nPanelMinWidth
-'         case "STATUSBARPANELAUTOSIZE.SPRING"
-'            nPanelWidth = 0
-'            iSpringIndex = i
-'      end select
-
-'      wszImageName = pDoc->PanelItems(i).pProp.wszPropValue
-'      hIcon = 0
-'      if len(wszImageName) then
-'         dim pImageType as IMAGES_TYPE ptr = GetImagesTypePtr(wszImageName)
-'         DestroyIcon( StatusBar_GetIcon( pDoc->hWndStatusBar, i ) )
-'         if pImageType then
-'            hIcon = AfxGdipIconFromFile( pImageType->wszFileName )
-'         end if
-'      end if
-
-'      ' If no hIcon defined then any previous icon will be removed
-'      StatusBar_SetIcon( pDoc->hWndStatusBar, i, hIcon ) 
-       
-'      rgPanelWidths(i) = pWindow->ScaleX(nPanelWidth)
-'      nTotalWidths = nTotalWidths + rgPanelWidths(i)
-       
-'   next
-
-'   if iSpringIndex <> -1 then rgPanelWidths(iSpringIndex) = rc.right - nTotalWidths
-    
-'   ' Set the right side panel measurments
-'   iRightSide = 0
-'   for i as long = lb to ub
-'      iRightSide = iRightSide + rgPanelWidths(i)   
-'      rgParts(i) = iRightSide
-'   next
-    
-'   If SendMessage( pDoc->hWndStatusBar, SB_SETPARTS, 5, Cast(LPARAM, @rgParts(0)) ) <> 0 Then
-'      SendMessage( pDoc->hWndStatusBar, SB_SIMPLE, False, 0 )
-'   End If
-
-'   ShowWindow( pDoc->hWndStatusBar, SW_SHOW )
 
    function = 0 
 End Function

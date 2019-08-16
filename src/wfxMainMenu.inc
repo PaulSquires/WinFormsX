@@ -240,7 +240,7 @@ function wfxMainMenu.CreateMenuStructure_Internal( byval hSubMenu as HMENU, _
    InsertMenuItem(hSubMenu, tMenuItem.MenuID, false, @itemInfo)
 
    For i As Long = 0 To NumItems - 1
-      ' Make sure that the mani menu handle propagates down through all of the MenuItems
+      ' Make sure that the main menu handle propagates down through all of the MenuItems
       this.CreateMenuStructure_Internal(itemInfo.hSubMenu, tMenuItem.MenuItem(i))
    Next
    
