@@ -513,7 +513,7 @@ Function wfxForm.SizeStatusBar() As Long
             if nPanelWidth < nPanelMinWidth then nPanelWidth = nPanelMinWidth
          end if
          nWidths(i) = iif(i, nWidths(i-1), 0) + nPanelWidth
-    NEXT
+      NEXT
       StatusBar_SetParts( pStatusBar->hWindow, pStatusBar->Panels.Count, @nWidths(0))
    end if
 

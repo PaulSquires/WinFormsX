@@ -185,6 +185,8 @@ Type wfxEventArgs Extends Object
       RButton           as boolean     ' the right mouse button pressed
       x                 as long        ' the x-coordinate of the mouse click
       y                 as long        ' the y-coordinate of the mouse click
+      PanelClickIndex   as long        ' the zero-based index of clicked statusbar panel 
+      ToolBarClickIndex as long        ' the zero-based index of clicked toolbar button
       hDrop             as HDROP       ' handle used for WM_DROPFILES message
 end type
 

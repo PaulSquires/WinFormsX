@@ -132,7 +132,7 @@ function wfxToolBar.Show(byval hWndParent as hwnd = 0) as long
    hImageListNormal   = ImageList_Create( nButtonWidth, nButtonHeight, ILC_COLOR32 Or ILC_MASK, 20, 1)
    hImageListHot      = ImageList_Create( nButtonWidth, nButtonHeight, ILC_COLOR32 Or ILC_MASK, 20, 1)
    hImageListDisabled = ImageList_Create( nButtonWidth, nButtonHeight, ILC_COLOR32 Or ILC_MASK, 20, 1)
-   
+
    ' Update the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
@@ -277,7 +277,6 @@ Property wfxToolBarButton.Enabled( ByVal nValue As boolean)
    end if
    _Enabled = nValue
 end property
-
 
 
 '' TOOLBARBUTTONS COLLECTION
