@@ -31,6 +31,7 @@ namespace WinFormsX
 #include once "wfxButton.bi"
 #Include Once "wfxMainMenu.bi"
 #Include Once "wfxStatusBar.bi"
+#Include Once "wfxToolBar.bi"
 #include once "wfxForm.bi"
 #include once "wfxLabel.bi"
 #Include Once "wfxFrame.bi"
@@ -62,6 +63,7 @@ namespace WinFormsX
 #include once "wfxPictureBox.inc"
 #Include Once "wfxMainMenu.inc"
 #Include Once "wfxStatusBar.inc"
+#Include Once "wfxToolBar.inc"
 #include once "wfxForm.inc"
 
 

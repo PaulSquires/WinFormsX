@@ -44,10 +44,11 @@ type wfxStatusBarPanel
       _Alignment   as StatusBarPanelAlignment
       _AutoSize    as StatusBarPanelAutoSize
       _BorderStyle as StatusBarPanelBorderStyle 
-      '_Icon
-      _MinWidth    as Long
+      _Icon        as wstring * MAX_PATH
       _Text        as CWSTR
-      _Width       as Long = 120
+      _ToolTip     as CWSTR
+      _Width       as Long = 100
+      _MinWidth    as Long = 0
      
    public:
       Declare Property hWindow() As hwnd
@@ -62,8 +63,14 @@ type wfxStatusBarPanel
       Declare Property BorderStyle( ByVal nValue As StatusBarPanelBorderStyle)
       declare property Text() as CWSTR
       declare property Text( byref wszValue as wstring )
+      declare property ToolTip() as CWSTR
+      declare property ToolTip( byref wszValue as wstring )
       Declare Property Width() As long
       Declare Property Width( ByVal nValue As long)
+      Declare Property MinWidth() As long
+      Declare Property MinWidth( ByVal nValue As long)
+      declare property Icon() as CWSTR
+      declare property Icon( byref cwzValue as wstring )
 
 END TYPE
 
@@ -85,7 +92,8 @@ END TYPE
 type wfxStatusBar extends wfxControl
    private:
       _hWindow    as hwnd
-      _SizingGrip as boolean 
+      _SizingGrip as boolean
+      _ClickIndex as long  
       _PanelsCollection as wfxStatusBarPanelsCollection
       
    public:
@@ -96,6 +104,8 @@ type wfxStatusBar extends wfxControl
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare Property SizingGrip() As boolean
       Declare Property SizingGrip( ByVal nValue As Boolean)
+      Declare Property ClickIndex() As long
+      Declare Property ClickIndex( ByVal nValue As long)
       declare function Show(byval hWndParent as hwnd = 0) as long override
       Declare Constructor
       declare destructor 

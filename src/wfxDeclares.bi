@@ -17,7 +17,6 @@ enum ControlType
    StatusBarPanel
    TabControl
    TextBox
-   ToolBar
    TrackBar
    Treeview
    Frame
@@ -25,6 +24,8 @@ enum ControlType
    ComboBox
    MainMenu
    RichEdit
+   ToolBar
+   ToolBarButton
 End Enum
 
 Enum FontStyles
@@ -169,23 +170,22 @@ type EventArgs as wfxEventArgs    ' forward reference
 Type wfxEventArgs Extends Object
    private:
    public:
-      Message         As UINT        ' Windows value of message being sent (WM_COMMAND, WM_NOTIFY, etc)
-      wParam          as WPARAM      ' the wParam of the raw message
-      lParam          as LPARAM      ' the lParam of the raw message
-      Handled         as Boolean     ' indicates whether the event is handled by the user
-      Cancel          as boolean     ' set to True to cancel closing of Form
-      Ctrl            as Boolean     ' the CTRL key is pressed
-      Alt             as Boolean     ' the Alt key is pressed
-      Shift           as Boolean     ' the SHIFT key is pressed
-      KeyChar         as long        ' stores the character corresponding to the key pressed
-      KeyCode         as long        ' stores the keyboard code for the event
-      LButton         as boolean     ' the left mouse button pressed
-      MButton         as boolean     ' the middle mouse button pressed
-      RButton         as boolean     ' the right mouse button pressed
-      x               as long        ' the x-coordinate of the mouse click
-      y               as long        ' the y-coordinate of the mouse click
-      PanelClickIndex as long        ' the zero-based index of clicked statusbar panel 
-      hDrop           as HDROP       ' handle used for WM_DROPFILES message
+      Message           As UINT        ' Windows value of message being sent (WM_COMMAND, WM_NOTIFY, etc)
+      wParam            as WPARAM      ' the wParam of the raw message
+      lParam            as LPARAM      ' the lParam of the raw message
+      Handled           as Boolean     ' indicates whether the event is handled by the user
+      Cancel            as boolean     ' set to True to cancel closing of Form
+      Ctrl              as Boolean     ' the CTRL key is pressed
+      Alt               as Boolean     ' the Alt key is pressed
+      Shift             as Boolean     ' the SHIFT key is pressed
+      KeyChar           as long        ' stores the character corresponding to the key pressed
+      KeyCode           as long        ' stores the keyboard code for the event
+      LButton           as boolean     ' the left mouse button pressed
+      MButton           as boolean     ' the middle mouse button pressed
+      RButton           as boolean     ' the right mouse button pressed
+      x                 as long        ' the x-coordinate of the mouse click
+      y                 as long        ' the y-coordinate of the mouse click
+      hDrop             as HDROP       ' handle used for WM_DROPFILES message
 end type
 
 

@@ -46,6 +46,7 @@ type wfxMenuItem
       _Shortcut        as CWSTR
       _Checked         as boolean
       _Grayed          as boolean
+      _Enabled         as boolean
       _IsParent        as boolean
       _ItemsCollection as wfxMenuItemsCollection
      
@@ -81,6 +82,8 @@ type wfxMenuItem
       Declare Property Checked( ByVal nValue As boolean)
       Declare Property Grayed() As boolean
       Declare Property Grayed( ByVal nValue As boolean)
+      Declare Property Enabled() As boolean
+      Declare Property Enabled( ByVal nValue As boolean)
       Declare Property Shortcut() As CWSTR
       Declare Property Shortcut( byref wszValue as wstring)
 

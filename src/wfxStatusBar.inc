@@ -61,6 +61,14 @@ property wfxStatusBar.SizingGrip( byval nValue as boolean )
    _SizingGrip = nValue
 end property
 
+property wfxStatusBar.ClickIndex() as long
+   property = _ClickIndex
+end property
+
+property wfxStatusBar.ClickIndex( byVal nValue as long)
+   _ClickIndex = nValue
+end property
+
 function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
 
    ' If the control is created but simply hidden, then show it.
@@ -152,7 +160,10 @@ end property
 
 property wfxStatusBarPanel.Text() as CWSTR
    if this.hWindow then 
+      _Text = string( MAX_PATH, 0 )
       StatusBar_GetText(this.hWindow, this.Index, _Text.vptr)
+      ' remove any leading TAB characters that handle the alignments
+      _Text = ltrim(_Text, chr(9))
    end if   
    property = _Text
 end property
@@ -164,6 +175,21 @@ property wfxStatusBarPanel.Text( byref wszValue as wstring )
    _Text = wszValue
 end property
 
+property wfxStatusBarPanel.ToolTip() as CWSTR
+   if this.hWindow then 
+      _ToolTip = string( MAX_PATH, 0 )
+      StatusBar_GetTipText( this.hWindow, this.Index, _ToolTip.vptr, MAX_PATH )
+   end if   
+   property = _ToolTip
+end property
+
+property wfxStatusBarPanel.ToolTip( byref wszValue as wstring )
+   if this.hWindow then 
+      StatusBar_SetTipText( this.hWindow, this.Index, @wszValue )
+   end if   
+   _ToolTip = wszValue
+end property
+
 property wfxStatusBarPanel.Width() as long
    property = _Width
 end property
@@ -171,6 +197,23 @@ end property
 property wfxStatusBarPanel.Width( byVal nValue as long)
    _Width = nValue
 end property
+
+property wfxStatusBarPanel.MinWidth() as long
+   property = _MinWidth
+end property
+
+property wfxStatusBarPanel.MinWidth( byVal nValue as long)
+   _MinWidth = nValue
+end property
+
+property wfxStatusBarPanel.Icon() as CWSTR
+   property = _Icon
+end property
+
+property wfxStatusBarPanel.Icon( byref cwzValue as wstring )
+   _Icon = cwzValue
+end property
+
 
 '' STATUSBARCOLLECTION
 constructor wfxStatusBarPanelsCollection

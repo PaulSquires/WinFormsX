@@ -126,6 +126,7 @@ end function
    dim pComboBox   as wfxComboBox ptr
    Dim pStatusBar  As wfxStatusBar Ptr
    Dim pMainMenu   As wfxMainMenu Ptr
+   Dim pToolBar    As wfxToolBar Ptr
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
@@ -145,6 +146,7 @@ end function
          Case ControlType.ComboBox:     pComboBox   = Cast(wfxComboBox Ptr, pNode->pData)
          Case ControlType.StatusBar:    pStatusBar  = Cast(wfxStatusBar Ptr, pNode->pData)
          Case ControlType.MainMenu:     pMainMenu   = Cast(wfxMainMenu Ptr, pNode->pData)
+         Case ControlType.ToolBar:      pToolBar    = Cast(wfxToolBar Ptr, pNode->pData)
       End Select
    End If   
 #EndMacro
@@ -672,13 +674,21 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                pMainMenu->OnClick(iMenuItem, e)
             end if
          else
-            ' Control 
+            ' Control
             pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
          end if
          
          
          If pNode Then
-            Select Case pNode->CtrlType 
+            Select Case pNode->CtrlType
+               case ControlType.ToolBar
+                  pToolBar = Cast(wfxToolBar Ptr, pNode->pData)
+                  if pToolBar then
+                     ' Convert the command id to button index
+                     pToolBar->ClickIndex = Toolbar_CommandToIndex(pToolBar->hWindow, loword(wParam))
+                     pToolBar->ClickDropDownIndex = -1
+                     if pToolBar->OnClick Then pToolBar->OnClick(*pToolBar, e)
+                  end if
                Case ControlType.Label
                   pLabel = Cast(wfxLabel Ptr, pNode->pData)
                   If pLabel AndAlso lNotification = STN_CLICKED AndAlso pLabel->OnClick Then pLabel->OnClick(*pLabel, e)
@@ -728,14 +738,30 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          If pNode Then
 
             Select Case pNode->CtrlType 
+               case ControlType.ToolBar
+                  pToolBar = Cast(wfxToolBar Ptr, pNode->pData)
+                  if pToolBar then
+                     if lNotification = TBN_DROPDOWN then
+                        Dim ptbn As NMTOOLBAR Ptr = Cast(NMTOOLBAR Ptr, pNMHDR)
+                        ' Convert the command id to button index
+                        pToolBar->ClickDropDownIndex = Toolbar_CommandToIndex(pToolBar->hWindow, ptbn->iItem)
+                        pToolBar->ClickIndex = -1
+                        if pToolBar->OnClick Then pToolBar->OnClick(*pToolBar, e)
+                     end if
+                  end if
+                  
                Case ControlType.StatusBar
                   ' Process clicking on the panels in the statusbar
                   pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
                   if pStatusBar then
-                     Dim lpnm As NMMOUSE Ptr = Cast(NMMOUSE Ptr, pNMHDR)
-                     e.PanelClickIndex = lpnm->dwItemSpec  
-                     e.x = lpnm->pt.x: e.y = lpnm->pt.y
-                     if pStatusBar andalso pStatusBar->OnClick then pStatusBar->OnClick(*pStatusBar, e)
+                     if lNotification = NM_CLICK then
+                        Dim lpnm As NMMOUSE Ptr = Cast(NMMOUSE Ptr, pNMHDR)
+                        e.x = lpnm->pt.x: e.y = lpnm->pt.y
+                        if pStatusBar andalso pStatusBar->OnClick then 
+                           pStatusBar->ClickIndex = lpnm->dwItemSpec  
+                           pStatusBar->OnClick(*pStatusBar, e)
+                        end if
+                     end if
                   end if
                   
                Case ControlType.PictureBox
@@ -768,7 +794,10 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          If pForm Then 
             ' If a StatusBar exists on this form then resize it.
             pForm->SizeStatusBar()
-            
+
+            ' If a ToolBar exists on this form then resize it.
+            pForm->SizeToolBar()
+
             ' Allow the user to respond to the size message
             If pForm->OnResize Then pForm->OnResize(*pForm, e)
          END IF

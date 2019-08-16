@@ -240,7 +240,7 @@ function wfxMainMenu.CreateMenuStructure_Internal( byval hSubMenu as HMENU, _
    InsertMenuItem(hSubMenu, tMenuItem.MenuID, false, @itemInfo)
 
    For i As Long = 0 To NumItems - 1
-      ' Make sure that the mani menu handle propagates down through all of the MenuItems
+      ' Make sure that the main menu handle propagates down through all of the MenuItems
       this.CreateMenuStructure_Internal(itemInfo.hSubMenu, tMenuItem.MenuItem(i))
    Next
    
@@ -295,6 +295,7 @@ constructor wfxMenuItem( ByRef wszText     As WString = "", _
    _Shortcut = wszShortcut
    _Checked  = bChecked
    _Grayed   = bGrayed
+   _Enabled  = not bGrayed
 end constructor
 
 destructor wfxMenuItem
@@ -425,6 +426,28 @@ property wfxMenuItem.Grayed( ByVal nValue As boolean)
       end if
    end if
    _Grayed = nValue
+END PROPERTY
+
+Property wfxMenuItem.Enabled() As boolean
+   if this.Handle then
+      if this.MenuParent->IsLoading = false then
+         _Enabled = not AfxIsMenuItemGrayed(this.Handle, this.MenuID, false)
+      end if
+   end if
+   property = _Enabled
+END PROPERTY
+
+property wfxMenuItem.Enabled( ByVal nValue As boolean) 
+   if this.Handle then
+      if this.MenuParent->IsLoading = false then
+         dim as long fState = iif(nValue, MFS_ENABLED, MFS_GRAYED)
+         AfxSetMenuItemState(this.Handle, this.MenuID, fState, false)
+         if AfxIsMenuItemPopup(this.Handle, this.MenuID, false ) then
+            AfxRedrawWindow(this.MenuParent->hWindowParent)
+         end if   
+      end if
+   end if
+   _Enabled = nValue
 END PROPERTY
 
 property wfxMenuItem.Text() as CWSTR
