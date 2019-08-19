@@ -1,3 +1,16 @@
+'    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
+'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'
+'    This program is free software: you can redistribute it and/or modify
+'    it under the terms of the GNU General Public License as published by
+'    the Free Software Foundation, either version 3 of the License, or
+'    (at your option) any later version.
+'
+'    This program is distributed in the hope that it will be useful,
+'    but WITHOUT any WARRANTY; without even the implied warranty of
+'    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
+'    GNU General Public License for more details.
+
 ''
 ''  WinFormsX.inc
 ''
@@ -43,6 +56,7 @@ namespace WinFormsX
 #include once "wfxOptionButton.bi"
 #Include Once "wfxListbox.bi"
 #Include Once "wfxComboBox.bi"
+#Include Once "wfxProgressBar.bi"
 #Include Once "wfxApplication.bi"
 
 #Include Once "wfxSize.inc"
@@ -61,6 +75,7 @@ namespace WinFormsX
 #Include Once "wfxLabel.inc"
 #include once "wfxFrame.inc"
 #include once "wfxPictureBox.inc"
+#Include Once "wfxProgressBar.inc"
 #Include Once "wfxMainMenu.inc"
 #Include Once "wfxStatusBar.inc"
 #Include Once "wfxToolBar.inc"

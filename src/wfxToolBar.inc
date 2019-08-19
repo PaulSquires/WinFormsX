@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -166,15 +166,15 @@ function wfxToolBar.Show(byval hWndParent as hwnd = 0) as long
             case ToolBarButton.DropDown:      dwStyle = TBSTYLE_DROPDOWN
             case ToolBarButton.WholeDropDown: dwStyle = BTNS_WHOLEDROPDOWN
          end select      
-         Toolbar_AddButton this.hWindow, i, 1000 + i, 0, dwStyle
+         Toolbar_AddButton this.hWindow, ii, 1000 + i, 0, dwStyle
       end if
 
    next
 
    ' Attach the ImageLists to the toolbar
    SendMessage this.hWindow, TB_SETIMAGELIST, 0, Cast(LPARAM, hImageListNormal)
-   SendMessage this.hWindow, TB_SETDISABLEDIMAGELIST, 0, Cast(LPARAM, hImageListDisabled)
    SendMessage this.hWindow, TB_SETHOTIMAGELIST, 0, Cast(LPARAM, hImageListHot)
+   SendMessage this.hWindow, TB_SETDISABLEDIMAGELIST, 0, Cast(LPARAM, hImageListDisabled)
 
    ' Size the toolbar
    SendMessage this.hWindow, TB_AUTOSIZE, 0, 0
@@ -266,14 +266,16 @@ end property
 
 Property wfxToolBarButton.Enabled() As boolean
    if this.hWindow then
-      _Enabled = SendMessage(this.hWindow, TB_ISBUTTONENABLED, cast(WPARAM, this.Index), 0)
+      dim as long idButton = 1000 + this.Index
+      _Enabled = SendMessage(this.hWindow, TB_ISBUTTONENABLED, cast(WPARAM, idButton), 0)
    end if
    property = _Enabled
 end property
 
 Property wfxToolBarButton.Enabled( ByVal nValue As boolean)
    if this.hWindow then
-      SendMessage(this.hWindow, TB_ENABLEBUTTON, cast(WPARAM, this.Index), cast(LPARAM, MAKELONG(nValue, 0)))
+      dim as long idButton = 1000 + this.Index
+      SendMessage(this.hWindow, TB_ENABLEBUTTON, cast(WPARAM, idButton), cast(LPARAM, MAKELONG(nValue, 0)) )
    end if
    _Enabled = nValue
 end property

@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -109,44 +109,46 @@ end function
 ''   M A C R O S
 ''
 #Macro WINFORMSX_DIM_POINTERS    
-   Dim pNode       As wfxLListNode Ptr
-   Dim e           As wfxEventArgs
-   Dim pCtrl       As wfxControl Ptr
-   Dim pForm       As wfxForm Ptr
-   Dim pLabel      As wfxLabel Ptr
-   Dim pFrame      As wfxFrame Ptr
-   Dim pPictureBox As wfxPictureBox Ptr
-   Dim pButton     As wfxButton Ptr
-   Dim pTextBox    As wfxTextBox Ptr
-   Dim pRichEdit   As wfxRichEdit Ptr
-   Dim pMaskedEdit As wfxMaskedEdit Ptr
-   Dim pCheckBox   As wfxCheckBox Ptr
-   Dim pOption     As wfxOptionButton Ptr
-   Dim pListBox    As wfxListBox Ptr
-   dim pComboBox   as wfxComboBox ptr
-   Dim pStatusBar  As wfxStatusBar Ptr
-   Dim pMainMenu   As wfxMainMenu Ptr
-   Dim pToolBar    As wfxToolBar Ptr
+   Dim pNode        As wfxLListNode Ptr
+   Dim e            As wfxEventArgs
+   Dim pCtrl        As wfxControl Ptr
+   Dim pForm        As wfxForm Ptr
+   Dim pLabel       As wfxLabel Ptr
+   Dim pFrame       As wfxFrame Ptr
+   Dim pPictureBox  As wfxPictureBox Ptr
+   Dim pButton      As wfxButton Ptr
+   Dim pTextBox     As wfxTextBox Ptr
+   Dim pRichEdit    As wfxRichEdit Ptr
+   Dim pMaskedEdit  As wfxMaskedEdit Ptr
+   Dim pCheckBox    As wfxCheckBox Ptr
+   Dim pOption      As wfxOptionButton Ptr
+   Dim pListBox     As wfxListBox Ptr
+   dim pComboBox    as wfxComboBox ptr
+   Dim pStatusBar   As wfxStatusBar Ptr
+   Dim pMainMenu    As wfxMainMenu Ptr
+   Dim pToolBar     As wfxToolBar Ptr
+   Dim pProgressBar As wfxProgressBar Ptr
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
       pCtrl = Cast(wfxControl Ptr, pNode->pData)
       Select Case pNode->CtrlType 
-         Case ControlType.Form:         pForm       = Cast(wfxForm Ptr, pNode->pData)
-         Case ControlType.Label:        pLabel      = Cast(wfxLabel Ptr, pNode->pData)
-         Case ControlType.Frame:        pFrame      = Cast(wfxFrame Ptr, pNode->pData)
-         Case ControlType.PictureBox:   pPictureBox = Cast(wfxPictureBox Ptr, pNode->pData)
-         Case ControlType.Button:       pButton     = Cast(wfxButton Ptr, pNode->pData)
-         Case ControlType.TextBox:      pTextBox    = Cast(wfxTextBox Ptr, pNode->pData)
-         Case ControlType.RichEdit:     pRichEdit   = Cast(wfxRichEdit Ptr, pNode->pData)
-         Case ControlType.MaskedEdit:   pMaskedEdit = Cast(wfxMaskedEdit Ptr, pNode->pData)
-         Case ControlType.CheckBox:     pCheckBox   = Cast(wfxCheckBox Ptr, pNode->pData)
-         Case ControlType.OptionButton: pOption     = Cast(wfxOptionButton Ptr, pNode->pData)
-         Case ControlType.ListBox:      pListBox    = Cast(wfxListBox Ptr, pNode->pData)
-         Case ControlType.ComboBox:     pComboBox   = Cast(wfxComboBox Ptr, pNode->pData)
-         Case ControlType.StatusBar:    pStatusBar  = Cast(wfxStatusBar Ptr, pNode->pData)
-         Case ControlType.MainMenu:     pMainMenu   = Cast(wfxMainMenu Ptr, pNode->pData)
-         Case ControlType.ToolBar:      pToolBar    = Cast(wfxToolBar Ptr, pNode->pData)
+         Case ControlType.Form:         pForm        = Cast(wfxForm Ptr, pNode->pData)
+         Case ControlType.Label:        pLabel       = Cast(wfxLabel Ptr, pNode->pData)
+         Case ControlType.Frame:        pFrame       = Cast(wfxFrame Ptr, pNode->pData)
+         Case ControlType.PictureBox:   pPictureBox  = Cast(wfxPictureBox Ptr, pNode->pData)
+         Case ControlType.Button:       pButton      = Cast(wfxButton Ptr, pNode->pData)
+         Case ControlType.TextBox:      pTextBox     = Cast(wfxTextBox Ptr, pNode->pData)
+         Case ControlType.RichEdit:     pRichEdit    = Cast(wfxRichEdit Ptr, pNode->pData)
+         Case ControlType.MaskedEdit:   pMaskedEdit  = Cast(wfxMaskedEdit Ptr, pNode->pData)
+         Case ControlType.CheckBox:     pCheckBox    = Cast(wfxCheckBox Ptr, pNode->pData)
+         Case ControlType.OptionButton: pOption      = Cast(wfxOptionButton Ptr, pNode->pData)
+         Case ControlType.ListBox:      pListBox     = Cast(wfxListBox Ptr, pNode->pData)
+         Case ControlType.ComboBox:     pComboBox    = Cast(wfxComboBox Ptr, pNode->pData)
+         Case ControlType.StatusBar:    pStatusBar   = Cast(wfxStatusBar Ptr, pNode->pData)
+         Case ControlType.MainMenu:     pMainMenu    = Cast(wfxMainMenu Ptr, pNode->pData)
+         Case ControlType.ToolBar:      pToolBar     = Cast(wfxToolBar Ptr, pNode->pData)
+         Case ControlType.ProgressBar:  pProgressBar = Cast(wfxProgressBar Ptr, pNode->pData)
       End Select
    End If   
 #EndMacro
@@ -164,6 +166,7 @@ end function
       If pStatusBar AndAlso pStatusBar->##msg Then pStatusBar->##msg(*pStatusBar, e)
       If pPictureBox AndAlso pPictureBox->##msg Then pPictureBox->##msg(*pPictureBox, e)
       If pFrame AndAlso pFrame->##msg Then pFrame->##msg(*pFrame, e)
+      If pProgressBar AndAlso pProgressBar->##msg Then pProgressBar->##msg(*pProgressBar, e)
    #EndIf
    ' ListBox doubleclicks are handled through LBN_DBLCLK notifications
    ' ListBox Clicks are handled through LBN_SELCHANGE

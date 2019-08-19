@@ -12,27 +12,96 @@
 '    GNU General Public License for more details.
 
 ''
-''  Frame Class
+''  ProgressBar Class
 ''
 ''
 
-#Include Once "wfxFrame.bi"
+#include once "wfxProgressBar.bi"
 
-constructor wfxFrame( byref wszName as wstring = "" )
-   this.CtrlType = ControlType.Frame
+constructor wfxProgressBar( byref wszName as wstring = "" )
+   this.CtrlType = ControlType.ProgressBar
    this.Name = wszName
-   this.BackColor = Colors.SystemControl
 End Constructor
 
-Property wfxFrame.UseMnemonic() As boolean
-   Property = _UseMnemonic
+destructor wfxProgressBar()
+   ''
+End Destructor
+
+
+property wfxProgressBar.Maximum() as long
+   if this.hWindow then 
+      _Maximum = ProgressBar_GetMaxRange( this.hWindow )
+   end if
+   property = _Maximum
 end property
 
-Property wfxFrame.UseMnemonic( ByVal nValue As boolean )
-   _UseMnemonic = nValue
+property wfxProgressBar.Maximum( byval nValue as long )
+   _Maximum = nValue   
+   if this.hWindow then 
+      _Minimum = ProgressBar_GetMinRange( this.hWindow )
+      ProgressBar_SetRange32( this.hWindow, _Minimum, _Maximum )
+   end if
 end property
 
-Function wfxFrame.Show(ByVal hWndParent As HWnd = 0) As Long
+property wfxProgressBar.Minimum() as long
+   if this.hWindow then 
+      _Minimum = ProgressBar_GetMinRange( this.hWindow )
+   end if
+   property = _Minimum
+end property
+
+property wfxProgressBar.Minimum( byval nValue as long )
+   _Minimum = nValue   
+   if this.hWindow then 
+      _Maximum = ProgressBar_GetMaxRange( this.hWindow )
+      ProgressBar_SetRange32( this.hWindow, _Minimum, _Maximum )
+   end if
+end property
+
+property wfxProgressBar.Value() as long
+   if this.hWindow then 
+      _Value = ProgressBar_GetPos( this.hWindow )
+   end if
+   property = _Value
+end property
+
+property wfxProgressBar.Value( byval nValue as long )
+   _Value = nValue   
+   if this.hWindow then 
+      ProgressBar_SetPos( this.hWindow, _Value )
+   end if
+end property
+
+property wfxProgressBar.StepValue() as long
+   if this.hWindow then 
+      ' SetStep returns the previous step value assigned to the control
+      _StepValue = ProgressBar_SetStep( this.hWindow, _StepValue )
+   end if
+   property = _StepValue
+end property
+
+property wfxProgressBar.StepValue( byval nValue as long )
+   _StepValue = nValue   
+   if this.hWindow then 
+      ProgressBar_SetStep( this.hWindow, _StepValue )
+   end if
+end property
+
+function wfxProgressBar.Increment( byval nValue as long ) as Long
+   if this.hWindow then 
+      ProgressBar_IncPos( this.hWindow, nValue )
+   end if
+   function = 0
+end function   
+
+function wfxProgressBar.PerformStep() as Long
+   if this.hWindow then 
+      ProgressBar_StepIt( this.hWindow )
+   end if
+   function = 0
+end function   
+
+function wfxProgressBar.Show(byval hWndParent as hwnd = 0) as long
 
    ' If the control is created but simply hidden, then show it.
    if this.hWindow THEN
@@ -44,16 +113,15 @@ Function wfxFrame.Show(ByVal hWndParent As HWnd = 0) As Long
    ' create this control when the form is created.
    if hWndParent = 0 THEN exit function
       
-   Dim As Long dwExStyle = WS_EX_TRANSPARENT
-   Dim As Long dwStyle = BS_GROUPBOX Or WS_CLIPSIBLINGS Or WS_CLIPCHILDREN
+   dim as long dwExStyle = 0
+   Dim As Long dwStyle = WS_CHILD
 
-   if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
-   If this.UseMnemonic = False Then dwStyle = dwStyle Or SS_NOPREFIX 
+   if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE 
    
    _CtrlID = this.Parent->GetNextCtrlID()
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
-         "GROUPBOX", _                     ' // Class name
+         "PROGRESSBAR", _                  ' // Class name
          hWndParent, _                     ' // Parent window handle
          _CtrlID, _                        ' // Control identifier 
          this.Text, _                      ' // Control caption
@@ -73,8 +141,10 @@ Function wfxFrame.Show(ByVal hWndParent As HWnd = 0) As Long
    If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
 
    ' Apply properties that require a valid window handle
-   this.Font        = _wfxFontPtr
-   this.Enabled     = _Enabled
+   this.Maximum   = _Maximum
+   this.Minimum   = _Minimum
+   this.Value     = _Value
+   this.Enabled   = _Enabled
 
    ' Store the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
