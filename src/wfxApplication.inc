@@ -736,6 +736,18 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pNMHDR = 0 then exit function
          Dim As Long lNotification = pNMHDR->code
          
+         if lNotification = TTN_GETDISPINFO then
+            dim lpttt as TOOLTIPTEXT ptr = cast(TOOLTIPTEXT ptr, pNMHDR)
+            dim tbb as wfxToolBarButton
+            pForm = Application.GetpFormObject(hWin)
+            if pForm then 
+               dim as long nIndex = Toolbar_CommandToIndex( pForm->ToolBar.hWindow, lpttt->hdr.idFrom )
+               tbb = pForm->ToolBar.Buttons.ByIndex(nIndex)
+               lpttt->lpszText = tbb.ToolTip
+               return CTRUE
+            end if   
+         end if
+
          pNode = Application.GetControlByHandle( pNMHDR->hwndFrom )
          
          If pNode Then

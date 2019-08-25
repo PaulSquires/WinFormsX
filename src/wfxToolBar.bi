@@ -33,7 +33,8 @@ type wfxToolBarButton
       _HotImage      as wstring * MAX_PATH
       _DisabledImage as wstring * MAX_PATH
       _Enabled       as boolean
-     
+      _CtrlID        as long = 100
+      
    public:
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)

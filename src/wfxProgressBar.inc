@@ -87,9 +87,40 @@ property wfxProgressBar.StepValue( byval nValue as long )
    end if
 end property
 
-function wfxProgressBar.Increment( byval nValue as long ) as Long
+property wfxProgressBar.Vertical( byval nValue as boolean ) 
+   _Vertical = nValue
+end property 
+
+property wfxProgressBar.Vertical() as boolean
+   property = _Vertical
+end property 
+
+property wfxProgressBar.Marquee( byval nValue as boolean ) 
+   _Marquee = nValue
+end property 
+
+property wfxProgressBar.Marquee() as boolean
+   property = _Marquee
+end property 
+
+property wfxProgressBar.MarqueeAnimationSpeed() as long
+   property = _MarqueeAnimationSpeed
+end property
+
+property wfxProgressBar.MarqueeAnimationSpeed( byval nValue as long )
+   _MarqueeAnimationSpeed = nValue   
    if this.hWindow then 
-      ProgressBar_IncPos( this.hWindow, nValue )
+      ProgressBar_SetMarquee( this.hWindow, false, _MarqueeAnimationSpeed )
+   end if
+end property
+
+function wfxProgressBar.StartMarquee( byval nValue as Boolean) as Long
+   if this.hWindow then 
+      if nValue = true then
+         ProgressBar_SetMarqueeOn( this.hWindow, _MarqueeAnimationSpeed )
+      else   
+         ProgressBar_SetMarqueeOff( this.hWindow )
+      end if 
    end if
    function = 0
 end function   
@@ -100,6 +131,8 @@ function wfxProgressBar.PerformStep() as Long
    end if
    function = 0
 end function   
+
+
 
 function wfxProgressBar.Show(byval hWndParent as hwnd = 0) as long
 
@@ -116,7 +149,9 @@ function wfxProgressBar.Show(byval hWndParent as hwnd = 0) as long
    dim as long dwExStyle = 0
    Dim As Long dwStyle = WS_CHILD
 
-   if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE 
+   if this.Visible  THEN dwStyle = dwStyle OR WS_VISIBLE 
+   if this.Vertical THEN dwStyle = dwStyle OR PBS_VERTICAL
+   if this.Marquee  then dwStyle = dwStyle OR PBS_MARQUEE
    
    _CtrlID = this.Parent->GetNextCtrlID()
 
@@ -146,6 +181,10 @@ function wfxProgressBar.Show(byval hWndParent as hwnd = 0) as long
    this.Value     = _Value
    this.Enabled   = _Enabled
 
+   if this.Marquee then
+      ProgressBar_SetMarquee( this.hWindow, false, _MarqueeAnimationSpeed )
+   end if
+   
    ' Store the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)

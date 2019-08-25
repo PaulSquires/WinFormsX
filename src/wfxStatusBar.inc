@@ -87,6 +87,8 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
    if this.SizingGrip THEN dwStyle = dwStyle OR SBARS_SIZEGRIP
    if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
+   _CtrlID = this.Parent->GetNextCtrlID()
+
    this.hWindow = _
          this.Parent->pWindow->AddControl ( _
          "STATUSBAR", _                    ' Class name
@@ -101,7 +103,7 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
          dwExStyle, _                      ' Extended style
          0, _                              ' Pointer to custom data
          Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), _   ' Address of the window callback procedure
-         100, _                            ' The subclass ID
+         _CtrlID, _                        ' The subclass ID
          Cast(DWORD_PTR, 0) _              ' Pointer to reference data
          )
 

@@ -95,6 +95,8 @@ function wfxToolBar.Show(byval hWndParent as hwnd = 0) as long
 
    if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
+   _CtrlID = this.Parent->GetNextCtrlID()
+
    ' Create the Rebar and ToolBar
    this.hRebar = _
          this.Parent->pWindow->AddControl("Rebar", hWndParent, 100)
@@ -113,7 +115,7 @@ function wfxToolBar.Show(byval hWndParent as hwnd = 0) as long
          dwExStyle, _                      ' Extended style
          0, _                              ' Pointer to custom data
          Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), _   ' Address of the window callback procedure
-         100, _                            ' The subclass ID
+         _CtrlID, _                        ' The subclass ID
          Cast(DWORD_PTR, 0) _              ' Pointer to reference data
          )
 
@@ -148,6 +150,7 @@ function wfxToolBar.Show(byval hWndParent as hwnd = 0) as long
 
       this.Button(i).hWindow = this.hWindow
       
+      ii = -1
       if this.Button(i).ButtonType = ToolBarButton.Separator then
          Toolbar_AddSeparator this.hWindow
       else

@@ -23,6 +23,9 @@ Type wfxProgressBar Extends wfxControl
       _Minimum       As long = 0
       _StepValue     As long = 1
       _Value         As long = 0
+      _Vertical      as Boolean = false
+      _Marquee       as Boolean = false
+      _MarqueeAnimationSpeed as long = 30   ' update every milliseonds 
       
    Public:
       Declare Constructor( byref wszName as wstring = "" )
@@ -35,8 +38,15 @@ Type wfxProgressBar Extends wfxControl
       Declare Property StepValue( ByVal nValue As long )
       Declare Property Value() As long
       Declare Property Value( ByVal nValue As long )
+      Declare Property Vertical() As boolean
+      Declare Property Vertical( ByVal nValue As boolean )
+      Declare Property Marquee() As boolean
+      Declare Property Marquee( ByVal nValue As boolean )
+      Declare Property MarqueeAnimationSpeed() As long
+      Declare Property MarqueeAnimationSpeed( ByVal nValue As long )
       declare function Increment( byval nValue as long ) as Long
       declare function PerformStep() as Long
+      declare function StartMarquee( byval nValue as Boolean) as Long
       declare function Show(byval hWndParent as hwnd = 0) as long override
 
       OnAllEvents        as function( byref sender as wfxProgressBar, byref e as EventArgs ) as LRESULT

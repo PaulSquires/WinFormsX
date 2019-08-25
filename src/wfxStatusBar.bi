@@ -49,6 +49,7 @@ type wfxStatusBarPanel
       _ToolTip     as CWSTR
       _Width       as Long = 100
       _MinWidth    as Long = 0
+      _CtrlID      as long = 100
      
    public:
       Declare Property hWindow() As hwnd

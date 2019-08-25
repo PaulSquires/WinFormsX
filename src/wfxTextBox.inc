@@ -340,7 +340,7 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
          dwExStyle, _                      ' // Extended style
          0, _                              ' // Pointer to custom data
          Cast(SUBCLASSPROC, @wfxApplication.SubclassProc), _   ' // Address of the window callback procedure
-         100, _                            ' // The subclass ID
+         _CtrlID, _                        ' // The subclass ID
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
  
