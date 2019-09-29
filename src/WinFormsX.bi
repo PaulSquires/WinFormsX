@@ -57,6 +57,7 @@ namespace WinFormsX
 #Include Once "wfxListbox.bi"
 #Include Once "wfxComboBox.bi"
 #Include Once "wfxProgressBar.bi"
+#Include Once "wfxListView.bi"
 #Include Once "wfxApplication.bi"
 
 #Include Once "wfxSize.inc"
@@ -76,6 +77,7 @@ namespace WinFormsX
 #include once "wfxFrame.inc"
 #include once "wfxPictureBox.inc"
 #Include Once "wfxProgressBar.inc"
+#Include Once "wfxListView.inc"
 #Include Once "wfxMainMenu.inc"
 #Include Once "wfxStatusBar.inc"
 #Include Once "wfxToolBar.inc"

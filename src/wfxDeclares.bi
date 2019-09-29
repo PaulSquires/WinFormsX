@@ -177,6 +177,18 @@ enum ComboBoxStyle
    DropDownList
 end enum
 
+enum SortOrder
+   None = 1
+   Ascending
+   Descending
+end enum
+
+enum ColumnHeaderStyle
+   None = 1
+   Clickable
+   NonClickable
+end enum
+
 
 type EventArgs as wfxEventArgs    ' forward reference
 Type wfxEventArgs Extends Object
