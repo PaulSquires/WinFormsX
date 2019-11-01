@@ -262,6 +262,7 @@ property wfxForm.MinimumWidth( byval nValue as long )
    _MinimumWidth = nValue
 end property
 
+#ifdef CODEGEN_BUTTON
 Property wfxForm.AcceptButton() As wfxButton ptr
    property = _AcceptButton
 END PROPERTY
@@ -277,6 +278,7 @@ END PROPERTY
 Property wfxForm.CancelButton( byval nValue as wfxButton ptr )
    _CancelButton = nValue
 END PROPERTY
+#endif
 
 'Property wfxForm.MainMenu() As wfxMainMenu 
 '   if _wfxMainMenuPtr = 0 then exit property
@@ -438,6 +440,7 @@ END function
 ''
 Function wfxForm.SizeToolBar() As Long
 
+#ifdef CODEGEN_TOOLBAR
    Dim pNode    As wfxLListNode Ptr
    dim pToolBar as wfxToolBar ptr
             
@@ -458,6 +461,7 @@ Function wfxForm.SizeToolBar() As Long
       cy = AfxGetWindowHeight( pToolBar->hRebar )
       SendMessage pToolBar->hRebar, WM_SIZE, cx, cy
    end if
+#endif
    
    function = 0   
 end function
@@ -468,6 +472,7 @@ end function
 ''
 Function wfxForm.SizeStatusBar() As Long
 
+#ifdef CODEGEN_STATUSBAR
    Dim pNode      As wfxLListNode Ptr
    dim pStatusBar as wfxStatusBar ptr
             
@@ -549,6 +554,7 @@ Function wfxForm.SizeStatusBar() As Long
          StatusBar_SetIcon( pStatusBar->hWindow, i, hIcon ) 
       End If   
    next
+#endif
 
    function = 0 
 End Function
@@ -653,7 +659,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
       CASE FormStartPosition.CenterScreen
          pt = this.CalculateStartPosition( rc, 0 )
    END SELECT
-   
+
    '  Create the main window based on properties set
    this.hWindow = this.pWindow->Create( hWndParent, _
                         this.Text, _
@@ -673,8 +679,10 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    pNode = Application.Forms.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
    
+   
    ' Create and show all of the child controls. Also track what control is being
    ' set as initially selected/focus
+   dim idx as Long = 0
    pNode = this.Controls.get_first
    do until pNode = 0
       pCtrl = cast(wfxControl ptr, pNode->pData)
@@ -687,7 +695,8 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
             If pCtrlFocus = 0 Then pCtrlFocus = pCtrl
          End If
       End If
-      pNode = this.Controls.get_next(pNode)
+      idx = idx + 1
+      pNode = this.Controls.get_next(idx)
    LOOP
 
    ' Setting the ClientSize property will override the width/height of the form
@@ -732,25 +741,29 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    
    
    ' Check for new focus control in case it was set in the OnLoad/OnShown event.
+   idx = 0
    pNode = this.Controls.get_first
    do until pNode = 0
       pCtrl = cast(wfxControl ptr, pNode->pData)
       if pCtrl then
          If pCtrl->Focused Then pCtrlFocus = pCtrl
       End If
-      pNode = this.Controls.get_next(pNode)
+      idx = idx + 1
+      pNode = this.Controls.get_next(idx)
    LOOP
 
    ' Set the focus/selected control which will also cause the Activate 
    ' message for the Form to fire. 
    If pCtrlFocus Then 
-      If pCtrlFocus->CtrlType = ControlType.TextBox Then
+#ifdef CODEGEN_TEXTBOX 
+     If pCtrlFocus->CtrlType = ControlType.TextBox Then
          Dim pTextBox As wfxTextBox Ptr = Cast(wfxTextBox Ptr, pCtrlFocus)
          If pTextBox->MultiLine = False Then
             pTextBox->SelectionStart = 0 
             pTextBox->SelectionLength = Len(pTextBox->Text)
          End If
       End If
+#endif
       SetFocus(pCtrlFocus->hWindow)
    End If
    
@@ -785,12 +798,14 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
                   Case WM_KEYDOWN, WM_KEYUP, WM_CHAR
                      Select Case uMsg.wParam
                         Case VK_TAB, VK_LEFT, VK_UP, VK_DOWN, VK_RIGHT, VK_PRIOR, VK_NEXT 
+                           idx = 0
                            Dim pNode As wfxLListNode Ptr = Application.Forms.get_first
                            Do Until pNode = 0
                               If IsDialogMessage(pNode->hWindow, @uMsg) Then
                                  bIsDialogMessage = True: Exit Do
                               end if
-                              pNode = Application.Forms.get_next(pNode)
+                              idx = idx + 1
+                              pNode = Application.Forms.get_next(idx)
                            Loop
                       End Select
                End Select

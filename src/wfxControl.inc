@@ -380,12 +380,14 @@ Function wfxControl.SelectNextControl( ByVal bForward As boolean ) As boolean
       Dim pCtrl As wfxControl Ptr
       pCtrl = Cast(wfxControl Ptr, pNode->pData)
       If pNode->CtrlType = ControlType.TextBox Then
+#ifdef CODEGEN_TEXTBOX
          Dim pTextBox As wfxTextBox Ptr
          pTextBox = Cast(wfxTextBox Ptr, pNode->pData)
          If pTextBox->MultiLine = False Then
             pTextBox->SelectionStart = 0 
             pTextBox->SelectionLength = Len(pTextBox->Text)
          End If
+#endif
       End If
    End If      
    SetFocus(hCtrl)

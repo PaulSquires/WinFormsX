@@ -375,18 +375,11 @@ function wfxComboBoxItemsCollection.Remove( byval nIndex as long ) as long
    if this.hWindow then
       function = SendMessage( this.hWindow, CB_DELETESTRING, nIndex, 0)
    else
-      dim pItem as wfxComboBoxItem ptr
-      dim pNode as wfxLListNode ptr
-      pNode = _Collection.get_first
-      do until pNode = 0
-         pItem = cast(wfxComboBoxItem ptr, pNode->pData)
-         if pItem->Index = nIndex then
-            _Collection.Remove(pNode)
-            exit do
-         END IF
-         pNode = _Collection.get_next(pNode)
-      LOOP
-      function = 0
+      dim pNode as wfxLListNode ptr = _Collection.get_index(nIndex)
+      if pNode then
+         Delete cast(wfxComboBoxItem ptr, pNode->pData)
+         _Collection.Remove(pNode)
+      end if   
    END IF
    function = _Collection.Size
 end function
@@ -394,15 +387,11 @@ end function
 function wfxComboBoxItemsCollection.ByIndex( byval nIndex as long ) byref as wfxComboBoxItem 
    dim pItem as wfxComboBoxItem ptr
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_first
-   do until pNode = 0
+   pNode = _Collection.get_index(nIndex)
+   if pNode then
       pItem = cast(wfxComboBoxItem ptr, pNode->pData)
-      if pItem->Index = nIndex then
-         exit do
-      END IF
-      pNode = _Collection.get_next(pNode)
-   LOOP
-   return *pItem
+      return *pItem
+   end if   
 end function
 
 function wfxComboBoxItemsCollection.Clear() as long

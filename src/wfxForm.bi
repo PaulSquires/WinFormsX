@@ -30,16 +30,26 @@ Type wfxForm Extends wfxControl
       _MinimumWidth    as Long = 0
       _MaximumHeight   as Long = 0
       _MaximumWidth    as Long = 0
+#ifdef CODEGEN_BUTTON
       _AcceptButton    as wfxButton ptr
       _CancelButton    as wfxButton ptr
+#endif
+#ifdef CODEGEN_MAINMENU
       _wfxMainMenuPtr  as wfxMainMenu ptr
+#endif
       _Icon            as wstring * MAX_PATH
       
    Public:           
       Controls         As wfxLList
+#ifdef CODEGEN_MAINMENU
       MainMenu         as wfxMainMenu
+#endif
+#ifdef CODEGEN_TOOLBAR
       ToolBar          as wfxToolBar
+#endif
+#ifdef CODEGEN_STATUSBAR
       StatusBar        as wfxStatusBar
+#endif      
       
       pWindow As CWindow Ptr
       declare function CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS HWND = NULL ) as POINT  'internal
@@ -77,10 +87,12 @@ Type wfxForm Extends wfxControl
       declare function ScaleY( byval nValue as long ) as Long
       declare function UnScaleX( byval nValue as long ) as Long
       declare function UnScaleY( byval nValue as long ) as Long
+#ifdef CODEGEN_BUTTON
       Declare Property AcceptButton() As wfxButton ptr
       Declare Property AcceptButton( byval nValue as wfxButton ptr )
       Declare Property CancelButton() As wfxButton ptr
       Declare Property CancelButton( byval nValue as wfxButton ptr )
+#endif
       'Declare Property MainMenu() As wfxMainMenu 
       'Declare Property MainMenu( byval nValue as wfxMainMenu ptr )
       declare property Icon() as CWSTR

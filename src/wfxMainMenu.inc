@@ -534,16 +534,11 @@ function wfxMenuItemsCollection.Remove( byval nIndex as long ) as long
    else
       dim pItem as wfxMenuItem ptr
       dim pNode as wfxLListNode ptr
-      pNode = _Collection.get_first
-      do until pNode = 0
-         pItem = cast(wfxMenuItem ptr, pNode->pData)
-         if pItem->Index = nIndex then
-            _Collection.Remove(pNode)
-            exit do
-         END IF
-         pNode = _Collection.get_next(pNode)
-      LOOP
-      function = 0
+      pNode = _Collection.get_index(nIndex)
+      if pNode then
+         Delete cast(wfxMenuItem ptr, pNode->pData)
+         _Collection.Remove(pNode)
+      end if
    END IF
    function = _Collection.Size
 end function
@@ -551,15 +546,11 @@ end function
 function wfxMenuItemsCollection.ByIndex( byval nIndex as long ) byref as wfxMenuItem 
    dim pItem as wfxMenuItem ptr
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_first
-   do until pNode = 0
+   pNode = _Collection.get_index(nIndex)
+   if pNode then
       pItem = cast(wfxMenuItem ptr, pNode->pData)
-      if pItem->Index = nIndex then
-         exit do
-      END IF
-      pNode = _Collection.get_next(pNode)
-   LOOP
-   return *pItem
+      return *pItem
+   end if
 end function
 
 function wfxMenuItemsCollection.Clear() as long

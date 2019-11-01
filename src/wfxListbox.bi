@@ -49,6 +49,7 @@ type wfxListBoxItemsCollection
       Declare Function SelectedCount() As Long
       Declare Function Remove( ByVal nIndex As Long ) As Long 
       Declare Function Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
+      Declare Function Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0 ) As Long 
       declare function ByIndex( byval nIndex as long ) byref as wfxListBoxItem
       Declare Constructor
       declare destructor 

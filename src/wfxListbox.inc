@@ -570,7 +570,16 @@ end function
 
 Function wfxListBoxItemsCollection.SelectedCount() As Long
    If this.hWindow Then
-      Function = SendMessage( this.hWindow, LB_GETSELCOUNT, 0, 0 )
+      dim as DWORD dwStyle = AfxGetWindowStyle(this.hWindow)
+      if (dwStyle and LBS_NOSEL) then
+         function = 0
+      elseif (dwStyle and LBS_MULTIPLESEL) then
+         Function = SendMessage( this.hWindow, LB_GETSELCOUNT, 0, 0 )
+      elseif (dwStyle and LBS_EXTENDEDSEL) then
+         Function = SendMessage( this.hWindow, LB_GETSELCOUNT, 0, 0 )
+      else
+         Function = iif( SendMessage(this.hWindow, LB_GETCURSEL, 0, 0) >= 0, 1, 0)
+      end if
    Else
       Dim As Long nSelCount = 0
       For i As Long = 0 To this.Count - 1
@@ -598,38 +607,43 @@ Function wfxListBoxItemsCollection.Add( ByRef wszValue As WString = "", ByVal nV
    END IF
 end function
 
+Function wfxListBoxItemsCollection.Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
+   If this.hWindow Then
+      Dim As Long idx = SendMessage( this.hWindow, LB_INSERTSTRING, nIndex, Cast(LPARAM, @wszValue) )
+      SendMessage( this.hWindow, LB_SETITEMDATA, idx, CAST(LPARAM, nValue))
+      Function = idx
+   Else
+      Dim pData As wfxListBoxItem Ptr = New wfxListBoxItem
+      pData->hWindow = this.hWindow
+      pData->Index = nIndex
+      pData->Text = wszValue
+      pData->Data32 = nValue
+      _Collection.Insert( nIndex, ControlType.ListBox, pData ) 
+      function = pData->Index
+   END IF
+end function
+
 function wfxListBoxItemsCollection.Remove( byval nIndex as long ) as long
    if this.hWindow then
       function = SendMessage( this.hWindow, LB_DELETESTRING, nIndex, 0)
    else
-      dim pItem as wfxListBoxItem ptr
-      dim pNode as wfxLListNode ptr
-      pNode = _Collection.get_first
-      do until pNode = 0
-         pItem = cast(wfxListBoxItem ptr, pNode->pData)
-         if pItem->Index = nIndex then
-            _Collection.Remove(pNode)
-            exit do
-         END IF
-         pNode = _Collection.get_next(pNode)
-      LOOP
-      function = 0
+      dim pNode as wfxLListNode ptr = _Collection.get_index(nIndex)
+      if pNode then
+         Delete cast(wfxListBoxItem ptr, pNode->pData)
+         _Collection.Remove(pNode)
+      end if   
    END IF
    function = _Collection.Size
 end function
 
 function wfxListBoxItemsCollection.ByIndex( byval nIndex as long ) byref as wfxListBoxItem 
-   dim pItem as wfxListBoxItem ptr
+   Dim pItem As wfxListBoxItem Ptr 
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_first
-   do until pNode = 0
-      pItem = cast(wfxListBoxItem ptr, pNode->pData)
-      if pItem->Index = nIndex then
-         exit do
-      END IF
-      pNode = _Collection.get_next(pNode)
-   LOOP
-   return *pItem
+   pNode = _Collection.get_index(nIndex)
+   if pNode then 
+      pItem = cast(wfxListBoxItem Ptr , pNode->pData)
+      return *pItem
+   end if
 end function
 
 function wfxListBoxItemsCollection.Clear() as long

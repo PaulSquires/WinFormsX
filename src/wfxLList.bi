@@ -12,13 +12,10 @@
 '    GNU General Public License for more details.
 
 ''
-''  CLASS LINKED LIST
-''  This is a doubly linked list based loosely on the C++ STL Container List syntax
+''  CLASS LIST (ARRAY BASED)
 ''
 
 type wfxLListNode
-   pNodePrev as wfxLListNode ptr
-   pNodeNext as wfxLListNode ptr
    CtrlType  as long      ' identifies the type of data pointed to in pData
    hWindow   as HWND      ' hwnd of form/control. Allows fast search/retrieval of data
    pData     as any ptr
@@ -26,18 +23,18 @@ end type
 
 type wfxLList
    private:
-      nodeCount   as Long
-      pNodeFirst  as wfxLListNode ptr    ' anchor to first node in list
-      pNodeLast   as wfxLListNode ptr    ' anchor to last node in list
+      redim _ListArray(any) as wfxLListNode ptr 
       
    public:
       declare constructor
       declare destructor
       declare function size() as Long
+      declare function insert( byval nIndex as long, byval CtrlType as long, byval pData as any ptr) as wfxLListNode ptr
       declare function add( byval CtrlType as long, byval pData as any ptr) as wfxLListNode ptr
       declare function remove( byval pNodeDelete as wfxLListNode ptr ) as wfxLListNode ptr
       declare function get_first() as wfxLListNode ptr
-      declare function get_next( byval pNode as wfxLListNode ptr ) as wfxLListNode ptr
+      declare function get_next( byval idx as long ) as wfxLListNode ptr
+      declare function get_index( byval idx as long ) as wfxLListNode ptr
       declare function search_data( byval pData as any ptr ) as wfxLListNode ptr
       declare function search_handle( byval hWindow as hwnd) as wfxLListNode ptr
       declare function search_controltype( byval nCtrlType as ControlType) as wfxLListNode ptr

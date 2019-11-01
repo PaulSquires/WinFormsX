@@ -113,42 +113,108 @@ end function
    Dim e            As wfxEventArgs
    Dim pCtrl        As wfxControl Ptr
    Dim pForm        As wfxForm Ptr
+#ifdef CODEGEN_LABEL
    Dim pLabel       As wfxLabel Ptr
+#endif
+#ifdef CODEGEN_FRAME
    Dim pFrame       As wfxFrame Ptr
+#endif
+#ifdef CODEGEN_PICTUREBOX
    Dim pPictureBox  As wfxPictureBox Ptr
+#endif
+#ifdef CODEGEN_BUTTON
    Dim pButton      As wfxButton Ptr
+#endif
+#ifdef CODEGEN_TEXTBOX
    Dim pTextBox     As wfxTextBox Ptr
+#endif
+#ifdef CODEGEN_RICHEDIT
    Dim pRichEdit    As wfxRichEdit Ptr
+#endif
+#ifdef CODEGEN_MASKEDEDIT
    Dim pMaskedEdit  As wfxMaskedEdit Ptr
+#endif
+#ifdef CODEGEN_CHECKBOX
    Dim pCheckBox    As wfxCheckBox Ptr
+#endif
+#ifdef CODEGEN_OPTIONBUTTON
    Dim pOption      As wfxOptionButton Ptr
+#endif
+#ifdef CODEGEN_LISTBOX
    Dim pListBox     As wfxListBox Ptr
+#endif
+#ifdef CODEGEN_COMBOBOX
    dim pComboBox    as wfxComboBox ptr
+#endif
+#ifdef CODEGEN_STATUSBAR
    Dim pStatusBar   As wfxStatusBar Ptr
+#endif   
+#ifdef CODEGEN_MAINMENU
    Dim pMainMenu    As wfxMainMenu Ptr
+#endif
+#ifdef CODEGEN_TOOLBAR
    Dim pToolBar     As wfxToolBar Ptr
+#endif   
+#ifdef CODEGEN_PROGRESSBAR
    Dim pProgressBar As wfxProgressBar Ptr
+#endif
+#ifdef CODEGEN_LISTVIEW
+   Dim pListView    As wfxListView Ptr
+#endif
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
       pCtrl = Cast(wfxControl Ptr, pNode->pData)
       Select Case pNode->CtrlType 
          Case ControlType.Form:         pForm        = Cast(wfxForm Ptr, pNode->pData)
+#ifdef CODEGEN_LABEL
          Case ControlType.Label:        pLabel       = Cast(wfxLabel Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_FRAME
          Case ControlType.Frame:        pFrame       = Cast(wfxFrame Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_PICTUREBOX
          Case ControlType.PictureBox:   pPictureBox  = Cast(wfxPictureBox Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_BUTTON
          Case ControlType.Button:       pButton      = Cast(wfxButton Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_TEXTBOX
          Case ControlType.TextBox:      pTextBox     = Cast(wfxTextBox Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_RICHEDIT
          Case ControlType.RichEdit:     pRichEdit    = Cast(wfxRichEdit Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_MASKEDEDIT
          Case ControlType.MaskedEdit:   pMaskedEdit  = Cast(wfxMaskedEdit Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_CHECKBOX
          Case ControlType.CheckBox:     pCheckBox    = Cast(wfxCheckBox Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_OPTIONBUTTON
          Case ControlType.OptionButton: pOption      = Cast(wfxOptionButton Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_LISTBOX
          Case ControlType.ListBox:      pListBox     = Cast(wfxListBox Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_COMBOBOX
          Case ControlType.ComboBox:     pComboBox    = Cast(wfxComboBox Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_STATUSBAR
          Case ControlType.StatusBar:    pStatusBar   = Cast(wfxStatusBar Ptr, pNode->pData)
+#endif            
+#ifdef CODEGEN_MAINMENU
          Case ControlType.MainMenu:     pMainMenu    = Cast(wfxMainMenu Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_TOOLBAR
          Case ControlType.ToolBar:      pToolBar     = Cast(wfxToolBar Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_PROGRESSBAR
          Case ControlType.ProgressBar:  pProgressBar = Cast(wfxProgressBar Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_LISTVIEW
+         Case ControlType.ListView:     pListView    = Cast(wfxListView Ptr, pNode->pData)
+#endif
       End Select
    End If   
 #EndMacro
@@ -161,26 +227,53 @@ end function
          If pForm AndAlso pForm->##msg Then pForm->##msg(*pForm, e)
       #EndIf
       #If(#msg <> "OnMouseDoubleClick")  ' Handled through STN_DBLCLK notification
+#ifdef CODEGEN_LABEL
          If pLabel AndAlso pLabel->##msg Then pLabel->##msg(*pLabel, e)
+#endif
       #EndIf
+#ifdef CODEGEN_TOOLBAR
       If pStatusBar AndAlso pStatusBar->##msg Then pStatusBar->##msg(*pStatusBar, e)
+#endif
+#ifdef CODEGEN_PICTUREBOX
       If pPictureBox AndAlso pPictureBox->##msg Then pPictureBox->##msg(*pPictureBox, e)
+#endif
+#ifdef CODEGEN_FRAME
       If pFrame AndAlso pFrame->##msg Then pFrame->##msg(*pFrame, e)
+#endif
+#ifdef CODEGEN_PROGRESSBAR
       If pProgressBar AndAlso pProgressBar->##msg Then pProgressBar->##msg(*pProgressBar, e)
+#endif
    #EndIf
    ' ListBox doubleclicks are handled through LBN_DBLCLK notifications
    ' ListBox Clicks are handled through LBN_SELCHANGE
    ' ComboBox Clicks are handled through CBN_SELCHANGE
    #If(#msg <> "OnMouseDoubleClick" AndAlso #msg <> "OnClick")  
+#ifdef CODEGEN_LISTBOX
       If pListBox AndAlso pListBox->##msg Then pListBox->##msg(*pListBox, e)
+#endif
+#ifdef CODEGEN_COMBOBOX
       If pComboBox AndAlso pComboBox->##msg Then pComboBox->##msg(*pComboBox, e)
+#endif
    #EndIf
+
+#ifdef CODEGEN_BUTTON
    If pButton AndAlso pButton->##msg Then pButton->##msg(*pButton, e)
+#endif
+#ifdef CODEGEN_TEXTBOX 
    If pTextBox AndAlso pTextBox->##msg Then pTextBox->##msg(*pTextBox, e)
+#endif
+#ifdef CODEGEN_RICHEDIT
    If pRichEdit AndAlso pRichEdit->##msg Then pRichEdit->##msg(*pRichEdit, e)
+#endif
+#ifdef CODEGEN_MASKEDEDIT
    If pMaskedEdit AndAlso pMaskedEdit->##msg Then pMaskedEdit->##msg(*pMaskedEdit, e)
+#endif
+#ifdef CODEGEN_CHECKBOX
    If pCheckBox AndAlso pCheckBox->##msg Then pCheckBox->##msg(*pCheckBox, e)
+#endif
+#ifdef CODEGEN_OPTIONBUTTON
    If pOption AndAlso pOption->##msg Then pOption->##msg(*pOption, e)
+#endif
 #EndMacro
 ''
 ''
@@ -272,6 +365,7 @@ Function wfxApplication.PreprocessMessage( ByVal hWndForm As HWnd, _
    ' If a button has been set for ACCEPTBUTTON or CANCELBUTTON then send Click
    ' message to that button. We need to get the activewindow because this could
    ' a popup window.
+#ifdef CODEGEN_BUTTON
    If pMsg->message = WM_KEYDOWN Then
       If pMsg->wParam = VK_RETURN Then
          pActiveForm = Application.GetpFormObject(hWndForm)
@@ -295,6 +389,7 @@ Function wfxApplication.PreprocessMessage( ByVal hWndForm As HWnd, _
          End If   
       End If
    End If
+#endif
             
    ' Handle any form level keypreview. All keys are previewed included the TAB
    ' key that would normally move focus input amongst controls.
@@ -322,6 +417,7 @@ Function wfxApplication.PreprocessMessage( ByVal hWndForm As HWnd, _
    ' If this is a multiline textbox then test to see if a TAB key should be
    ' allowed as a valid character (the default action) or if the TAB should
    ' move control focus.
+#ifdef CODEGEN_TEXTBOX
    If (pMsg->message = WM_KEYDOWN) AndAlso (pMsg->wParam = VK_TAB) Then
       Dim pNode As wfxLListNode Ptr
       Dim pCtrl As wfxControl Ptr
@@ -346,7 +442,8 @@ Function wfxApplication.PreprocessMessage( ByVal hWndForm As HWnd, _
          End If
       End If      
    End If
-   
+#endif
+
    Return False
 End Function
 
@@ -386,6 +483,7 @@ function wfxApplication.GetControlByHandle( byval hWindow as hwnd ) as wfxLListN
    dim pNodeCtrl as wfxLListNode ptr
    dim pNode as wfxLListNode ptr
    dim pForm as wfxForm ptr
+   dim idx as long = 0
    
    ' Search all Forms and each control in each Form.
    pNode = this.Forms.get_first
@@ -396,8 +494,9 @@ function wfxApplication.GetControlByHandle( byval hWindow as hwnd ) as wfxLListN
       pForm = cast(wfxForm ptr, pNode->pData)
       pNodeCtrl = pForm->Controls.search_handle(hWindow)
       if pNodeCtrl then return pNodeCtrl
-      ' Get the form in the application   
-      pNode = this.Forms.get_next(pNode)
+      ' Get the next form in the application 
+      idx = idx + 1  
+      pNode = this.Forms.get_next(idx)
    LOOP
    function = 0
 end function
@@ -449,9 +548,12 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
       Case WM_MOUSEMOVE
          WINFORMSX_HANDLE_MESSAGE(OnMouseMove)
          ' If this is a Label/ListBox then redraw so hot colors will be used
+#ifdef CODEGEN_LABEL
          if pLabel then pLabel->Refresh
+#endif
+#ifdef CODEGEN_LISTBOX
          if pListBox then pListBox->Refresh
-         
+#endif         
          ' There is no such thing as a WM_MOUSEENTER message so we need to simulate it
          ' here by using a tracking variable and TRACKMOUSEEVENT.
          If pCtrl Then
@@ -471,8 +573,12 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          If pCtrl Then pCtrl->IsTracking = False 
          WINFORMSX_HANDLE_MESSAGE(OnMouseLeave)
          ' If this is a Label/ListBox then redraw so normal colors will be used
+#ifdef CODEGEN_LABEL
          if pLabel then pLabel->Refresh
+#endif
+#ifdef CODEGEN_LISTBOX
          if pListBox then pListBox->Refresh
+#endif         
       
       
       Case WM_MOUSEHOVER
@@ -494,8 +600,12 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          ' Forms and TextBoxes convert LBUTTONUP to simulate OnClick()
          If uMsg = WM_LBUTTONUP Then
             If pForm AndAlso pForm->OnClick Then pForm->OnClick(*pForm, e)
+#ifdef CODEGEN_TEXTBOX
             If pTextBox AndAlso pTextBox->OnClick Then pTextBox->OnClick(*pTextBox, e)
+#endif
+#ifdef CODEGEN_RICHEDIT
             If pRichEdit AndAlso pRichEdit->OnClick Then pRichEdit->OnClick(*pRichEdit, e)
+#endif
          End If
          
       
@@ -633,6 +743,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          '         The high-order word indicates whether the drop-down menu is the 
          '         window menu. If the menu is the window menu, this parameter 
          '         is TRUE; otherwise, it is FALSE.
+#ifdef CODEGEN_MAINMENU
          if hiword( lParam ) = false then
             pForm = Application.GetpFormObject(hWin)
             if pForm then pNode = pForm->Controls.search_controltype(ControlType.MainMenu)
@@ -642,7 +753,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                pMainMenu->OnPopup(iMenuItem, e)
             end if
          end if
-         
+#endif         
       
       case WM_COMMAND
          ' wParam: LOWORD contains the button's control identifier. 
@@ -667,6 +778,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
          ' Handle the different types of notifications
          if (lNotification = 0 or lNotification = 1) andalso (lParam = 0) then
+#ifdef CODEGEN_MAINMENU
             ' Menu notification or accelerator key
             if pForm then pNode = pForm->Controls.search_controltype(ControlType.MainMenu)
             if pNode then pMainMenu = cast(wfxMainMenu ptr, pNode->pData)
@@ -676,6 +788,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                dim byref iMenuItem as wfxMenuItem = pMainMenu->ByMenuID(loword(wParam))
                pMainMenu->OnClick(iMenuItem, e)
             end if
+#endif
          else
             ' Control
             pNode = Application.GetControlByHandle( Cast(HWnd, lParam) )
@@ -684,6 +797,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          
          If pNode Then
             Select Case pNode->CtrlType
+#ifdef CODEGEN_TOOLBAR
                case ControlType.ToolBar
                   pToolBar = Cast(wfxToolBar Ptr, pNode->pData)
                   if pToolBar then
@@ -692,34 +806,52 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      pToolBar->ClickDropDownIndex = -1
                      if pToolBar->OnClick Then pToolBar->OnClick(*pToolBar, e)
                   end if
+#endif
+#ifdef CODEGEN_LABEL
                Case ControlType.Label
                   pLabel = Cast(wfxLabel Ptr, pNode->pData)
                   If pLabel AndAlso lNotification = STN_CLICKED AndAlso pLabel->OnClick Then pLabel->OnClick(*pLabel, e)
                   If pLabel AndAlso lNotification = STN_DBLCLK AndAlso pLabel->OnMouseDoubleClick Then pLabel->OnMouseDoubleClick(*pLabel, e)
                   if pLabel then pLabel->Refresh
+#endif
+#ifdef CODEGEN_BUTTON
                Case ControlType.Button
                   pButton = Cast(wfxButton Ptr, pNode->pData)
                   If pButton AndAlso lNotification = BN_CLICKED AndAlso pButton->OnClick Then pButton->OnClick(*pButton, e)
+#endif
+#ifdef CODEGEN_CHECKBOX
                Case ControlType.CheckBox
                   pCheckBox = Cast(wfxCheckBox Ptr, pNode->pData)
                   If pCheckBox AndAlso lNotification = BN_CLICKED AndAlso pCheckBox->OnClick Then pCheckBox->OnClick(*pCheckBox, e)
+#endif
+#ifdef CODEGEN_OPTIONBUTTON
                Case ControlType.OptionButton
                   pOption = Cast(wfxOptionButton Ptr, pNode->pData)
                   If pOption AndAlso lNotification = BN_CLICKED AndAlso pOption->OnClick Then pOption->OnClick(*pOption, e)
+#endif
+#ifdef CODEGEN_TEXTBOX
                Case ControlType.TextBox
                   pTextBox = Cast(wfxTextBox Ptr, pNode->pData)
                   If pTextBox AndAlso lNotification = EN_CHANGE AndAlso pTextBox->OnTextChanged Then pTextBox->OnTextChanged(*pTextBox, e)
+#endif
+#ifdef CODEGEN_RICHEDIT
                Case ControlType.RichEdit
                   pRichEdit = Cast(wfxRichEdit Ptr, pNode->pData)
                   If pRichEdit AndAlso lNotification = EN_CHANGE AndAlso pRichEdit->OnTextChanged Then pRichEdit->OnTextChanged(*pRichEdit, e)
+#endif
+#ifdef CODEGEN_MASKEDEDIT
                Case ControlType.MaskedEdit
                   pMaskedEdit = Cast(wfxMaskedEdit Ptr, pNode->pData)
                   If pMaskedEdit AndAlso lNotification = EN_CHANGE AndAlso pMaskedEdit->OnTextChanged Then pMaskedEdit->OnTextChanged(*pMaskedEdit, e)
+#endif
+#ifdef CODEGEN_LISTBOX
                Case ControlType.ListBox
                   pListBox = Cast(wfxListBox Ptr, pNode->pData)
                   If pListBox AndAlso lNotification = LBN_DBLCLK AndAlso pListBox->OnMouseDoubleClick Then pListBox->OnMouseDoubleClick(*pListBox, e)
                   If pListBox AndAlso lNotification = LBN_SELCHANGE AndAlso pListBox->OnClick Then pListBox->OnClick(*pListBox, e)
                   if pListBox then pListBox->Refresh
+#endif
+#ifdef CODEGEN_COMBOBOX
                Case ControlType.ComboBox
                   pComboBox = Cast(wfxComboBox Ptr, pNode->pData)
                   If pComboBox AndAlso lNotification = CBN_DBLCLK AndAlso pComboBox->OnMouseDoubleClick Then pComboBox->OnMouseDoubleClick(*pComboBox, e)
@@ -727,6 +859,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   If pComboBox AndAlso lNotification = CBN_DROPDOWN AndAlso pComboBox->OnDropDown Then pComboBox->OnDropDown(*pComboBox, e)
                   If pComboBox AndAlso lNotification = CBN_CLOSEUP AndAlso pComboBox->OnDropDownClosed Then pComboBox->OnDropDownClosed(*pComboBox, e)
                   If pComboBox AndAlso lNotification = CBN_EDITCHANGE AndAlso pComboBox->OnTextChanged Then pComboBox->OnTextChanged(*pComboBox, e)
+#endif
+               Case Else
+                  ' To prevent an empty case structure
             End Select
          End If
          
@@ -736,6 +871,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pNMHDR = 0 then exit function
          Dim As Long lNotification = pNMHDR->code
          
+#ifdef CODEGEN_TOOLBAR
          if lNotification = TTN_GETDISPINFO then
             dim lpttt as TOOLTIPTEXT ptr = cast(TOOLTIPTEXT ptr, pNMHDR)
             dim tbb as wfxToolBarButton
@@ -747,12 +883,112 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                return CTRUE
             end if   
          end if
+#endif
 
          pNode = Application.GetControlByHandle( pNMHDR->hwndFrom )
          
          If pNode Then
 
             Select Case pNode->CtrlType 
+
+#ifdef CODEGEN_LISTVIEW
+               case ControlType.ListView
+                  pListView = Cast(wfxListView Ptr, pNode->pData)
+
+                  if lNotification = LVN_ITEMCHANGED then
+                     if pListView->OnClick Then pListView->OnClick(*pListView, e)
+                  end if   
+                  
+                  if lNotification = LVN_KEYDOWN then
+                     dim plvkd as NMLVKEYDOWN ptr = cast(NMLVKEYDOWN ptr, pNMHDR)
+                     ' user pressed space, toggle flag on selected item
+                     if plvkd->wVKey = VK_SPACE then
+                        ' Toggle if some item is selected
+                        if pListView->SelectedIndex <> -1 then
+                           pListView->Item(pListView->SelectedIndex).Checked = _
+                              not pListView->Item(pListView->SelectedIndex).Checked
+                           pListView->Refresh   
+                        end if
+                     end if
+                     return false
+                  end if
+                  
+                  if lNotification = NM_CLICK then
+                     dim plvnm as NMITEMACTIVATE ptr = cast(NMITEMACTIVATE ptr, pNMHDR)
+                     dim hitinfo as LVHITTESTINFO
+                     ' Copy click point
+                     hitinfo.pt = plvnm->ptAction
+
+                     ' Make the hit test...
+                     dim as long nItem = SendMessage( pListView->hWindow, LVM_HITTEST, 0, cast(LONG_PTR, @hitinfo) )
+                     if nItem <> -1 then
+                        ' We hit one item... did we hit state image (check box)?
+                        if (hitInfo.flags and LVHT_ONITEM) <> LVHT_ONITEM then
+                           if (hitinfo.flags and LVHT_ONITEMSTATEICON) then
+                              pListView->Item(nItem).Checked = not pListView->Item(nItem).Checked
+                              pListView->Refresh   
+                           end if
+                        end if
+                     end if
+                     return false
+                  end if
+                      
+                  if lNotification = LVN_GETDISPINFO then
+                     dim plvdi as NMLVDISPINFO ptr = cast(NMLVDISPINFO ptr, pNMHDR)
+                     
+                     dim as long nItem = plvdi->item.iItem
+                     dim as long nSubItem = plvdi->item.iSubItem
+               
+                     if (plvdi->item.mask and LVIF_TEXT) then
+                        plvdi->item.pszText = pListView->Item(nItem).SubItem(nSubItem).Text.sptr
+                        plvdi->item.cchTextMax = len(pListView->Item(nItem).SubItem(nSubItem).Text)
+                     end if
+                        
+                     if (plvdi->item.mask and LVIF_IMAGE) then  
+                       
+                        ' Show check box?
+                        if pListView->CheckBoxes then
+                       
+                           ' To enable check box, we have to enable state mask.
+                           plvdi->item.mask = (plvdi->item.mask or LVIF_STATE)
+                           plvdi->item.stateMask = LVIS_STATEIMAGEMASK
+
+                           if pListView->Item(nItem).Checked then
+                               ' Turn check box on
+                               plvdi->item.state = INDEXTOSTATEIMAGEMASK(2)
+                           else
+                               ' Turn check box off
+                               plvdi->item.state = INDEXTOSTATEIMAGEMASK(1)
+                           end if
+                        end if
+                     end if
+    
+                     return CTRUE
+                  end if
+
+                  if lNotification = NM_CUSTOMDRAW then
+                
+                     dim plvcd as NMLVCUSTOMDRAW ptr = cast(NMLVCUSTOMDRAW ptr, pNMHDR)
+                     Select Case plvcd->nmcd.dwDrawStage
+                     
+                         Case CDDS_PREPAINT, CDDS_ITEMPREPAINT
+                              return CDRF_NOTIFYSUBITEMDRAW
+                              
+                         Case CDDS_ITEMPREPAINT Or CDDS_SUBITEM
+                              ' to retrieve the line and column number of the cell
+                              dim as long nItem = plvcd->nmcd.dwItemSpec 
+                              dim as long nSubItem = plvcd->iSubItem     
+                             
+                              plvcd->clrText   = pListView->Item(nItem).SubItem(nSubItem).ForeColor
+                              plvcd->clrTextBk = pListView->Item(nItem).SubItem(nSubItem).BackColor
+                                 
+                              return CDRF_NEWFONT
+                                                        
+                     End Select
+                  End if
+#endif
+                  
+#ifdef CODEGEN_TOOLBAR
                case ControlType.ToolBar
                   pToolBar = Cast(wfxToolBar Ptr, pNode->pData)
                   if pToolBar then
@@ -764,7 +1000,9 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         if pToolBar->OnClick Then pToolBar->OnClick(*pToolBar, e)
                      end if
                   end if
-                  
+#endif
+
+#ifdef CODEGEN_STATUSBAR
                Case ControlType.StatusBar
                   ' Process clicking on the panels in the statusbar
                   pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
@@ -778,12 +1016,17 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         end if
                      end if
                   end if
+#endif
                   
+#ifdef CODEGEN_PICTUREBOX
                Case ControlType.PictureBox
                   pPictureBox = Cast(wfxPictureBox Ptr, pNode->pData)
                   If pPictureBox AndAlso lNotification = NM_CLICK AndAlso pPictureBox->OnClick Then pPictureBox->OnClick(*pPictureBox, e)
                   If pPictureBox AndAlso lNotification = NM_DBLCLK AndAlso pPictureBox->OnMouseDoubleClick Then pPictureBox->OnMouseDoubleClick(*pPictureBox, e)
+#endif
                   
+               Case Else
+               
             end select
             
          end if
@@ -807,11 +1050,15 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
       Case WM_SIZE
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
+#ifdef CODEGEN_STATUSBAR
             ' If a StatusBar exists on this form then resize it.
             pForm->SizeStatusBar()
+#endif
 
+#ifdef CODEGEN_TOOLBAR
             ' If a ToolBar exists on this form then resize it.
             pForm->SizeToolBar()
+#endif
 
             ' Allow the user to respond to the size message
             If pForm->OnResize Then pForm->OnResize(*pForm, e)
@@ -853,9 +1100,11 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
 
       case WM_MEASUREITEM
+#ifdef CODEGEN_LISTBOX
          dim lpmis As MEASUREITEMSTRUCT Ptr = cast( MEASUREITEMSTRUCT Ptr, lParam )
          if lpmis = 0 then exit function
          if pForm = 0 then exit function
+         dim idx as long = 0
          ' WM_MEASUREITEM is sent prior to valid hWindow so we need to manually
          ' search all controls in the controls collection to get a matching CtrlID.
          pNode = pForm->Controls.get_first
@@ -868,9 +1117,10 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   return true
                end if
             end if
-            pNode = pForm->Controls.get_next( pNode )
+            idx = idx + 1
+            pNode = pForm->Controls.get_next( idx )
          LOOP
-         
+ #endif        
          
       case WM_DRAWITEM
          Dim memDC as HDC      ' Double buffering
@@ -888,12 +1138,16 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             SaveDC(lpdis->hDC)
              
             if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
-               ( lpdis->itemAction = ODA_SELECT ) then
+               ( lpdis->itemAction = ODA_SELECT ) orelse _
+               ( lpdis->itemAction = ODA_FOCUS ) then
 
                Select Case pNode->CtrlType 
+#ifdef CODEGEN_LABEL
                   Case ControlType.Label   '' LABEL CONTROL
                      pLabel = cast(wfxLabel ptr, pNode->pData)
                      if pLabel = 0 then exit function
+                     if lpdis->itemAction = ODA_FOCUS then return true
+
                      GetClientRect( lpdis->hwndItem, @rc )
                      
                      memDC = CreateCompatibleDC( lpdis->hDC )
@@ -931,13 +1185,16 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      ' Cleanup
                      If hbit  Then DeleteObject SelectObject(memDC, hbit)
                      If memDC Then DeleteDC memDC
-
+#endif
 
                   Case ControlType.ListBox   '' LISTBOX CONTROL
+#ifdef CODEGEN_LISTBOX
                      If lpdis->itemID = -1 Then Exit Function
                      pListBox = cast(wfxListBox ptr, pNode->pData)
                      if pListBox = 0 then exit function
                      
+                     if lpdis->itemAction = ODA_FOCUS then return true
+
                      dim as COLORREF clrBack, clrFore
                      dim as HBRUSH hBrushBack
                      
@@ -992,17 +1249,25 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      wszText = AfxGetListBoxText( lpdis->hwndItem, lpdis->itemID )
                      DrawText( memDC, wszText, -1, Cast(lpRect, @rcText), lFormat )
 
+                     ' Draw a focus rectangle around the item
+                     if pListBox->SelectionMode <> ListSelectionMode.None then
+                        If (lpdis->itemState And ODS_SELECTED) Then     
+                           DrawFocusRect( lpdis->hDC, @lpdis->rcItem ) 
+                        end if
+                     end if   
+                     
                      BitBlt lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, _
                             nWidth, nHeight, memDC, 0, 0, SRCCOPY 
 
                      ' Cleanup
                      If hbit  Then DeleteObject SelectObject(memDC, hbit)
                      If memDC Then DeleteDC memDC
-
+#endif
                end select
 
             end if
             RestoreDC(lpdis->hDC, -1)
+            return true
          end if
          
       
@@ -1056,6 +1321,7 @@ static Function wfxApplication.SubclassProc ( _
          ' Only erase the bottom portion of the listbox that extends from the last item
          ' to the bottom edge of the listbox. All other lines are already drawn. This helps
          ' reduce screen flicker.
+#ifdef CODEGEN_LISTBOX
          if pListBox then
             dim as RECT rc: GetClientRect( hWin, @rc )
             ' If the number of lines in the listbox is less than the number per page then 
@@ -1125,7 +1391,7 @@ static Function wfxApplication.SubclassProc ( _
             
             return TRUE
          end if
-         
+#endif         
       
       Case WM_DESTROY
          ' Handle any final Destroy messages for the control and then return

@@ -227,11 +227,9 @@ destructor wfxStatusBarPanelsCollection
    ' of the node has been NEW with a StatusBarPanel.
    dim pNode as wfxLListNode ptr = _Collection.get_first
    do until pNode = 0
-      if pNode->pData then
-         ' Unallocate the StatusBarPanel
-         Delete cast(wfxStatusBarPanel ptr, pNode->pData)
-      end if
-      pNode = _Collection.remove(pNode) ' this also unallocates the previouslt NEW node
+      ' Unallocate the StatusBarPanel
+      Delete cast(wfxStatusBarPanel ptr, pNode->pData)
+      pNode = _Collection.remove(pNode)
    LOOP
 end destructor
 
@@ -258,15 +256,11 @@ end function
 function wfxStatusBarPanelsCollection.ByIndex( byval nIndex as long ) byref as wfxStatusBarPanel 
    dim pPanel as wfxStatusBarPanel ptr
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_first
-   do until pNode = 0
+   pNode = _Collection.get_index(nIndex)
+   if pNode then
       pPanel = cast(wfxStatusBarPanel ptr, pNode->pData)
-      if pPanel->Index = nIndex then
-         exit do
-      END IF
-      pNode = _Collection.get_next(pNode)
-   LOOP
-   return *pPanel
+      return *pPanel
+   end if   
 end function
 
 

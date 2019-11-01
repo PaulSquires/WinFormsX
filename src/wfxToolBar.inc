@@ -294,11 +294,8 @@ destructor wfxToolBarButtonsCollection
    ' of the node has been NEW with a ToolBarButton.
    dim pNode as wfxLListNode ptr = _Collection.get_first
    do until pNode = 0
-      if pNode->pData then
-         ' Unallocate the ToolBarButton
-         Delete cast(wfxToolBarButton ptr, pNode->pData)
-      end if
-      pNode = _Collection.remove(pNode) ' this also unallocates the previouslt NEW node
+      Delete cast(wfxToolBarButton ptr, pNode->pData)
+      pNode = _Collection.remove(pNode) 
    LOOP
 end destructor
 
@@ -325,15 +322,11 @@ end function
 function wfxToolBarButtonsCollection.ByIndex( byval nIndex as long ) byref as wfxToolBarButton 
    dim pButton as wfxToolBarButton ptr
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_first
-   do until pNode = 0
+   pNode = _Collection.get_index(nIndex)
+   if pNode then 
       pButton = cast(wfxToolBarButton ptr, pNode->pData)
-      if pButton->Index = nIndex then
-         exit do
-      END IF
-      pNode = _Collection.get_next(pNode)
-   LOOP
-   return *pButton
+      return *pButton
+   end if   
 end function
 
 
