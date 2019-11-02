@@ -872,7 +872,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
       case WM_NOTIFY
          Dim pNMHDR As NMHDR Ptr = Cast(NMHDR Ptr, lParam)
          if pNMHDR = 0 then exit function
-         Dim As Long lNotification = pNMHDR->code
+         Dim As UINT lNotification = pNMHDR->code
          
 #ifdef CODEGEN_TOOLBAR
          if lNotification = TTN_GETDISPINFO then
