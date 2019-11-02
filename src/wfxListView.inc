@@ -297,6 +297,21 @@ property wfxListView.Sorting( byval nValue as SortOrder )
    _Sorting = nValue
 end property
 
+function wfxListView.HitTest( byref iItem as long, byref iSubItem as long ) as Long
+   dim as POINT pt
+   GetCursorPos( @pt )
+   ScreenToClient( this.hWindow, @pt )
+   
+   dim hitinfo as LVHITTESTINFO
+   hitinfo.pt = pt
+
+   iSubItem = -1
+   
+   iItem = ListView_SubItemHitTest( this.hWindow, @hitinfo ) 
+   if iItem <> -1 then iSubItem = hitinfo.iSubItem
+   
+   function = iItem
+end function
 
 
 function wfxListView.Show(byval hWndParent as hwnd = 0) as long

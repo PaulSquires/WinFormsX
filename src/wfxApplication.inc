@@ -274,6 +274,9 @@ end function
 #ifdef CODEGEN_OPTIONBUTTON
    If pOption AndAlso pOption->##msg Then pOption->##msg(*pOption, e)
 #endif
+#ifdef CODEGEN_LISTVIEW
+   If pListView AndAlso pListView->##msg Then pListView->##msg(*pListView, e)
+#endif
 #EndMacro
 ''
 ''

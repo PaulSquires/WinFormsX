@@ -194,6 +194,7 @@ Type wfxListView Extends wfxControl
       Declare Constructor( byref wszName as wstring = "" )
       declare destructor
       declare function Show(byval hWndParent as hwnd = 0) as long override
+      declare function HitTest( byref iItem as long, byref iSubItem as long ) as Long
 
       OnAllEvents        as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
