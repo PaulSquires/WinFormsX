@@ -329,7 +329,7 @@ function wfxListView.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    Dim As Long dwExStyle = 0
-   dim as long dwStyle = WS_CLIPCHILDREN OR LVS_REPORT OR LVS_SHAREIMAGELISTS or LVS_OWNERDATA
+   dim as long dwStyle = WS_CLIPCHILDREN OR LVS_REPORT or LVS_OWNERDATA
 
    if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE

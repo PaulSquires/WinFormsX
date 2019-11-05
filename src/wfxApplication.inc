@@ -899,9 +899,25 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   pListView = Cast(wfxListView Ptr, pNode->pData)
 
                   if lNotification = LVN_ITEMCHANGED then
-                     if pListView->OnClick Then pListView->OnClick(*pListView, e)
+                     dim lpStateChange as NMLISTVIEW ptr = cast(NMLISTVIEW ptr, pNMHDR)
+                     IF (lpStateChange->uChanged AND LVIF_STATE) = LVIF_STATE THEN  
+                        if (lpStateChange->uNewState AND LVIS_SELECTED) = LVIS_SELECTED then 
+                          e.ListViewRow = lpStateChange->iItem
+                          e.ListViewColumn = -1
+                          if pListView->OnItemSelectionChanged Then pListView->OnItemSelectionChanged(*pListView, e)
+                        end if          
+                     end if
                   end if   
                   
+                  
+                  if lNotification = LVN_COLUMNCLICK then
+                     dim lpnm as NMLISTVIEW ptr = cast(NMLISTVIEW ptr, pNMHDR)
+                     e.ListViewRow = -1
+                     e.ListViewColumn = lpnm->iSubItem
+                     if pListView->OnColumnClick Then pListView->OnColumnClick(*pListView, e)
+                  end if
+                  
+                     
                   if lNotification = LVN_KEYDOWN then
                      dim plvkd as NMLVKEYDOWN ptr = cast(NMLVKEYDOWN ptr, pNMHDR)
                      ' user pressed space, toggle flag on selected item
@@ -915,6 +931,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      end if
                      return false
                   end if
+                  
                   
                   if lNotification = NM_CLICK then
                      dim plvnm as NMITEMACTIVATE ptr = cast(NMITEMACTIVATE ptr, pNMHDR)
@@ -933,9 +950,12 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                            end if
                         end if
                      end if
-                     return false
+                     
+                     ' Invoke the Click event
+                     if pListView->OnClick Then pListView->OnClick(*pListView, e)
                   end if
                       
+
                   if lNotification = LVN_GETDISPINFO then
                      dim plvdi as NMLVDISPINFO ptr = cast(NMLVDISPINFO ptr, pNMHDR)
                      

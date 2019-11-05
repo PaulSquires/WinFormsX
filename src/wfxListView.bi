@@ -199,6 +199,8 @@ Type wfxListView Extends wfxControl
       OnAllEvents        as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnClick            as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
+      OnColumnClick      as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
+      OnItemSelectionChanged as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnMouseMove        as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnMouseDown        as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnMouseUp          as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT

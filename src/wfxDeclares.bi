@@ -210,6 +210,8 @@ Type wfxEventArgs Extends Object
       x                 as long        ' the x-coordinate of the mouse click
       y                 as long        ' the y-coordinate of the mouse click
       hDrop             as HDROP       ' handle used for WM_DROPFILES message
+      ListViewRow       as long        ' zero based value of current Listview row
+      ListViewColumn    as long        ' zero based value of current Listview column
 end type
 
 
