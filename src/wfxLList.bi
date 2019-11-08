@@ -28,6 +28,7 @@ type wfxLList
    public:
       declare constructor
       declare destructor
+      declare function clear() as long
       declare function size() as Long
       declare function insert( byval nIndex as long, byval CtrlType as long, byval pData as any ptr) as wfxLListNode ptr
       declare function add( byval CtrlType as long, byval pData as any ptr) as wfxLListNode ptr

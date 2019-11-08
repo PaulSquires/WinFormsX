@@ -202,3 +202,17 @@ function wfxLList.insert( byval nIndex as long, _
    
    function = pNode
 end function
+
+
+''
+''
+function wfxLList.clear() as long
+   ' Deallocate all of the LListNodes and erase the array
+   dim pNode as wfxLListNode ptr 
+   for i as long = lbound(this._ListArray) to ubound(this._ListArray)
+      pNode = cast( wfxLListNode ptr, this._ListArray(i) )
+      delete pNode 
+   next
+   erase this._ListArray
+   function = 0
+end function

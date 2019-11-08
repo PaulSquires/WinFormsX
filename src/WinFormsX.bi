@@ -125,6 +125,10 @@ namespace WinFormsX
 #Include Once "wfxListView.bi"
 #endif
 
+#ifdef CODEGEN_TREEVIEW
+#Include Once "wfxTreeView.bi"
+#endif
+
 #Include Once "wfxApplication.bi"
 
 #Include Once "wfxSize.inc"
@@ -183,6 +187,10 @@ namespace WinFormsX
 
 #ifdef CODEGEN_LISTVIEW
 #Include Once "wfxListView.inc"
+#endif
+
+#ifdef CODEGEN_TREEVIEW
+#Include Once "wfxTreeView.inc"
 #endif
 
 #ifdef CODEGEN_MAINMENU

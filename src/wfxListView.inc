@@ -44,6 +44,18 @@ function wfxListView.Columns byref As wfxListViewColumnsCollection
    return this._ColumnsCollection
 END function
 
+function wfxListView.BeginUpdate() As long
+   this.Items.UpdateFlag = true
+   function = 0
+end function
+
+function wfxListView.EndUpdate() as Long
+   this.Items.UpdateFlag = false
+   ListView_SetItemCountEx( this.hWindow, this.Items.Count, 0 )
+   function = 0
+end function
+
+
 Property wfxListView.BorderStyle() As ControlBorderStyle
    If this.hWindow Then 
       If (AfxGetWindowExStyle(this.hWindow) And WS_EX_CLIENTEDGE) Then
@@ -392,30 +404,19 @@ function wfxListView.Show(byval hWndParent as hwnd = 0) as long
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
       
-   Dim lvi as LVITEM
-   dim lvc as LVCOLUMN
-
-   ' Add the columns for the ListView
+   ' Call internal class function to setup the columns
+   this.Columns.hWindow = this.hWindow
    For i As Long = 0 To this.Columns.Count - 1
-      Dim As CWSTR wszText = this.Column(i).Text
-      dim as long nWidth = this.Column(i).Width * this.Parent->pWindow->rxRatio
-      dim as long idx = ListView_AddColumn( this.hWindow, i, wszText, nWidth )
-
-      lvc.mask  = LVCF_FMT
-      select case this.Column(i).TextAlign
-         case TextAlignment.Left:   lvc.fmt = LVCFMT_LEFT
-         case TextAlignment.Right:  lvc.fmt = LVCFMT_RIGHT
-         case TextAlignment.Center: lvc.fmt = LVCFMT_CENTER
-      end select
-      ListView_SetColumn( this.hWindow, idx, @lvc )
-   next
+      this.Column(i).hWindow = this.hWindow
+   Next
+   this.Columns.SetupColumns_Internal()
    
    ' Set the text for the Items.
-   ListView_SetItemCount( this.hWindow, this.Items.Count )
-   
    For i As Long = 0 To this.Items.Count - 1
       this.Item(i).hWindow = this.hWindow
    Next
+   ListView_SetItemCountEx( this.hWindow, this.Items.Count, 0 )
+
    ListView_SelectItem( this.hWindow, _SelectedIndex )
 
    ' Set the hWindow for the collection
@@ -446,26 +447,62 @@ property wfxListViewColumn.Index( ByVal nValue As long)
 END PROPERTY
 
 property wfxListViewColumn.Text() as CWSTR
-   property = _Text
+   dim wszText as wstring * MAX_PATH = _Text
+   if this.hWindow then
+      ListView_GetColumnText( this.hWindow, _Index, wszText, MAX_PATH )
+   end if
+   property = wszText
 end property
 
 property wfxListViewColumn.Text( byref wszValue as wstring )
+   if this.hWindow then
+      dim lvc as LVCOLUMN
+      lvc.mask    = LVCF_TEXT
+      lvc.pszText = @wszValue
+      ListView_SetColumn( this.hWindow, _Index, @lvc )
+   end if
    _Text = wszValue
 end property
 
 property wfxListViewColumn.Width() as long
+   if this.hWindow then
+      _Width = ListView_GetColumnWidth(this.hWindow, _Index) 
+   end if
    property = _Width
 end property
 
 property wfxListViewColumn.Width( byval nValue as long )
+   if this.hWindow then
+      ListView_SetColumnWidth( this.hWindow, _Index, nValue )
+   end if
    _Width = nValue
 end property
 
 property wfxListViewColumn.TextAlign() as TextAlignment
+   if this.hWindow then
+      dim lvc as LVCOLUMN
+      lvc.mask = LVCF_FMT
+      ListView_GetColumn( this.hWindow, _Index, @lvc )
+      select case lvc.fmt
+         case LVCFMT_LEFT:   _TextAlign = TextAlignment.Left
+         case LVCFMT_RIGHT:  _TextAlign = TextAlignment.Right
+         case LVCFMT_CENTER: _TextAlign = TextAlignment.Center
+      end select
+   end if
    property = _TextAlign
 end property
 
 property wfxListViewColumn.TextAlign( byval nValue as TextAlignment )
+   if this.hWindow then
+      dim lvc as LVCOLUMN
+      lvc.mask = LVCF_FMT
+      select case nValue
+         case TextAlignment.Left:   lvc.fmt = LVCFMT_LEFT
+         case TextAlignment.Right:  lvc.fmt = LVCFMT_RIGHT
+         case TextAlignment.Center: lvc.fmt = LVCFMT_CENTER
+      end select
+      ListView_SetColumn( this.hWindow, _Index, @lvc )
+   end if   
    _TextAlign = nValue
 end property
 
@@ -543,6 +580,10 @@ end function
 
 Function wfxListViewSubItemsCollection.Add( ByRef wszValue As WString = "" ) As Long
    Dim pData As wfxListViewSubItem Ptr = New wfxListViewSubItem
+   if pData = 0 then
+      AfxMsg( "Memory allocation failed. wfxListViewSubItemsCollection.Add" )
+      exit function
+   end if
    pData->hWindow = this.hWindow
    pData->Index = (this.Count - 1) + 1
    pData->Text = wszValue
@@ -571,11 +612,12 @@ end function
 
 function wfxListViewSubItemsCollection.Clear() as long
    ' Deallocate elements in the Items collection.
-   dim pNode as wfxLListNode ptr = _Collection.get_first
-   do until pNode = 0
+   dim pNode as wfxLListNode ptr 
+   for i as long = 0 to _Collection.Size - 1
+      pNode = _Collection.get_index(i)
       Delete cast(wfxListViewSubItem ptr, pNode->pData)
-      pNode = _Collection.remove(pNode)
-   LOOP
+   next
+   _Collection.Clear
    function = 0
 END FUNCTION
 
@@ -690,6 +732,41 @@ function wfxListViewColumnsCollection.Count() as Long
    function = _Collection.Size
 end function
 
+' Internal function used to set up columns for the ListView
+function wfxListViewColumnsCollection.SetupColumns_Internal() as Long   
+   dim lvc as LVCOLUMN
+
+   ' Delete all existing columns
+   do until ListView_GetColumnCount( this.hWindow ) = 0
+      ListView_DeleteColumn( this.hWindow, 0 )
+   loop
+   
+   ' Add the columns for the ListView
+   For i As Long = 0 To this.Count - 1
+      ' Given the way the events are fired we want to get the raw text
+      ' and width values from the class rather then the ones stored in
+      ' the control itself, so hackthis by setting the hWindow to zero
+      ' and then restoringit afterwards. 
+      dim as hwnd hWin = this.hWindow
+      this.ByIndex(i).hWindow = 0
+      
+      Dim As CWSTR wszText = this.ByIndex(i).Text
+      dim as long nWidth = AfxScaleX( this.ByIndex(i).Width )
+
+      lvc.mask  = LVCF_FMT
+      select case this.ByIndex(i).TextAlign
+         case TextAlignment.Left:   lvc.fmt = LVCFMT_LEFT
+         case TextAlignment.Right:  lvc.fmt = LVCFMT_RIGHT
+         case TextAlignment.Center: lvc.fmt = LVCFMT_CENTER
+      end select
+      this.ByIndex(i).hWindow = hWin
+      
+      dim as long idx = ListView_AddColumn( this.hWindow, i, wszText, nWidth )
+      ListView_SetColumn( this.hWindow, idx, @lvc )
+   next
+   function = 0
+end function
+
 Function wfxListViewColumnsCollection.Add( ByRef wszValue As WString = "", _
                                            ByVal nWidth As Long = 100, _
                                            byval nTextAlign as TextAlignment _
@@ -701,6 +778,8 @@ Function wfxListViewColumnsCollection.Add( ByRef wszValue As WString = "", _
    pData->Width = nWidth
    pData->TextAlign = nTextAlign
    _Collection.Add( ControlType.ListView, pData ) 
+   ' Call internal class function to setup the columns
+   this.SetupColumns_Internal()
    function = pData->Index
 end function
 
@@ -710,6 +789,8 @@ function wfxListViewColumnsCollection.Remove( byval nIndex as long ) as long
        Delete cast(wfxListViewColumn ptr, pNode->pData)
       _Collection.Remove(pNode)
    end if   
+   ' Call internal class function to setup the columns
+   this.SetupColumns_Internal()
    function = _Collection.Size
 end function
 
@@ -730,6 +811,8 @@ function wfxListViewColumnsCollection.Clear() as long
       Delete cast(wfxListViewColumn ptr, pNode->pData)
       pNode = _Collection.remove(pNode)
    LOOP
+   ' Call internal class function to setup the columns
+   this.SetupColumns_Internal()
    function = 0
 END FUNCTION
 
@@ -771,23 +854,39 @@ End Function
 
 Function wfxListViewItemsCollection.Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
    Dim pData As wfxListViewItem Ptr = New wfxListViewItem
+   if pData = 0 then
+      AfxMsg( "Memory allocation failed. wfxListViewItemsCollection.Add" )
+      exit function
+   end if
    pData->hWindow = this.hWindow
    pData->Index = (this.Count - 1) + 1
    pData->Data32 = nValue
    pData->SubItems.Add( wszValue )
    _Collection.Add( ControlType.ListView, pData ) 
-   If this.hWindow Then ListView_SetItemCount( this.hWindow, this.Count )
+   If this.hWindow Then 
+      if this.UpdateFlag = false then
+         ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
+      end if   
+   end if
    function = pData->Index
 end function
 
 Function wfxListViewItemsCollection.Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
    Dim pData As wfxListViewItem Ptr = New wfxListViewItem
+   if pData = 0 then
+      AfxMsg( "Memory allocation failed. wfxListViewItemsCollection.Insert" )
+      exit function
+   end if
    pData->hWindow = this.hWindow
    pData->Index = nIndex
    pData->Data32 = nValue
    pData->SubItems.Add( wszValue )
    _Collection.Insert( nIndex, ControlType.ListView, pData ) 
-   If this.hWindow Then ListView_SetItemCount( this.hWindow, this.Count )
+   If this.hWindow Then 
+      if this.UpdateFlag = false then
+         ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
+      end if   
+   end if
    function = pData->Index
 end function
 
@@ -797,7 +896,11 @@ function wfxListViewItemsCollection.Remove( byval nIndex as long ) as long
       ' Delete ListViewItem fires destructor that deletes any subitems
       Delete cast(wfxListViewItem ptr, pNode->pData)
       _Collection.Remove(pNode)
-      If this.hWindow Then ListView_SetItemCount( this.hWindow, this.Count )
+      If this.hWindow Then 
+         if this.UpdateFlag = false then
+            ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
+         end if   
+      end if
    end if   
    function = _Collection.Size
 end function
@@ -814,13 +917,22 @@ end function
 
 function wfxListViewItemsCollection.Clear() as long
    ' Deallocate elements in the Items collection.
-   dim pNode as wfxLListNode ptr = _Collection.get_first
-   do until pNode = 0
+   ' In order to speed the deallocations, we first loop through
+   ' the collection and deallocate the ListViewItems. We then call
+   ' the LList's method Clear to quickly deallocate the list nodes
+   ' and erase the list.
+   dim pNode as wfxLListNode ptr 
+   for i as long = 0 to _Collection.Size - 1
+      pNode = _Collection.get_index(i)
       ' Delete ListViewItem fires destructor that deletes any subitems
       Delete cast(wfxListViewItem ptr, pNode->pData)
-      pNode = _Collection.remove(pNode)
-   LOOP
-   If this.hWindow Then ListView_SetItemCount( this.hWindow, this.Count )
+   next
+   _Collection.Clear
+   If this.hWindow Then 
+      if this.UpdateFlag = false then
+         ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
+      end if   
+   end if
    function = 0
 END FUNCTION
 

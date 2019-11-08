@@ -42,6 +42,7 @@ type wfxListViewColumnsCollection
       _Collection As wfxLList
        
    public:
+      declare function SetupColumns_Internal() as Long   ' internal
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Clear() as long 
@@ -130,6 +131,7 @@ type wfxListViewItemsCollection
       _Collection As wfxLList
        
    public:
+      UpdateFlag as Boolean = false
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Clear() as long 
@@ -166,6 +168,8 @@ Type wfxListView Extends wfxControl
       declare function Items byref As wfxListViewItemsCollection
       Declare Function Column( ByVal nIndex As Long) ByRef As wfxListViewColumn
       declare function Columns byref As wfxListViewColumnsCollection
+      Declare function BeginUpdate() As long
+      Declare function EndUpdate() as Long
       Declare Property AllowColumnReorder() As boolean
       Declare Property AllowColumnReorder( ByVal nValue As boolean)
       Declare Property BorderStyle() As ControlBorderStyle

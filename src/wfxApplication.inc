@@ -961,7 +961,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      
                      dim as long nItem = plvdi->item.iItem
                      dim as long nSubItem = plvdi->item.iSubItem
-               
+
                      if (plvdi->item.mask and LVIF_TEXT) then
                         plvdi->item.pszText = pListView->Item(nItem).SubItem(nSubItem).Text.sptr
                         plvdi->item.cchTextMax = len(pListView->Item(nItem).SubItem(nSubItem).Text)
