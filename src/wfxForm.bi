@@ -106,7 +106,10 @@ Type wfxForm Extends wfxControl
       declare function ShowDialog(byval hWndParent as hwnd = 0) as Long 
       declare function ShowDialog(byref frmParent as wfxForm) as Long
       declare function ShowDialog(byval frmParent as wfxForm ptr) as Long
-      declare function CreateFormInternal( byval hWndParent as hwnd, byval IsModal as boolean ) as long   
+      declare function ShowChild(byval hWndParent as hwnd = 0 ) as Long 
+      declare function ShowChild(byref frmParent as wfxForm) as Long 
+      declare function ShowChild(byval frmParent as wfxForm ptr) as Long
+      declare function CreateFormInternal( byval hWndParent as hwnd, byval IsModal as boolean, byval IsChild as Boolean ) as long   
       declare Function SizeToolBar() As Long  ' internal function
       declare Function SizeStatusBar() As Long  ' internal function
       

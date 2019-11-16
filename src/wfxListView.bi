@@ -48,7 +48,7 @@ type wfxListViewColumnsCollection
       Declare function Clear() as long 
       Declare function Count() as long 
       Declare Function Remove( ByVal nIndex As Long ) As Long 
-      declare Function Add( ByRef wszValue As WString = "", ByVal nWidth As Long = 100, byval nTextAlign as TextAlignment ) as Long
+      declare Function Add( ByRef wszValue As WString = "", ByVal nWidth As Long = 100, byval nTextAlign as TextAlignment = TextAlignment.Left ) as Long
       declare function ByIndex( byval nIndex as long ) byref as wfxListViewColumn
       Declare Constructor
       declare destructor 
@@ -154,6 +154,9 @@ Type wfxListView Extends wfxControl
       _GridLines as Boolean = false
       _HideSelection as Boolean = false
       _HeaderStyle as ColumnHeaderStyle = ColumnHeaderStyle.Clickable
+      _HeaderHeight as Long =  20
+      _HeaderForeColor as COLORREF = Colors.SystemWindowText
+      _HeaderBackColor as COLORREF = Colors.SystemWindow
       _LabelEdit As boolean = false
       _MultiSelect As boolean = false
       _SelectedItem as wfxListViewItem
@@ -162,6 +165,7 @@ Type wfxListView Extends wfxControl
       _ItemsCollection as wfxListViewItemsCollection
       _ColumnsCollection as wfxListViewColumnsCollection
       _IsLoading as Boolean = true   ' internal
+      _OddRowColor As COLORREF = Colors.SystemWindow
       
    Public:
       Declare Function Item( ByVal nIndex As Long) ByRef As wfxListViewItem
@@ -194,15 +198,26 @@ Type wfxListView Extends wfxControl
       Declare Property SelectedIndex( ByVal nValue As long)
       Declare Property Sorting() As SortOrder
       Declare Property Sorting( ByVal nValue As SortOrder)
+      Declare Property OddRowColor() As COLORREF
+      Declare Property OddRowColor( ByVal nValue As COLORREF )
+      Declare Property HeaderForeColor() As COLORREF
+      Declare Property HeaderForeColor( ByVal nValue As COLORREF )
+      Declare Property HeaderBackColor() As COLORREF
+      Declare Property HeaderBackColor( ByVal nValue As COLORREF )
+      Declare Property HeaderHeight() As long
+      Declare Property HeaderHeight( ByVal nValue As long)
       
       Declare Constructor( byref wszName as wstring = "" )
       declare destructor
       declare function Show(byval hWndParent as hwnd = 0) as long override
       declare function HitTest( byref iItem as long, byref iSubItem as long ) as Long
+      declare static Function HeaderSubclassProc( ByVal HWnd As HWnd, ByVal uMsg As UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM, ByVal uIdSubclass As UINT_PTR, ByVal dwRefData As DWORD_PTR ) As LRESULT
 
       OnAllEvents        as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnClick            as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
+      OnRightClick       as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
+      OnDoubleClick      as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnColumnClick      as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnItemSelectionChanged as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnMouseMove        as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT

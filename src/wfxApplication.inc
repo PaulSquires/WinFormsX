@@ -898,26 +898,6 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                case ControlType.ListView
                   pListView = Cast(wfxListView Ptr, pNode->pData)
 
-                  if lNotification = LVN_ITEMCHANGED then
-                     dim lpStateChange as NMLISTVIEW ptr = cast(NMLISTVIEW ptr, pNMHDR)
-                     IF (lpStateChange->uChanged AND LVIF_STATE) = LVIF_STATE THEN  
-                        if (lpStateChange->uNewState AND LVIS_SELECTED) = LVIS_SELECTED then 
-                          e.ListViewRow = lpStateChange->iItem
-                          e.ListViewColumn = -1
-                          if pListView->OnItemSelectionChanged Then pListView->OnItemSelectionChanged(*pListView, e)
-                        end if          
-                     end if
-                  end if   
-                  
-                  
-                  if lNotification = LVN_COLUMNCLICK then
-                     dim lpnm as NMLISTVIEW ptr = cast(NMLISTVIEW ptr, pNMHDR)
-                     e.ListViewRow = -1
-                     e.ListViewColumn = lpnm->iSubItem
-                     if pListView->OnColumnClick Then pListView->OnColumnClick(*pListView, e)
-                  end if
-                  
-                     
                   if lNotification = LVN_KEYDOWN then
                      dim plvkd as NMLVKEYDOWN ptr = cast(NMLVKEYDOWN ptr, pNMHDR)
                      ' user pressed space, toggle flag on selected item
@@ -933,29 +913,45 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   end if
                   
                   
-                  if lNotification = NM_CLICK then
-                     dim plvnm as NMITEMACTIVATE ptr = cast(NMITEMACTIVATE ptr, pNMHDR)
-                     dim hitinfo as LVHITTESTINFO
-                     ' Copy click point
-                     hitinfo.pt = plvnm->ptAction
-
-                     ' Make the hit test...
-                     dim as long nItem = SendMessage( pListView->hWindow, LVM_HITTEST, 0, cast(LONG_PTR, @hitinfo) )
-                     if nItem <> -1 then
-                        ' We hit one item... did we hit state image (check box)?
-                        if (hitInfo.flags and LVHT_ONITEM) <> LVHT_ONITEM then
-                           if (hitinfo.flags and LVHT_ONITEMSTATEICON) then
-                              pListView->Item(nItem).Checked = not pListView->Item(nItem).Checked
-                              pListView->Refresh   
-                           end if
-                        end if
+                  if lNotification = LVN_ITEMCHANGED then
+                     dim lpStateChange as NMLISTVIEW ptr = cast(NMLISTVIEW ptr, pNMHDR)
+                     IF (lpStateChange->uChanged AND LVIF_STATE) = LVIF_STATE THEN  
+                        if (lpStateChange->uNewState AND LVIS_SELECTED) = LVIS_SELECTED then 
+                          e.ListViewRow = lpStateChange->iItem
+                          e.ListViewColumn = -1
+                          if pListView->OnItemSelectionChanged Then pListView->OnItemSelectionChanged(*pListView, e)
+                        end if          
                      end if
+                  end if   
+                  
+                  
+                  select case lNotification 
+                     case NM_CLICK
+                        ' Invoke the Click event
+                        if pListView then pListView->HitTest( e.ListViewRow, e.ListViewColumn )
+                        if pListView->OnClick Then pListView->OnClick(*pListView, e)
+                     case NM_RETURN
+                        ' Invoke the Click event
+                        e.ListViewRow = -1
+                        e.ListViewColumn = -1
+                        if pListView then e.ListViewRow = pListView->SelectedIndex
+                        if pListView->OnClick Then pListView->OnClick(*pListView, e)
+                     case NM_RCLICK   
+                        ' Invoke the RightClick event
+                        if pListView then pListView->HitTest( e.ListViewRow, e.ListViewColumn )
+                        if pListView->OnRightClick Then pListView->OnRightClick(*pListView, e)
+                     case NM_DBLCLK   
+                        ' Invoke the DoubleClick event
+                        if pListView then pListView->HitTest( e.ListViewRow, e.ListViewColumn )
+                        if pListView->OnDoubleClick Then pListView->OnDoubleClick(*pListView, e)
+                     case LVN_COLUMNCLICK 
+                        dim lpnm as NMLISTVIEW ptr = cast(NMLISTVIEW ptr, pNMHDR)
+                        e.ListViewRow = -1
+                        e.ListViewColumn = lpnm->iSubItem
+                        if pListView->OnColumnClick Then pListView->OnColumnClick(*pListView, e)
+                  end select
+                  
                      
-                     ' Invoke the Click event
-                     if pListView->OnClick Then pListView->OnClick(*pListView, e)
-                  end if
-                      
-
                   if lNotification = LVN_GETDISPINFO then
                      dim plvdi as NMLVDISPINFO ptr = cast(NMLVDISPINFO ptr, pNMHDR)
                      
@@ -988,6 +984,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
     
                      return CTRUE
                   end if
+                  
 
                   if lNotification = NM_CUSTOMDRAW then
                 
@@ -1004,6 +1001,12 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                              
                               plvcd->clrText   = pListView->Item(nItem).SubItem(nSubItem).ForeColor
                               plvcd->clrTextBk = pListView->Item(nItem).SubItem(nSubItem).BackColor
+                                 
+                              if pListView->OddRowColor <> plvcd->clrTextBk then
+                                 if (nItem mod 2) = 0 then
+                                    plvcd->clrTextBk = pListView->OddRowColor
+                                 end if   
+                              end if
                                  
                               return CDRF_NEWFONT
                                                         
@@ -1415,6 +1418,116 @@ static Function wfxApplication.SubclassProc ( _
             return TRUE
          end if
 #endif         
+      
+
+
+      case WM_NOTIFY
+
+#ifdef CODEGEN_LISTVIEW
+ 
+         Dim pNMHDR As NMHDR Ptr = Cast(NMHDR Ptr, _lParam)
+         if pNMHDR = 0 then exit function
+         Dim As UINT lNotification = pNMHDR->code
+         
+         dim pNode as wfxLListNode ptr = Application.GetControlByHandle( GetParent(pNMHDR->hwndFrom) )
+         
+         If pNode Then
+
+            ' The ListView Header messages are sent to its parent (the ListView itself)
+            ' so we handle CustomDraw in the ListView subclass.
+            
+            Select Case pNode->CtrlType 
+
+               case ControlType.ListView
+                  dim pListView as wfxListView Ptr = Cast(wfxListView Ptr, pNode->pData)
+                  if lNotification = NM_CUSTOMDRAW then
+                
+                     dim plvcd as NMLVCUSTOMDRAW ptr = cast(NMLVCUSTOMDRAW ptr, pNMHDR)
+                     Select Case plvcd->nmcd.dwDrawStage
+                     
+                        Case CDDS_PREPAINT
+                           return CDRF_NOTIFYITEMDRAW
+                              
+                        Case CDDS_ITEMPREPAINT 
+                           dim hLvHeader AS hwnd
+                           dim nIndex AS long
+                           dim nState AS long
+                           dim wszText as WString * MAX_PATH
+                           
+                           nIndex = plvcd->nmcd.dwItemSpec
+                           nState = plvcd->nmcd.uItemState
+
+                           ' Get the header item text...
+                           dim hdi AS HDITEM
+                           hdi.mask = HDI_TEXT
+                           hdi.pszText = @wszText
+                           hdi.cchtextmax = SIZEOF(wszText)
+                           hLvHeader = ListView_GetHeader(hWin)
+                           Header_GetItem(hLvHeader, nIndex, @hdi)
+   
+                           ' Draw the button state...
+                           IF (nState AND CDIS_SELECTED) THEN
+                              DrawFrameControl plvcd->nmcd.hdc, @plvcd->nmcd.rc, DFC_BUTTON, DFCS_BUTTONPUSH OR DFCS_PUSHED
+                           ELSE
+                              DrawFrameControl plvcd->nmcd.hdc, @plvcd->nmcd.rc, DFC_BUTTON, DFCS_BUTTONPUSH
+                           END IF
+
+                           ' Paint the background
+                           dim hBrush AS HBRUSH
+                           InflateRect @plvcd->nmcd.rc, -2, -2
+                           
+                           if pListView then
+                              hBrush = CreateSolidBrush(pListView->HeaderBackColor)
+                              FillRect plvcd->nmcd.hdc, @plvcd->nmcd.rc, hBrush
+                           end if
+                           
+                           SetBkMode plvcd->nmcd.hdc, TRANSPARENT
+                           ' Change your text color here...
+                           SetTextColor plvcd->nmcd.hdc, pListView->HeaderForeColor
+
+                           ' Get the text alignment
+                           dim as long nAlign 
+                           if pListView then
+                              select case pListView->Column(nIndex).TextAlign
+                                 case TextAlignment.Left:   nAlign = DT_LEFT
+                                 case TextAlignment.Right:  nAlign = DT_RIGHT
+                                 case TextAlignment.Center: nAlign = DT_CENTER
+                              end select
+                           end if
+                           if instr(wszText, chr(13)) then
+                              nAlign = nAlign OR DT_WORDBREAK
+                           else
+                              nAlign = nAlign OR DT_VCENTER or DT_SINGLELINE
+                           end if
+                           
+                           ' Offset the text slightly if depressed...
+                           IF (nState AND CDIS_SELECTED) THEN InflateRect @plvcd->nmcd.rc, -2, -2
+                           
+                           ' // Draw multiline, using CRLF (i.e. wszText = "Customer" & $CRLF & "number")
+                           DrawText plvcd->nmcd.hdc, wszText, LEN(wszText), @plvcd->nmcd.rc, nAlign
+                                    
+                           
+                           ' // Draw multiline using word wrap (i.e. wszText = "Customer number")
+                           'DrawText @pnmcd.hdc, wszText, LEN(wszText), @pnmcd.rc, %DT_CENTER OR %DT_VCENTER OR %DT_WORDBREAK
+                           ' // Sraw single line with ellipsis... (i.e. wszText = "Customer number")
+                           'DrawText @pnmcd.hdc, wszText, LEN(wszText), @pnmcd.rc, %DT_CENTER OR %DT_VCENTER OR %DT_END_ELLIPSIS
+
+                           ' Cleanup
+                           IF hBrush THEN DeleteObject hBrush
+                           'IF hOldFont THEN SelectObject plvcd->nmcd.hdc, hOldFont
+                           'IF hFont THEN DeleteObject hFont
+
+                           ' Tell Windows the item has already been drawn
+                           FUNCTION = CDRF_SKIPDEFAULT
+                           EXIT FUNCTION
+                                                        
+                     End Select
+                  End if
+            
+            end select
+         end if
+#endif         
+         
       
       Case WM_DESTROY
          ' Handle any final Destroy messages for the control and then return

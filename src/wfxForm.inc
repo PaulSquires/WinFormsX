@@ -562,7 +562,10 @@ End Function
 
 ''
 ''
-function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal as boolean ) as long   
+function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
+                                     byval IsFormModal as boolean, _
+                                     byval IsChild as boolean _
+                                     ) as long   
    ' Internal function. Do not call from code.
    ' Get Window creation values before the hWindow actually exists
 
@@ -604,6 +607,8 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, byval IsFormModal
    
    Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS 
    dim as long dwExStyle = WS_EX_CONTROLPARENT
+   
+   if IsChild then dwStyle = dwStyle or WS_CHILD
    
    if this.IsMainForm THEN dwStyle = dwStyle or WS_POPUP 
    If IsFormModal Then dwStyle = dwStyle Or WS_POPUP
@@ -832,41 +837,63 @@ END FUNCTION
 ''  Show the Form as modeless using parent form window handle
 ''
 function wfxForm.Show( byval hWndParent as hwnd = 0 ) as Long
-   function = this.CreateFormInternal( hWndParent, false)
+   function = this.CreateFormInternal( hWndParent, false, false)
 END FUNCTION
 
 ''
 ''  Show the Form as modeless using parent form object (BYREF)
 ''
 function wfxForm.Show(byref frmParent as wfxForm) as Long
-   function = this.CreateFormInternal( frmParent.hWindow, false)
+   function = this.CreateFormInternal( frmParent.hWindow, false, false)
 end function
 
 ''
 ''  Show the Form as modeless using parent form object (POINTER)
 ''
 function wfxForm.Show(byval frmParent as wfxForm ptr) as Long
-   function = this.CreateFormInternal( frmParent->hWindow, false)
+   function = this.CreateFormInternal( frmParent->hWindow, false, false)
 end function
 
 ''
 ''  Show the Form as modal using parent form window handle
 ''
 function wfxForm.ShowDialog(byval hWndParent as hwnd = 0) as Long
-   function = this.CreateFormInternal( hWndParent, true)
+   function = this.CreateFormInternal( hWndParent, true, false)
 end function
 
 ''
 ''  Show the Form as modal using parent form object (BYREF)
 ''
 function wfxForm.ShowDialog(byref frmParent as wfxForm) as Long
-   function = this.CreateFormInternal( frmParent.hWindow, true)
+   function = this.CreateFormInternal( frmParent.hWindow, true, false)
 end function
 
 ''
 ''  Show the Form as modal using parent form object (POINTER)
 ''
 function wfxForm.ShowDialog(byval frmParent as wfxForm ptr) as Long
-   function = this.CreateFormInternal( frmParent->hWindow, true)
+   function = this.CreateFormInternal( frmParent->hWindow, true, false)
 end function
+
+''
+''  Show the Form as WS_CHILD using parent form window handle
+''
+function wfxForm.ShowChild(byval hWndParent as hwnd = 0) as Long
+   function = this.CreateFormInternal( hWndParent, false, true)
+end function
+
+''
+''  Show the Form as WS_CHILD using parent form object (BYREF)
+''
+function wfxForm.ShowChild(byref frmParent as wfxForm) as Long
+   function = this.CreateFormInternal( frmParent.hWindow, false, true)
+end function
+
+''
+''  Show the Form as WS_CHILD using parent form object (POINTER)
+''
+function wfxForm.ShowChild(byval frmParent as wfxForm ptr) as Long
+   function = this.CreateFormInternal( frmParent->hWindow, false, true)
+end function
+
 

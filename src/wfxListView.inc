@@ -17,10 +17,13 @@
 
 
 constructor wfxListView( byref wszName as wstring = "" )
-   this.CtrlType  = ControlType.ListView
-   this.Name      = wszName
-   this.BackColor = Colors.SystemWindow
-   this.ForeColor = Colors.SystemWindowText
+   this.CtrlType    = ControlType.ListView
+   this.Name        = wszName
+   this.BackColor   = Colors.SystemWindow
+   this.ForeColor   = Colors.SystemWindowText
+   this.OddRowColor = this.BackColor
+   this.HeaderForeColor = this.ForeColor
+   this.HeaderBackColor = this.BackColor
 end constructor
 
 destructor wfxListView
@@ -55,6 +58,41 @@ function wfxListView.EndUpdate() as Long
    function = 0
 end function
 
+property wfxListView.OddRowColor() as COLORREF
+   property = _OddRowColor
+end property
+
+property wfxListView.OddRowColor( byval nValue as COLORREF )
+   _OddRowColor = nValue
+   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+end property
+
+property wfxListView.HeaderForeColor() as COLORREF
+   property = _HeaderForeColor
+end property
+
+property wfxListView.HeaderForeColor( byval nValue as COLORREF )
+   _HeaderForeColor = nValue
+   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+end property
+
+property wfxListView.HeaderBackColor() as COLORREF
+   property = _HeaderBackColor
+end property
+
+property wfxListView.HeaderBackColor( byval nValue as COLORREF )
+   _HeaderBackColor = nValue
+   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+end property
+
+property wfxListView.HeaderHeight() as long
+   property = _HeaderHeight
+end property
+
+property wfxListView.HeaderHeight( byval nValue as long )
+   _HeaderHeight = nValue
+   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+end property
 
 Property wfxListView.BorderStyle() As ControlBorderStyle
    If this.hWindow Then 
@@ -326,6 +364,48 @@ function wfxListView.HitTest( byref iItem as long, byref iSubItem as long ) as L
 end function
 
 
+
+static Function wfxListView.HeaderSubclassProc ( _
+                  ByVal hWin   As HWnd, _                 ' // Control window handle
+                  ByVal uMsg   As UINT, _                 ' // Type of message
+                  ByVal _wParam As WPARAM, _               ' // First message parameter
+                  ByVal _lParam As LPARAM, _               ' // Second message parameter
+                  ByVal uIdSubclass As UINT_PTR, _        ' // The subclass ID
+                  ByVal dwRefData As DWORD_PTR _          ' // Pointer to reference data
+                  ) As LRESULT
+
+   Select Case uMsg
+
+      CASE HDM_LAYOUT
+         ' Fill the WINDOWPOS structure with the appropriate size and position of the
+         ' header control and change the top position of the rectangle that the header
+         ' control will occupy.
+         dim pListView as wfxListView ptr = cast( wfxListView ptr, dwRefData )
+         if pListView then
+            dim phdl AS HDLAYOUT PTR = cast(HDLAYOUT PTR, _lParam)
+            phdl->pwpos->hwnd = hWin
+            phdl->pwpos->flags = SWP_FRAMECHANGED
+            phdl->pwpos->x = phdl->prc->Left
+            phdl->pwpos->y = 0
+            ' scale the size for high dpi
+            phdl->pwpos->cx = pListView->Parent->ScaleX(phdl->prc->Right - phdl->prc->Left)
+            phdl->pwpos->cy = pListView->Parent->ScaleY( pListView->HeaderHeight )
+            phdl->prc->Top  = pListView->Parent->ScaleY( pListView->HeaderHeight )
+            return true
+         end if
+
+
+      Case WM_DESTROY
+         ' REQUIRED: Remove control subclassing
+         RemoveWindowSubclass( hWin, @wfxListView.HeaderSubclassProc, uIdSubclass )
+   End Select
+    
+   ' For messages that we don't deal with
+   Function = DefSubclassProc(hWin, uMsg, _wParam, _lParam)
+
+end function
+
+
 function wfxListView.Show(byval hWndParent as hwnd = 0) as long
 
    dim wszClassName as wstring * MAX_PATH
@@ -402,8 +482,20 @@ function wfxListView.Show(byval hWndParent as hwnd = 0) as long
    ' Store the hWindow in the linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
-   if pNode then pNode->hWindow = this.hWindow
+   if pNode then 
+      pNode->hWindow = this.hWindow
       
+      ' The header subclassing must occur before the columns are added.
+      ' Get the handle of the ListView header control and subclass it
+      dim hLvHeader AS hwnd = ListView_GetHeader(this.hWindow)
+      IF hLvHeader THEN 
+         ' Store the ListView Header hWindow in the linked list in order to allow
+         ' for fast lookups via GetControlByHandle.
+         'this.Parent->Controls.Add( ControlType.ListView, pNode->pData )->hWindow = hLvHeader
+         SetWindowSubclass( hLvHeader, Cast(SUBCLASSPROC, @wfxListView.HeaderSubclassProc), _CtrlID, Cast(DWORD_PTR, @this) )
+      end if
+   end if
+
    ' Call internal class function to setup the columns
    this.Columns.hWindow = this.hWindow
    For i As Long = 0 To this.Columns.Count - 1
@@ -646,6 +738,7 @@ END PROPERTY
 
 property wfxListViewItem.Checked( ByVal nValue As boolean) 
    _Checked = nValue
+   AfxRedrawWindow(this.hWindow)
 END PROPERTY
 
 property wfxListViewItem.Index() as long
@@ -769,7 +862,7 @@ end function
 
 Function wfxListViewColumnsCollection.Add( ByRef wszValue As WString = "", _
                                            ByVal nWidth As Long = 100, _
-                                           byval nTextAlign as TextAlignment _
+                                           byval nTextAlign as TextAlignment = TextAlignment.Left _
                                            ) As Long
    Dim pData As wfxListViewColumn Ptr = New wfxListViewColumn
    pData->hWindow = this.hWindow
@@ -789,6 +882,15 @@ function wfxListViewColumnsCollection.Remove( byval nIndex as long ) as long
        Delete cast(wfxListViewColumn ptr, pNode->pData)
       _Collection.Remove(pNode)
    end if   
+
+   ' Renumber the Index property for each item in the collectio.
+   dim pListViewColumn as wfxListViewColumn ptr
+   for i as long = 0 to _Collection.Size - 1
+      pNode = _Collection.get_index(i)
+      pListViewColumn = cast(wfxListViewColumn ptr, pNode->pData)
+      if pListViewColumn then pListViewColumn->Index = i
+   next
+
    ' Call internal class function to setup the columns
    this.SetupColumns_Internal()
    function = _Collection.Size
@@ -882,6 +984,16 @@ Function wfxListViewItemsCollection.Insert( ByVal nIndex As Long, ByRef wszValue
    pData->Data32 = nValue
    pData->SubItems.Add( wszValue )
    _Collection.Insert( nIndex, ControlType.ListView, pData ) 
+
+   ' Renumber the Index property for each item in the collectio.
+   dim pNode as wfxLListNode ptr 
+   dim pListViewItem as wfxListViewItem ptr
+   for i as long = 0 to _Collection.Size - 1
+      pNode = _Collection.get_index(i)
+      pListViewItem = cast(wfxListViewItem ptr, pNode->pData)
+      if pListViewItem then pListViewItem->Index = i
+   next
+
    If this.hWindow Then 
       if this.UpdateFlag = false then
          ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
@@ -896,6 +1008,15 @@ function wfxListViewItemsCollection.Remove( byval nIndex as long ) as long
       ' Delete ListViewItem fires destructor that deletes any subitems
       Delete cast(wfxListViewItem ptr, pNode->pData)
       _Collection.Remove(pNode)
+
+      ' Renumber the Index property for each item in the collectio.
+      dim pListViewItem as wfxListViewItem ptr
+      for i as long = 0 to _Collection.Size - 1
+         pNode = _Collection.get_index(i)
+         pListViewItem = cast(wfxListViewItem ptr, pNode->pData)
+         if pListViewItem then pListViewItem->Index = i
+      next
+      
       If this.hWindow Then 
          if this.UpdateFlag = false then
             ListView_SetItemCountEx( this.hWindow, this.Count, 0 )

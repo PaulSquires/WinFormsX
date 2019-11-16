@@ -621,6 +621,15 @@ Function wfxListBoxItemsCollection.Insert( ByVal nIndex As Long, ByRef wszValue 
       _Collection.Insert( nIndex, ControlType.ListBox, pData ) 
       function = pData->Index
    END IF
+   
+   ' Renumber the Index property for each item in the collection.
+   dim pNode as wfxLListNode ptr 
+   dim pListBoxItem as wfxListBoxItem ptr
+   for i as long = 0 to _Collection.Size - 1
+      pNode = _Collection.get_index(i)
+      pListBoxItem = cast(wfxListBoxItem ptr, pNode->pData)
+      if pListBoxItem then pListBoxItem->Index = i
+   next
 end function
 
 function wfxListBoxItemsCollection.Remove( byval nIndex as long ) as long
@@ -633,6 +642,14 @@ function wfxListBoxItemsCollection.Remove( byval nIndex as long ) as long
          _Collection.Remove(pNode)
       end if   
    END IF
+   ' Renumber the Index property for each item in the collection.
+   dim pNode as wfxLListNode ptr 
+   dim pListBoxItem as wfxListBoxItem ptr
+   for i as long = 0 to _Collection.Size - 1
+      pNode = _Collection.get_index(i)
+      pListBoxItem = cast(wfxListBoxItem ptr, pNode->pData)
+      if pListBoxItem then pListBoxItem->Index = i
+   next
    function = _Collection.Size
 end function
 

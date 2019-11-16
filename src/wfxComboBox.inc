@@ -381,6 +381,14 @@ function wfxComboBoxItemsCollection.Remove( byval nIndex as long ) as long
          _Collection.Remove(pNode)
       end if   
    END IF
+   ' Renumber the Index property for each item in the collection.
+   dim pNode as wfxLListNode ptr 
+   dim pComboBoxItem as wfxComboBoxItem ptr
+   for i as long = 0 to _Collection.Size - 1
+      pNode = _Collection.get_index(i)
+      pComboBoxItem = cast(wfxComboBoxItem ptr, pNode->pData)
+      if pComboBoxItem then pComboBoxItem->Index = i
+   next
    function = _Collection.Size
 end function
 
