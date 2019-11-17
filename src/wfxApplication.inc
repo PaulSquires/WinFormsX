@@ -726,6 +726,18 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             If pForm->OnFormClosed Then pForm->OnFormClosed(*pForm, e)
             ' Always let the WM_DESTROY complete
             e.Handled = False
+            ' Make sure to delete all controls so that their subclasses are reset
+            dim pNode as wfxLListNode ptr = pForm->Controls.get_first
+            for i as long = 0 to pForm->Controls.size - 1
+               pNode = pForm->Controls.get_index(i)
+               if pNode then
+                  if pNode->hWindow then 
+                     DestroyWindow( pNode->hWindow )
+                     pNode->hWindow = 0
+                  end if
+               end if
+            next
+            
             If pForm->pWindow Then 
                ' Delete the CWindow of the form.
                Delete pForm->pWindow
