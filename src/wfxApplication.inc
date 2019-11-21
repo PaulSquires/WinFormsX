@@ -548,6 +548,7 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          WINFORMSX_HANDLE_MESSAGE(OnDropFiles)
 
       
+
       Case WM_MOUSEMOVE
          WINFORMSX_HANDLE_MESSAGE(OnMouseMove)
          ' If this is a Label/ListBox then redraw so hot colors will be used
@@ -559,19 +560,25 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
 #endif         
          ' There is no such thing as a WM_MOUSEENTER message so we need to simulate it
          ' here by using a tracking variable and TRACKMOUSEEVENT.
+         dim as DWORD dwFlags = TME_HOVER Or TME_LEAVE
+#ifdef CODEGEN_LISTVIEW
+         ' Do not allow HOVER on a ListView as it somehow invokes hot tracking an
+         ' automatic row selection when the mouse hovers over it. Not desirable.
+         if pListView then dwFlags = TME_LEAVE
+#endif         
          If pCtrl Then
             If pCtrl->IsTracking = False Then
                pCtrl->IsTracking = True
                Dim tme As TrackMouseEvent
                tme.cbSize = Sizeof(TrackMouseEvent)
-               tme.dwFlags = TME_HOVER Or TME_LEAVE
+               tme.dwFlags = dwFlags
                tme.hwndTrack = hWin
                TrackMouseEvent(@tme) 
                WINFORMSX_HANDLE_MESSAGE(OnMouseEnter)
             End If
          End If
-          
-      
+           
+       
       Case WM_MOUSELEAVE
          If pCtrl Then pCtrl->IsTracking = False 
          WINFORMSX_HANDLE_MESSAGE(OnMouseLeave)
@@ -582,11 +589,14 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
 #ifdef CODEGEN_LISTBOX
          if pListBox then pListBox->Refresh
 #endif         
-      
-      
+       
+       
       Case WM_MOUSEHOVER
+#ifdef CODEGEN_LISTVIEW
+         ' Don't allow MouseHover for a ListView control
+#else
          WINFORMSX_HANDLE_MESSAGE(OnMouseHover)
-            
+#endif            
       
       Case WM_LBUTTONDBLCLK, WM_MBUTTONDBLCLK, WM_RBUTTONDBLCLK
          WINFORMSX_HANDLE_MESSAGE(OnMouseDoubleClick)
@@ -654,16 +664,15 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
        Case WM_GETMINMAXINFO
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
-             DefWindowProc(hWin, uMsg, wParam, lParam)
-             Dim pMinMaxInfo As MINMAXINFO Ptr
-             pMinMaxInfo = Cast(MINMAXINFO Ptr,lParam)
-             pMinMaxInfo->ptMinTrackSize.x = Iif(pForm->MinimumWidth,  pForm->MinimumWidth,  pMinMaxInfo->ptMinTrackSize.x)
-             pMinMaxInfo->ptMinTrackSize.y = iif(pForm->MinimumHeight, pForm->MinimumHeight, pMinMaxInfo->ptMinTrackSize.y)
-             pMinMaxInfo->ptMaxTrackSize.x = Iif(pForm->MaximumWidth,  pForm->MaximumWidth,  pMinMaxInfo->ptMaxTrackSize.x)
-             pMinMaxInfo->ptMaxTrackSize.y = iif(pForm->MaximumHeight, pForm->MaximumHeight, pMinMaxInfo->ptMaxTrackSize.y)
-             return 0
-          End If	 
-
+            DefWindowProc(hWin, uMsg, wParam, lParam)
+            Dim pMinMaxInfo As MINMAXINFO Ptr
+            pMinMaxInfo = Cast(MINMAXINFO Ptr,lParam)
+            pMinMaxInfo->ptMinTrackSize.x = Iif(pForm->MinimumWidth,  pForm->MinimumWidth,  pMinMaxInfo->ptMinTrackSize.x)
+            pMinMaxInfo->ptMinTrackSize.y = iif(pForm->MinimumHeight, pForm->MinimumHeight, pMinMaxInfo->ptMinTrackSize.y)
+            pMinMaxInfo->ptMaxTrackSize.x = Iif(pForm->MaximumWidth,  pForm->MaximumWidth,  pMinMaxInfo->ptMaxTrackSize.x)
+            pMinMaxInfo->ptMaxTrackSize.y = iif(pForm->MaximumHeight, pForm->MaximumHeight, pMinMaxInfo->ptMaxTrackSize.y)
+            return 0
+         End If	 
       
       case WM_ACTIVATE
          pForm = Application.GetpFormObject(hWin)
@@ -946,6 +955,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         ' Invoke the Click event
                         e.ListViewRow = -1
                         e.ListViewColumn = -1
+                        e.KeyChar = 13
+                        e.KeyCode = VK_RETURN
                         if pListView then e.ListViewRow = pListView->SelectedIndex
                         if pListView->OnClick Then pListView->OnClick(*pListView, e)
                      case NM_RCLICK   

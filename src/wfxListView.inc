@@ -275,7 +275,9 @@ End Property
 
 property wfxListView.SelectedItem() byref as wfxListViewItem
    if this.hWindow then 
-      _SelectedItem = this.Item(this.SelectedIndex)
+      if this.SelectedIndex >= 0 then
+         _SelectedItem = this.Item(this.SelectedIndex)
+      end if   
    end if
    property = _SelectedItem
 end property
@@ -298,9 +300,13 @@ property wfxListView.SelectedIndex( byval nValue as long )
    if this.hWindow then 
       ' Deselect all items in a multiple select ListView if -1 is passed.
       if (nValue = -1) and (this.MultiSelect = true) then
-         ListView_UnselectAllItems( this.hWindow )
+         ListView_UnSelectAllItems( this.hWindow )
       end if
       ListView_SelectItem( this.hWindow, nValue)
+   end if
+   ' Set the Item's Selected property to true if it is in range.
+   if (nValue > -1) and (nValue < this.Items.Count) then
+      this.Item(nValue).Selected = true
    end if
    _SelectedIndex = nValue
 end property
@@ -1058,4 +1064,59 @@ function wfxListViewItemsCollection.Clear() as long
 END FUNCTION
 
 
+function wfxListViewItemsCollection.SortByColumn( ByVal nColNum As Long, byval nSortAscend as Boolean = true ) as long 
+   ' Simple Bubblesort to sort the Items based on the specified column data
+   dim as long numItems = _Collection.Size
+   if numItems = 0 then exit function
+   
+   dim pNode1 as wfxLListNode ptr 
+   dim pItem1 as wfxListViewItem ptr
+   dim pNode2 as wfxLListNode ptr 
+   dim pItem2 as wfxListViewItem ptr
+
+   ' SHELL SORT 
+   Dim As Long lb = 0
+   Dim As Long ub = numItems - 1
+   Dim As Long done, i, inc = ub - lb
+ 
+    Do
+        inc = Int(inc / 2.2)
+        If inc < 1 Then inc = 1
+ 
+        Do
+            done = 0
+            For i = lb To ub - inc
+               pNode1 = _Collection.get_index(i)
+               pItem1 = cast(wfxListViewItem ptr, pNode1->pData)
+                  
+               pNode2 = _Collection.get_index(i+inc)
+               pItem2 = cast(wfxListViewItem ptr, pNode2->pData)
+
+               if nSortAscend then
+                  If ucase(pItem1->SubItem(nColNum).Text) > _
+                     ucase(pItem2->SubItem(nColNum).Text) then
+                     Swap pNode1->pData, pNode2->pData
+                     done = 1
+                  end if   
+               else
+                  If ucase(pItem1->SubItem(nColNum).Text) < _
+                     ucase(pItem2->SubItem(nColNum).Text) then
+                     Swap pNode1->pData, pNode2->pData
+                     done = 1
+                  end if   
+               end if
+            Next
+        Loop Until done = 0
+ 
+    Loop Until inc = 1
+ 
+
+   If this.hWindow Then 
+      if this.UpdateFlag = false then
+         AfxRedrawWindow( this.hWindow )
+      end if   
+   end if
+   
+   function = 0
+end function
 

@@ -136,6 +136,7 @@ type wfxListViewItemsCollection
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Clear() as long 
       Declare function Count() as long 
+      declare function SortByColumn( ByVal nColNum As Long, byval nSortAscend as Boolean = true ) as long 
       Declare Function SelectedCount() As Long
       Declare Function Remove( ByVal nIndex As Long ) As Long 
       Declare Function Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
@@ -225,7 +226,6 @@ Type wfxListView Extends wfxControl
       OnMouseUp          as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnMouseDoubleClick as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnMouseEnter       as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
-      OnMouseHover       as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnMouseLeave       as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnGotFocus         as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT
       OnLostFocus        as function( byref sender as wfxListView, byref e as EventArgs ) as LRESULT

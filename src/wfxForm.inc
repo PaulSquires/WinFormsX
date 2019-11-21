@@ -619,8 +619,10 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
    end if
 
    select case this.WindowState
-      case FormWindowState.Maximized: dwStyle = dwStyle or WS_MAXIMIZE
-      case FormWindowState.Minimized: dwStyle = dwStyle or WS_MINIMIZE
+      case FormWindowState.Maximized
+         dwStyle = dwStyle or WS_MAXIMIZE
+      case FormWindowState.Minimized
+         dwStyle = dwStyle or WS_MINIMIZE
       case FormWindowState.Normal     ' no style needed
    end select  
     
@@ -713,7 +715,11 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
    ' Ensure that window gets correctly placed into the taskbar (if applicable) by
    ' calling ShowWindow with SW_SHOWDEFAULT initially specified.
    if this.IsMainForm then
-      ShowWindow(this.hWindow, SW_SHOWDEFAULT)
+      if this.WindowState = FormWindowState.Maximized then
+         ShowWindow(this.hWindow, SW_MAXIMIZE)
+      else
+         ShowWindow(this.hWindow, SW_SHOWDEFAULT)
+      end if   
    end if
     
    
