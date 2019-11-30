@@ -189,6 +189,15 @@ enum ColumnHeaderStyle
    NonClickable
 end enum
 
+enum DateTimePickerFormat 
+   LongDate = 1
+   ShortDate
+   ShortDateCentury
+   TimeFormat
+   CustomFormat
+end enum
+
+
 
 type EventArgs as wfxEventArgs    ' forward reference
 Type wfxEventArgs Extends Object

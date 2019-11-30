@@ -119,7 +119,11 @@ Property wfxControl.Font( ByVal wfxFontPtr As wfxFont Ptr )
    _wfxFontPtr = wfxFontPtr
    If this.hWindow Then 
       If _wfxFontPtr Then
-         AfxSetWindowFont( this.hWindow, _wfxFontPtr->FontHandle, CTRUE )
+         if this.CtrlType = ControlType.DateTimePicker then
+            SendMessage( this.hWindow, DTM_SETMCFONT, CAST(WPARAM, _wfxFontPtr->FontHandle), CTRUE )
+         else   
+            AfxSetWindowFont( this.hWindow, _wfxFontPtr->FontHandle, CTRUE )
+         end if   
       End If
    End If
 End Property

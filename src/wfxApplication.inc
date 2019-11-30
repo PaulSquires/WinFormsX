@@ -161,6 +161,12 @@ end function
 #ifdef CODEGEN_LISTVIEW
    Dim pListView    As wfxListView Ptr
 #endif
+#ifdef CODEGEN_MONTHCALENDAR
+   Dim pMonthCal    As wfxMonthCalendar Ptr
+#endif
+#ifdef CODEGEN_DATETIMEPICKER
+   Dim pDateTimePicker As wfxDateTimePicker Ptr
+#endif
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
@@ -214,6 +220,12 @@ end function
 #endif
 #ifdef CODEGEN_LISTVIEW
          Case ControlType.ListView:     pListView    = Cast(wfxListView Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_MONTHCALENDAR
+         Case ControlType.MonthCalendar: pMonthCal   = Cast(wfxMonthCalendar Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_DATETIMEPICKER
+         Case ControlType.DateTimePicker: pDateTimePicker = Cast(wfxDateTimePicker Ptr, pNode->pData)
 #endif
       End Select
    End If   
@@ -276,6 +288,12 @@ end function
 #endif
 #ifdef CODEGEN_LISTVIEW
    If pListView AndAlso pListView->##msg Then pListView->##msg(*pListView, e)
+#endif
+#ifdef CODEGEN_MONTHCALENDAR
+   If pMonthCal AndAlso pMonthCal->##msg Then pMonthCal->##msg(*pMonthCal, e)
+#endif
+#ifdef CODEGEN_DATETIMEPICKER
+   If pDateTimePicker AndAlso pDateTimePicker->##msg Then pDateTimePicker->##msg(*pDateTimePicker, e)
 #endif
 #EndMacro
 ''
@@ -460,7 +478,7 @@ Function wfxApplication.Run( Byref pForm As wfxForm ) As LRESULT
 
    ' Ensure the window is placed on screen should the user had changed 
    ' the logical ordering of a multiple display setup.
-   AfxForceVisibleDisplay(pForm.pWindow->hWindow)
+   AfxForceVisibleDisplay( pForm.pWindow->hWindow )
    
    ' Show the window and update its client area (this will also create any child controls)
    pForm.IsMainForm = true
@@ -618,6 +636,9 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
 #endif
 #ifdef CODEGEN_RICHEDIT
             If pRichEdit AndAlso pRichEdit->OnClick Then pRichEdit->OnClick(*pRichEdit, e)
+#endif
+#ifdef CODEGEN_DATETIMEPICKER
+            If pDateTimePicker AndAlso pDateTimePicker->OnClick Then pDateTimePicker->OnClick(*pDateTimePicker, e)
 #endif
          End If
          
@@ -915,6 +936,28 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
             Select Case pNode->CtrlType 
 
+#ifdef CODEGEN_MONTHCALENDAR
+               case ControlType.MonthCalendar
+                  pMonthCal = Cast(wfxMonthCalendar Ptr, pNode->pData)
+
+                  if lNotification = MCN_SELECT then
+                     'dim pNMSelChange as NMSELCHANGE ptr = cast(NMSELCHANGE ptr, pNMHDR)
+                     if pMonthCal->OnClick Then pMonthCal->OnClick(*pMonthCal, e)
+                  end if
+
+                  if lNotification = MCN_SELCHANGE then
+                     if pMonthCal->OnSelectionChanged Then pMonthCal->OnSelectionChanged(*pMonthCal, e)
+                  end if
+#endif
+
+#ifdef CODEGEN_DATETIMEPICKER
+               case ControlType.DateTimePicker
+                  pDateTimePicker = Cast(wfxDateTimePicker Ptr, pNode->pData)
+                  if lNotification = DTN_DATETIMECHANGE then
+                     if pDateTimePicker->OnDateTimeChanged Then pDateTimePicker->OnDateTimeChanged(*pDateTimePicker, e)
+                  end if
+#endif
+
 #ifdef CODEGEN_LISTVIEW
                case ControlType.ListView
                   pListView = Cast(wfxListView Ptr, pNode->pData)
@@ -948,9 +991,31 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   
                   select case lNotification 
                      case NM_CLICK
-                        ' Invoke the Click event
-                        if pListView then pListView->HitTest( e.ListViewRow, e.ListViewColumn )
-                        if pListView->OnClick Then pListView->OnClick(*pListView, e)
+                        if pListView then 
+                           ' Test to see if the checkbox was clicked.
+                           dim hitinfo as LVHITTESTINFO
+                           dim as POINT pt
+                           
+                           GetCursorPos( @pt )
+                           ScreenToClient( pNMHDR->hwndFrom, @pt )
+                           hitinfo.pt = pt
+                           e.ListViewColumn = -1
+                           e.ListViewRow = SendMessage( pNMHDR->hwndFrom, LVM_SUBITEMHITTEST, 0, cast(ULONG_PTR, @hitinfo) ) 
+                           if e.ListViewRow <> -1 then e.ListViewColumn = hitinfo.iSubItem
+
+                           ' Toggle if some item is selected
+                           if e.ListViewRow <> -1 then
+                              if (hitinfo.flags and LVHT_ONITEMSTATEICON) = LVHT_ONITEMSTATEICON then
+                                 pListView->Item(e.ListViewRow).Checked = _
+                                    not pListView->Item(e.ListViewRow).Checked
+                                 pListView->Refresh  
+                              end if 
+                           end if
+                           
+                           ' Invoke the Click event
+                           if pListView->OnClick Then pListView->OnClick(*pListView, e)
+                        end if
+                     
                      case NM_RETURN
                         ' Invoke the Click event
                         e.ListViewRow = -1
@@ -982,8 +1047,12 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      dim as long nSubItem = plvdi->item.iSubItem
 
                      if (plvdi->item.mask and LVIF_TEXT) then
-                        plvdi->item.pszText = pListView->Item(nItem).SubItem(nSubItem).Text.sptr
-                        plvdi->item.cchTextMax = len(pListView->Item(nItem).SubItem(nSubItem).Text)
+                        ' Do an array bounds check because it is possible that the user
+                        ' has not defined all subitems to match the number of columns.
+                        if nSubItem <= pListView->Item(nItem).SubItems.Count - 1 then
+                           plvdi->item.pszText = pListView->Item(nItem).SubItem(nSubItem).Text.sptr
+                           plvdi->item.cchTextMax = len(pListView->Item(nItem).SubItem(nSubItem).Text)
+                        end if
                      end if
                         
                      if (plvdi->item.mask and LVIF_IMAGE) then  
@@ -1022,8 +1091,12 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                               dim as long nItem = plvcd->nmcd.dwItemSpec 
                               dim as long nSubItem = plvcd->iSubItem     
                              
-                              plvcd->clrText   = pListView->Item(nItem).SubItem(nSubItem).ForeColor
-                              plvcd->clrTextBk = pListView->Item(nItem).SubItem(nSubItem).BackColor
+                              ' Do an array bounds check because it is possible that the user
+                              ' has not defined all subitems to match the number of columns.
+                              if nSubItem <= pListView->Item(nItem).SubItems.Count - 1 then
+                                 plvcd->clrText   = pListView->Item(nItem).SubItem(nSubItem).ForeColor
+                                 plvcd->clrTextBk = pListView->Item(nItem).SubItem(nSubItem).BackColor
+                              end if
                                  
                               if pListView->OddRowColor <> plvcd->clrTextBk then
                                  if (nItem mod 2) = 0 then
@@ -1511,11 +1584,16 @@ static Function wfxApplication.SubclassProc ( _
                            ' Get the text alignment
                            dim as long nAlign 
                            if pListView then
-                              select case pListView->Column(nIndex).TextAlign
-                                 case TextAlignment.Left:   nAlign = DT_LEFT
-                                 case TextAlignment.Right:  nAlign = DT_RIGHT
-                                 case TextAlignment.Center: nAlign = DT_CENTER
-                              end select
+                              ' Do array bounds check in case columns are deleted and
+                              ' this drawing routine attempts to access column due to
+                              ' horizontal scrollbar being moved too far right.
+                              if nIndex <= pListView->Columns.Count - 1 then
+                                 select case pListView->Column(nIndex).TextAlign
+                                    case TextAlignment.Left:   nAlign = DT_LEFT
+                                    case TextAlignment.Right:  nAlign = DT_RIGHT
+                                    case TextAlignment.Center: nAlign = DT_CENTER
+                                 end select
+                              end if
                            end if
                            if instr(wszText, chr(13)) then
                               nAlign = nAlign OR DT_WORDBREAK
@@ -1526,14 +1604,8 @@ static Function wfxApplication.SubclassProc ( _
                            ' Offset the text slightly if depressed...
                            IF (nState AND CDIS_SELECTED) THEN InflateRect @plvcd->nmcd.rc, -2, -2
                            
-                           ' // Draw multiline, using CRLF (i.e. wszText = "Customer" & $CRLF & "number")
+                           ' Draw multiline, using CRLF (i.e. wszText = "Customer" & $CRLF & "number")
                            DrawText plvcd->nmcd.hdc, wszText, LEN(wszText), @plvcd->nmcd.rc, nAlign
-                                    
-                           
-                           ' // Draw multiline using word wrap (i.e. wszText = "Customer number")
-                           'DrawText @pnmcd.hdc, wszText, LEN(wszText), @pnmcd.rc, %DT_CENTER OR %DT_VCENTER OR %DT_WORDBREAK
-                           ' // Sraw single line with ellipsis... (i.e. wszText = "Customer number")
-                           'DrawText @pnmcd.hdc, wszText, LEN(wszText), @pnmcd.rc, %DT_CENTER OR %DT_VCENTER OR %DT_END_ELLIPSIS
 
                            ' Cleanup
                            IF hBrush THEN DeleteObject hBrush

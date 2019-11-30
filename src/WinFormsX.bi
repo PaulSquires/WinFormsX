@@ -129,6 +129,14 @@ namespace WinFormsX
 #Include Once "wfxTreeView.bi"
 #endif
 
+#ifdef CODEGEN_MONTHCALENDAR
+#Include Once "wfxMonthCalendar.bi"
+#endif
+
+#ifdef CODEGEN_DATETIMEPICKER
+#Include Once "wfxDateTimePicker.bi"
+#endif
+
 #Include Once "wfxApplication.bi"
 
 #Include Once "wfxSize.inc"
@@ -191,6 +199,14 @@ namespace WinFormsX
 
 #ifdef CODEGEN_TREEVIEW
 #Include Once "wfxTreeView.inc"
+#endif
+
+#ifdef CODEGEN_MONTHCALENDAR
+#Include Once "wfxMonthCalendar.inc"
+#endif
+
+#ifdef CODEGEN_DATETIMEPICKER
+#Include Once "wfxDateTimePicker.inc"
 #endif
 
 #ifdef CODEGEN_MAINMENU
