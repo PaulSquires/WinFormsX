@@ -48,11 +48,13 @@ function wfxListView.Columns byref As wfxListViewColumnsCollection
 END function
 
 function wfxListView.BeginUpdate() As long
+   SendMessage( this.hWindow, WM_SETREDRAW, false, 0 )
    this.Items.UpdateFlag = true
    function = 0
 end function
 
 function wfxListView.EndUpdate() as Long
+   SendMessage( this.hWindow, WM_SETREDRAW, true, 0 )
    this.Items.UpdateFlag = false
    ListView_SetItemCountEx( this.hWindow, this.Items.Count, 0 )
    function = 0
@@ -479,6 +481,10 @@ function wfxListView.Show(byval hWndParent as hwnd = 0) as long
    this.GridLines          = _GridLines
    this.Sorting            = _Sorting
 
+   if len(_ToolTip) then
+      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
+   end if
+
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.
@@ -509,9 +515,10 @@ function wfxListView.Show(byval hWndParent as hwnd = 0) as long
    Next
    this.Columns.SetupColumns_Internal()
    
-   ' Set the text for the Items.
+   ' Set the hWindow for the Items.
    For i As Long = 0 To this.Items.Count - 1
       this.Item(i).hWindow = this.hWindow
+      this.Item(i).SubItems.hWindow = this.hWindow
    Next
    ListView_SetItemCountEx( this.hWindow, this.Items.Count, 0 )
 
@@ -634,6 +641,7 @@ end property
 
 property wfxListViewSubItem.Text( byref wszValue as wstring )
    _Text = wszValue
+   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
 end property
 
 property wfxListViewSubItem.BackColor() as COLORREF
@@ -701,11 +709,16 @@ end function
 function wfxListViewSubItemsCollection.ByIndex( byval nIndex as long ) byref as wfxListViewSubItem 
    dim pItem as wfxListViewSubItem ptr
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_index(nIndex)
-   if pNode then
-      pItem = cast(wfxListViewSubItem ptr, pNode->pData)
-      return *pItem
-   end if   
+   ' Do array bounds check
+   if _Collection.Size then
+      if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) then
+         pNode = _Collection.get_index(nIndex)
+         if pNode then
+            pItem = cast(wfxListViewSubItem ptr, pNode->pData)
+            return *pItem
+         end if   
+      end if
+   end if
 end function
 
 function wfxListViewSubItemsCollection.Clear() as long
@@ -726,6 +739,14 @@ destructor wfxListViewItem
    ' Subitems Collection will automatically have its destructor
    ' called when the ListViewItem is destroyed.
 end destructor
+
+property wfxListViewItem.hWindow() as hwnd
+   property = _hWindow
+END PROPERTY
+
+property wfxListViewItem.hWindow( ByVal nValue As hwnd) 
+   _hWindow = nValue
+END PROPERTY
 
 Property wfxListViewItem.Selected() As boolean
    property = _Selected
@@ -764,6 +785,7 @@ end property
 property wfxListViewItem.Text( byref wszValue as wstring )
    if this.SubItems.Count > 0 then
       this.SubItem(0).Text = wszValue
+      if this.hWindow THEN AfxRedrawWindow(this.hWindow)
    end if   
 end property
 
@@ -905,10 +927,14 @@ end function
 function wfxListViewColumnsCollection.ByIndex( byval nIndex as long ) byref as wfxListViewColumn
    dim pItem as wfxListViewColumn ptr
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_index(nIndex)
-   if pNode then
-      pItem = cast(wfxListViewColumn ptr, pNode->pData)
-      return *pItem
+   if _Collection.Size then
+      if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) then
+         pNode = _Collection.get_index(nIndex)
+         if pNode then
+            pItem = cast(wfxListViewColumn ptr, pNode->pData)
+            return *pItem
+         end if   
+      end if
    end if   
 end function
 
@@ -966,7 +992,8 @@ Function wfxListViewItemsCollection.Add( ByRef wszValue As WString = "", ByVal n
       AfxMsg( "Memory allocation failed. wfxListViewItemsCollection.Add" )
       exit function
    end if
-   pData->hWindow = this.hWindow
+   if this.hWindow then pData->hWindow = this.hWindow
+   if this.hWindow then pData->SubItems.hWindow = this.hWindow
    pData->Index = (this.Count - 1) + 1
    pData->Data32 = nValue
    pData->SubItems.Add( wszValue )
@@ -985,7 +1012,8 @@ Function wfxListViewItemsCollection.Insert( ByVal nIndex As Long, ByRef wszValue
       AfxMsg( "Memory allocation failed. wfxListViewItemsCollection.Insert" )
       exit function
    end if
-   pData->hWindow = this.hWindow
+   if this.hWindow then pData->hWindow = this.hWindow
+   if this.hWindow then pData->SubItems.hWindow = this.hWindow
    pData->Index = nIndex
    pData->Data32 = nValue
    pData->SubItems.Add( wszValue )
@@ -1035,10 +1063,14 @@ end function
 function wfxListViewItemsCollection.ByIndex( byval nIndex as long ) byref as wfxListViewItem 
    dim pItem as wfxListViewItem ptr
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_index(nIndex)
-   if pNode then
-      pItem = cast(wfxListViewItem ptr, pNode->pData)
-      return *pItem
+   if _Collection.Size then
+      if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) then
+         pNode = _Collection.get_index(nIndex)
+         if pNode then
+            pItem = cast(wfxListViewItem ptr, pNode->pData)
+            return *pItem
+         end if   
+      end if
    end if   
 end function
 

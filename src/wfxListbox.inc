@@ -432,6 +432,9 @@ function wfxListBox.Show(byval hWndParent as hwnd = 0) as long
 
    If _MultiColumn Then this.ColumnWidth = _ColumnWidth 
    
+   if len(_ToolTip) then
+      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
+   end if
 
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to

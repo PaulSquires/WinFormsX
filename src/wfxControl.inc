@@ -26,6 +26,7 @@ destructor wfxControl()
    ' Destroy the background brush
    DeleteObject(_hBackBrush)
    If _wfxFontPtr Then Delete _wfxFontPtr
+   if IsWindow(_hWndToolTip) then DestroyWindow(_hWndToolTip)
 End Destructor
 
 property wfxControl.CtrlType() as LONG
@@ -51,6 +52,27 @@ end property
 property wfxControl.Tag( byref cwzValue as wstring )
    _Tag = cwzValue
 end property
+
+property wfxControl.ToolTip() as CWSTR
+   property = _ToolTip
+end property
+
+property wfxControl.ToolTip( byref cwzValue as wstring )
+   if this.hWindow then
+      if _hWndToolTip then
+         AfxSetTooltipText(_hWndToolTip, this.hWindow, cwzValue)
+      end if
+   end if
+   _ToolTip = cwzValue
+end property
+
+Property wfxControl.ToolTipBalloon() As boolean
+   Property = _ToolTipBalloon
+End Property
+
+Property wfxControl.ToolTipBalloon( ByVal nValue As boolean )
+   _ToolTipBalloon = nValue
+End Property
 
 property wfxControl.CtrlID() as LONG
    if this.hWindow then 

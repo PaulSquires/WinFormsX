@@ -132,6 +132,14 @@ property wfxForm.StartPosition( byval nValue as FormStartPosition )
    _StartPosition = nValue
 end property
 
+property wfxForm.ChildForm() as boolean
+   property = _ChildForm
+end property
+
+property wfxForm.ChildForm( byval nValue as boolean )
+   _ChildForm = nValue
+end property
+
 property wfxForm.MinimizeBox() as boolean
    if this.pWindow andalso this.pWindow->hWindow THEN
       _MinimizeBox = (AfxGetWindowStyle(this.pWindow->hWindow) and WS_MINIMIZEBOX)
@@ -608,65 +616,70 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
    Dim As Long dwStyle = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS 
    dim as long dwExStyle = WS_EX_CONTROLPARENT
    
-   if IsChild then dwStyle = dwStyle or WS_CHILD
-   
-   if this.IsMainForm THEN dwStyle = dwStyle or WS_POPUP 
-   If IsFormModal Then dwStyle = dwStyle Or WS_POPUP
-   this.IsModal = IsFormModal
-      
-   if this.StartPosition = FormStartPosition.WindowsDefaultLocation then
-      nLeft = CW_USEDEFAULT: nTop = CW_USEDEFAULT
-   end if
 
-   select case this.WindowState
-      case FormWindowState.Maximized
-         dwStyle = dwStyle or WS_MAXIMIZE
-      case FormWindowState.Minimized
-         dwStyle = dwStyle or WS_MINIMIZE
-      case FormWindowState.Normal     ' no style needed
-   end select  
-    
-   if this.MinimizeBox then dwStyle = dwStyle or WS_MINIMIZEBOX or WS_CAPTION 
-   if this.MaximizeBox then dwStyle = dwStyle or WS_MAXIMIZEBOX or WS_CAPTION
-   if this.ControlBox  THEN dwStyle = dwStyle or WS_SYSMENU or WS_CAPTION
+   if IsChild then 
+      dwStyle = dwStyle or WS_CHILD
+   
+   else
+      if this.IsMainForm THEN dwStyle = dwStyle or WS_POPUP 
+      If IsFormModal Then dwStyle = dwStyle Or WS_POPUP
+      this.IsModal = IsFormModal
+         
+      if this.StartPosition = FormStartPosition.WindowsDefaultLocation then
+         nLeft = CW_USEDEFAULT: nTop = CW_USEDEFAULT
+      end if
+
+      select case this.WindowState
+         case FormWindowState.Maximized
+            dwStyle = dwStyle or WS_MAXIMIZE
+         case FormWindowState.Minimized
+            dwStyle = dwStyle or WS_MINIMIZE
+         case FormWindowState.Normal     ' no style needed
+      end select  
        
-   select case this.BorderStyle 
-      case FormBorderStyle.None
-         dwStyle   = dwStyle and (not WS_BORDER)
-      case FormBorderStyle.SizableToolWindow
-         dwExStyle = dwExStyle or WS_EX_TOOLWINDOW
-         dwStyle   = dwStyle or WS_BORDER or WS_THICKFRAME
-      case FormBorderStyle.FixedToolWindow
-         dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
-         dwExStyle = dwExStyle or WS_EX_TOOLWINDOW
-      case FormBorderStyle.Sizable
-         dwStyle   = dwStyle or WS_THICKFRAME or WS_DLGFRAME or WS_BORDER	
-         dwExStyle = dwExStyle or WS_EX_WINDOWEDGE
-      case FormBorderStyle.Fixed3D
-         dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
-         dwExStyle = dwExStyle or WS_EX_WINDOWEDGE or WS_EX_CLIENTEDGE
-      case FormBorderStyle.FixedSingle
-         dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
-         dwExStyle = dwExStyle or WS_EX_WINDOWEDGE
-      Case FormBorderStyle.FixedDialog
-         dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
-         dwExStyle = dwExStyle or WS_EX_DLGMODALFRAME
-   end select     
+      if this.MinimizeBox then dwStyle = dwStyle or WS_MINIMIZEBOX or WS_CAPTION 
+      if this.MaximizeBox then dwStyle = dwStyle or WS_MAXIMIZEBOX or WS_CAPTION
+      if this.ControlBox  THEN dwStyle = dwStyle or WS_SYSMENU or WS_CAPTION
+          
+      select case this.BorderStyle 
+         case FormBorderStyle.None
+            dwStyle   = dwStyle and (not WS_BORDER)
+         case FormBorderStyle.SizableToolWindow
+            dwExStyle = dwExStyle or WS_EX_TOOLWINDOW
+            dwStyle   = dwStyle or WS_BORDER or WS_THICKFRAME
+         case FormBorderStyle.FixedToolWindow
+            dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
+            dwExStyle = dwExStyle or WS_EX_TOOLWINDOW
+         case FormBorderStyle.Sizable
+            dwStyle   = dwStyle or WS_THICKFRAME or WS_DLGFRAME or WS_BORDER	
+            dwExStyle = dwExStyle or WS_EX_WINDOWEDGE
+         case FormBorderStyle.Fixed3D
+            dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
+            dwExStyle = dwExStyle or WS_EX_WINDOWEDGE or WS_EX_CLIENTEDGE
+         case FormBorderStyle.FixedSingle
+            dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
+            dwExStyle = dwExStyle or WS_EX_WINDOWEDGE
+         Case FormBorderStyle.FixedDialog
+            dwStyle   = dwStyle or WS_BORDER or WS_DLGFRAME
+            dwExStyle = dwExStyle or WS_EX_DLGMODALFRAME
+      end select     
 
-'   If this.ShowInTaskBar Then
-'      dwExStyle = dwExStyle Or WS_EX_APPWINDOW
-'   End If
+   '   If this.ShowInTaskBar Then
+   '      dwExStyle = dwExStyle Or WS_EX_APPWINDOW
+   '   End If
    
-   ' Calculate the correct size and position of the form that we are about
-   ' to create. We do this because otherwise we would have to display the
-   ' form and move it resulting in unsighlty visual movement to the user.
-   select CASE this.StartPosition
-      CASE FormStartPosition.CenterParent
-         pt = this.CalculateStartPosition( rc, hWndParent )
-      CASE FormStartPosition.CenterScreen
-         pt = this.CalculateStartPosition( rc, 0 )
-   END SELECT
+   
+      ' Calculate the correct size and position of the form that we are about
+      ' to create. We do this because otherwise we would have to display the
+      ' form and move it resulting in unsighlty visual movement to the user.
+      select CASE this.StartPosition
+         CASE FormStartPosition.CenterParent
+            pt = this.CalculateStartPosition( rc, hWndParent )
+         CASE FormStartPosition.CenterScreen
+            pt = this.CalculateStartPosition( rc, 0 )
+      END SELECT
 
+   end if
    '  Create the main window based on properties set
    this.hWindow = this.pWindow->Create( hWndParent, _
                         this.Text, _

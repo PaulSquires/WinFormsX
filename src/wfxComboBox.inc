@@ -223,6 +223,10 @@ function wfxComboBox.Show(byval hWndParent as hwnd = 0) as long
    'this.BorderStyle = _BorderStyle
    this.Enabled     = _Enabled
 
+   if len(_ToolTip) then
+      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
+   end if
+
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.

@@ -95,16 +95,20 @@ type wfxListViewSubItemsCollection
 END TYPE
 
 
-type wfxListViewItem extends wfxListViewSubItem
+type wfxListViewItem 
    private:
+      _hWindow            as HWND
       _Index              as Long
       _IsLoading          as Boolean = true   ' internal
       _Checked            as boolean
       _Selected           as boolean
       _Data32             as long
       _SubItemsCollection as wfxListViewSubItemsCollection
-      
+   
    public:
+      
+      Declare Property hWindow() As hwnd
+      Declare Property hWindow( ByVal nValue As hwnd)
       Declare Property Index() As long
       Declare Property Index( ByVal nValue As long)
       Declare Property Checked() As boolean

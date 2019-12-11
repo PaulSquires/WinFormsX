@@ -29,6 +29,7 @@ Type wfxApplication
       Declare Property StartupPath() As CWSTR
       
       Declare Function GetpFormObject( ByVal hWin As HWnd ) As wfxForm Ptr
+      declare function GetpFormObjectByName( byref wszFormName as wstring ) as wfxForm ptr
       Declare Function TranslateFormWindowState( ByVal nValue As FormWindowState ) As Long
       Declare Function DoEvents() As LRESULT
       Declare Function Run() As LRESULT

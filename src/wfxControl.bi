@@ -39,6 +39,9 @@ Type wfxControl Extends Object
       _hFont         As HFONT
       _FontString    As CWSTR
       _wfxFontPtr    As wfxFont Ptr
+      _ToolTip       as CWSTR
+      _ToolTipBalloon as Boolean = false
+      _hWndToolTip   as HWND
       
    Public:
       Declare Property hWindow() As hwnd
@@ -51,6 +54,10 @@ Type wfxControl Extends Object
       Declare Property Name( ByRef cwzValue As wstring )
       Declare Property Tag() As CWSTR 
       Declare Property Tag( ByRef cwzValue As wstring )
+      Declare Property ToolTip() As CWSTR 
+      Declare Property ToolTip( ByRef cwzValue As wstring )
+      Declare Property ToolTipBalloon() As boolean
+      Declare Property ToolTipBalloon( ByVal nValue As Boolean)
       Declare Property Font() As wfxFont 
       Declare Property Font( ByVal wfxFontPtr As wfxFont Ptr )
       Declare Property AllowDrop() As boolean

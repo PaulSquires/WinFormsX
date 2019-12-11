@@ -137,6 +137,10 @@ namespace WinFormsX
 #Include Once "wfxDateTimePicker.bi"
 #endif
 
+#ifdef CODEGEN_TABCONTROL
+#Include Once "wfxTabControl.bi"
+#endif
+
 #Include Once "wfxApplication.bi"
 
 #Include Once "wfxSize.inc"
@@ -207,6 +211,10 @@ namespace WinFormsX
 
 #ifdef CODEGEN_DATETIMEPICKER
 #Include Once "wfxDateTimePicker.inc"
+#endif
+
+#ifdef CODEGEN_TABCONTROL
+#Include Once "wfxTabControl.inc"
 #endif
 
 #ifdef CODEGEN_MAINMENU

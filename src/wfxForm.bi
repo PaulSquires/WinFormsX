@@ -24,6 +24,7 @@ Type wfxForm Extends wfxControl
       _ClientSize      as wfxSize 
       _NextCtrlID      as long    = 100
       _IsMainForm      as boolean = false 
+      _ChildForm       as boolean = false 
       _IsModal         as Boolean = false
       _KeyPreview      As Boolean = False
       _MinimumHeight   as Long = 0
@@ -67,6 +68,8 @@ Type wfxForm Extends wfxControl
       Declare Property ControlBox( ByVal nValue As boolean )
       Declare Property ClientSize() As wfxSize
       declare property ClientSize( byval nWidth as long, byval nHeight as long )
+      Declare Property ChildForm() As boolean
+      Declare Property ChildForm( ByVal nValue As boolean )
       Declare Property IsMainForm() As boolean
       Declare Property IsMainForm( ByVal nValue As boolean )
       Declare Property IsModal() As boolean

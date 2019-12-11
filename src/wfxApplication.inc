@@ -167,6 +167,9 @@ end function
 #ifdef CODEGEN_DATETIMEPICKER
    Dim pDateTimePicker As wfxDateTimePicker Ptr
 #endif
+#ifdef CODEGEN_TABCONTROL
+   Dim pTabControl As wfxTabControl Ptr
+#endif
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
@@ -226,6 +229,9 @@ end function
 #endif
 #ifdef CODEGEN_DATETIMEPICKER
          Case ControlType.DateTimePicker: pDateTimePicker = Cast(wfxDateTimePicker Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_TABCONTROL
+         Case ControlType.TabControl: pTabControl = Cast(wfxTabControl Ptr, pNode->pData)
 #endif
       End Select
    End If   
@@ -294,6 +300,9 @@ end function
 #endif
 #ifdef CODEGEN_DATETIMEPICKER
    If pDateTimePicker AndAlso pDateTimePicker->##msg Then pDateTimePicker->##msg(*pDateTimePicker, e)
+#endif
+#ifdef CODEGEN_TABCONTROL
+   If pTabControl AndAlso pTabControl->##msg Then pTabControl->##msg(*pTabControl, e)
 #endif
 #EndMacro
 ''
@@ -370,6 +379,35 @@ Function wfxApplication.GetpFormObject( ByVal hWin As HWnd ) As wfxForm Ptr
    
    Return pForm
 End Function      
+
+
+''    
+''  Generic function to retrieve form object based on form name.
+''  Used by the Tab Control to retrieve child Tab Page window handles.
+''
+function wfxApplication.GetpFormObjectByName( byref wszFormName as wstring ) as wfxForm ptr
+   dim pNode as wfxLListNode ptr
+   dim pForm as wfxForm ptr
+   dim idx as long = 0
+   
+   dim as CWSTR wszFormNameUCASE = ucase(wszFormName)
+   
+   pNode = this.Forms.get_first
+   do until pNode = 0
+      If pNode->CtrlType = ControlType.Form Then
+         pForm = Cast(wfxForm Ptr, pNode->pData)
+         if pForm then
+            if ucase(pForm->Name) = wszFormNameUCASE then
+               return pForm
+            end if   
+         end if
+      End If
+      ' Get the next form in the application 
+      idx = idx + 1  
+      pNode = this.Forms.get_next(idx)
+   LOOP
+   function = 0
+end function
 
 
 ''
@@ -936,6 +974,27 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
             Select Case pNode->CtrlType 
 
+#ifdef CODEGEN_TABCONTROL
+               case ControlType.TabControl
+                  pTabControl = Cast(wfxTabControl Ptr, pNode->pData)
+
+                  pTabControl->SelectedIndex = TabCtrl_GetCurSel(pNMHDR->hwndFrom)
+                  
+                  if lNotification = TCN_SELCHANGING then
+                     if pTabControl->OnSelecting Then 
+                        if pTabControl->OnSelecting(*pTabControl, e) = true then return true
+                     end if
+                     if e.Cancel then return true
+                     pTabControl->HideTabPage( pTabControl->SelectedIndex )
+                  end if
+
+                  if lNotification = TCN_SELCHANGE then
+                     if pTabControl->OnSelected Then pTabControl->OnSelected(*pTabControl, e)
+                     ' Show the current TabPage
+                     pTabControl->ShowTabPage( pTabControl->SelectedIndex )
+                  end if   
+#endif
+
 #ifdef CODEGEN_MONTHCALENDAR
                case ControlType.MonthCalendar
                   pMonthCal = Cast(wfxMonthCalendar Ptr, pNode->pData)
@@ -1438,83 +1497,102 @@ static Function wfxApplication.SubclassProc ( _
          If Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) Then Return 0
          
       
-      case WM_ERASEBKGND   
-         WINFORMSX_DIM_POINTERS
-         ' Only erase the bottom portion of the listbox that extends from the last item
-         ' to the bottom edge of the listbox. All other lines are already drawn. This helps
-         ' reduce screen flicker.
-#ifdef CODEGEN_LISTBOX
-         if pListBox then
-            dim as RECT rc: GetClientRect( hWin, @rc )
-            ' If the number of lines in the listbox is less than the number per page then 
-            ' calculate from last item to bottom of listbox, otherwise calculate based on
-            ' the mod of the lineheight to listbox height so we can color the partial line
-            ' that won't be displayed at the bottom of the list.
-            dim as RECT rcItem
-            SendMessage( hWin, LB_GETITEMRECT, 0, cast(LPARAM, @rcItem) )
-            dim as long itemHeight = rcItem.bottom - rcItem.top
-            dim as long NumItems = pListBox->Items.Count
-            dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
-            dim as long visible_rows = 0
-            dim as long ItemsPerPage = 0
-            dim as long bottom_index = 0
-            
-            if pListBox->MultiColumn = false then
-               if NumItems > 0 then
-                  ItemsPerPage = (rc.bottom - rc.top) / itemHeight
-                  bottom_index = (nTopIndex + ItemsPerPage) 
-                  if bottom_index >= NumItems then bottom_index = NumItems - 1
-                  visible_rows = (bottom_index - nTopIndex) + 1
-               end if
-
-               rc.top = visible_rows * itemHeight 
-               if rc.top < rc.bottom then
-                  dim as HDC _hDC = cast(HDC, _wParam)
-                  FillRect( _hDC, @rc, pListBox->hBackBrush  )
-               end if
-
-            else
-               ' Painting for multicolumn listbox.
-               ' Check if the last item in the listbox is visible within the listbox
-               ' client area. We now need to clear the space to the right of the column
-               ' that this item is appearing. If the last item is not visible, then that
-               ' means that the whole client area of thelistbox must already be covered
-               ' with listbox items and therefore no blank spaces need to be manually
-               ' painted.
-               dim as HDC _hDC = cast(HDC, _wParam)
-               dim as RECT rcIntersect
-               GetWindowRect( hWin, @rc )
-               SendMessage( hWin, LB_GETITEMRECT, NumItems - 1, cast(LPARAM, @rcItem) )
-               MapWindowPoints( hWin, null, cast( POINT ptr, @rcItem), 2 )
-               if IntersectRect( @rcIntersect, @rcItem, @rc ) then
-                  ' Get the client coordinates again...
-                  SendMessage( hWin, LB_GETITEMRECT, NumItems - 1, cast(LPARAM, @rcItem) )
-                  
-                  ' Paint the items in the column under the last item
-                  GetClientRect( hWin, @rc )
-                  rc.top = rcItem.bottom
-                  rc.left = rcItem.left
-                  FillRect( _hDC, @rc, pListBox->hBackBrush  )
-                  
-                  ' Paint everything to the right
-                  GetClientRect( hWin, @rc )
-                  rc.left = rcItem.right
-                  FillRect( _hDC, @rc, pListBox->hBackBrush  )
-               end if   
-               ' Always do the bottom gap painting
-               ' Paint the gap area between the bottom of the column lists and the
-               ' listbox bottom itself. Get the rect of the last item in the first column.
-               dim as long NumColItems = SendMessage( hWin, LB_GETLISTBOXINFO, 0, 0 )
-               SendMessage( hWin, LB_GETITEMRECT, nTopIndex + NumColItems - 1, cast(LPARAM, @rcItem) )
-               GetClientRect( hWin, @rc )
-               rc.top = rcItem.bottom
-               FillRect( _hDC, @rc, pListBox->hBackBrush  )
-            end if
-            
-            return TRUE
+      case WM_SIZE
+#ifdef CODEGEN_TABCONTROL
+         dim pNode as wfxLListNode ptr = Application.GetControlByHandle( hWin )
+         If pNode Then
+            Select Case pNode->CtrlType 
+               case ControlType.TabControl
+                  dim pTabControl as wfxTabControl Ptr = Cast(wfxTabControl Ptr, pNode->pData)
+                  if pTabControl then pTabControl->AutoResizeTabPages
+            end select      
          end if
 #endif         
-      
+
+      case WM_ERASEBKGND   
+#ifdef CODEGEN_LISTBOX
+         dim pNode as wfxLListNode ptr = Application.GetControlByHandle( hWin )
+         
+         If pNode Then
+            Select Case pNode->CtrlType 
+               case ControlType.ListView
+                  dim pListBox as wfxListBox Ptr = Cast(wfxListBox Ptr, pNode->pData)
+
+                  ' Only erase the bottom portion of the listbox that extends from the last item
+                  ' to the bottom edge of the listbox. All other lines are already drawn. This helps
+                  ' reduce screen flicker.
+                  if pListBox then
+                     dim as RECT rc: GetClientRect( hWin, @rc )
+                     ' If the number of lines in the listbox is less than the number per page then 
+                     ' calculate from last item to bottom of listbox, otherwise calculate based on
+                     ' the mod of the lineheight to listbox height so we can color the partial line
+                     ' that won't be displayed at the bottom of the list.
+                     dim as RECT rcItem
+                     SendMessage( hWin, LB_GETITEMRECT, 0, cast(LPARAM, @rcItem) )
+                     dim as long itemHeight = rcItem.bottom - rcItem.top
+                     dim as long NumItems = pListBox->Items.Count
+                     dim as long nTopIndex = SendMessage( hWin, LB_GETTOPINDEX, 0, 0 ) 
+                     dim as long visible_rows = 0
+                     dim as long ItemsPerPage = 0
+                     dim as long bottom_index = 0
+                     
+                     if pListBox->MultiColumn = false then
+                        if NumItems > 0 then
+                           ItemsPerPage = (rc.bottom - rc.top) / itemHeight
+                           bottom_index = (nTopIndex + ItemsPerPage) 
+                           if bottom_index >= NumItems then bottom_index = NumItems - 1
+                           visible_rows = (bottom_index - nTopIndex) + 1
+                        end if
+
+                        rc.top = visible_rows * itemHeight 
+                        if rc.top < rc.bottom then
+                           dim as HDC _hDC = cast(HDC, _wParam)
+                           FillRect( _hDC, @rc, pListBox->hBackBrush  )
+                        end if
+
+                     else
+                        ' Painting for multicolumn listbox.
+                        ' Check if the last item in the listbox is visible within the listbox
+                        ' client area. We now need to clear the space to the right of the column
+                        ' that this item is appearing. If the last item is not visible, then that
+                        ' means that the whole client area of thelistbox must already be covered
+                        ' with listbox items and therefore no blank spaces need to be manually
+                        ' painted.
+                        dim as HDC _hDC = cast(HDC, _wParam)
+                        dim as RECT rcIntersect
+                        GetWindowRect( hWin, @rc )
+                        SendMessage( hWin, LB_GETITEMRECT, NumItems - 1, cast(LPARAM, @rcItem) )
+                        MapWindowPoints( hWin, null, cast( POINT ptr, @rcItem), 2 )
+                        if IntersectRect( @rcIntersect, @rcItem, @rc ) then
+                           ' Get the client coordinates again...
+                           SendMessage( hWin, LB_GETITEMRECT, NumItems - 1, cast(LPARAM, @rcItem) )
+                           
+                           ' Paint the items in the column under the last item
+                           GetClientRect( hWin, @rc )
+                           rc.top = rcItem.bottom
+                           rc.left = rcItem.left
+                           FillRect( _hDC, @rc, pListBox->hBackBrush  )
+                           
+                           ' Paint everything to the right
+                           GetClientRect( hWin, @rc )
+                           rc.left = rcItem.right
+                           FillRect( _hDC, @rc, pListBox->hBackBrush  )
+                        end if   
+                        ' Always do the bottom gap painting
+                        ' Paint the gap area between the bottom of the column lists and the
+                        ' listbox bottom itself. Get the rect of the last item in the first column.
+                        dim as long NumColItems = SendMessage( hWin, LB_GETLISTBOXINFO, 0, 0 )
+                        SendMessage( hWin, LB_GETITEMRECT, nTopIndex + NumColItems - 1, cast(LPARAM, @rcItem) )
+                        GetClientRect( hWin, @rc )
+                        rc.top = rcItem.bottom
+                        FillRect( _hDC, @rc, pListBox->hBackBrush  )
+                     end if
+                     
+                     return TRUE
+                  end if
+            end select
+         end if   
+#endif      
 
 
       case WM_NOTIFY

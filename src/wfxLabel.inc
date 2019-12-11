@@ -172,6 +172,10 @@ function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
    this.BorderStyle = _BorderStyle
    this.Enabled     = _Enabled
 
+   if len(_ToolTip) then
+      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
+   end if
+
    ' Store the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)

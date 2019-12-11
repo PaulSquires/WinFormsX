@@ -76,6 +76,10 @@ Function wfxFrame.Show(ByVal hWndParent As HWnd = 0) As Long
    this.Font        = _wfxFontPtr
    this.Enabled     = _Enabled
 
+   if len(_ToolTip) then
+      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
+   end if
+
    ' Store the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
