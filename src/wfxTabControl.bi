@@ -54,7 +54,6 @@ type wfxTabPageCollection
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Clear() as long 
       Declare function Count() as long 
-      Declare Function SelectedCount() As Long
       Declare Function Remove( ByVal nIndex As Long ) As Long 
       Declare Function Add( ByRef wszText As WString = "", _
                             ByRef wszTabPage As WString = "", _
@@ -73,18 +72,51 @@ END TYPE
 Type wfxTabControl Extends wfxControl
    private:
       _TabPageCollection as wfxTabPageCollection
-      _TabHeight as long = 0
-      _TabWidth as long = 0
+      _AllowFocus as Boolean = true
+      _TabHeight as long = 24
+      _TabWidth as long = 100
       _BorderStyle As ControlBorderStyle = ControlBorderStyle.None
       _SelectedIndex as Long
       _IsLoading as Boolean = true   ' internal
       _ResizeTabPages as Boolean = true   
+      _TabImageSize as ControlImageSize = ControlImageSize.Size16
+      _ForceImageLeft as Boolean = false
+      _ForceLabelLeft as Boolean = false
+      _TabTopPadding as long = 4
+      _TabSidePadding as long = 4
+      _ButtonStyle as Boolean = false
+      _FixedWidthTabs as Boolean = false
+      _HotTracking as Boolean = true
+      _MultiLine as Boolean = false
+      _hImageList as HANDLE
       
    Public:
+      Declare Property AllowFocus() As boolean
+      Declare Property AllowFocus( ByVal nValue As boolean)
+      Declare Property hImageList() As HANDLE
+      Declare Property hImageList( ByVal nValue As HANDLE)
+      Declare Property MultiLine() As boolean
+      Declare Property MultiLine( ByVal nValue As boolean)
+      Declare Property HotTracking() As boolean
+      Declare Property HotTracking( ByVal nValue As boolean)
+      Declare Property FixedWidthTabs() As boolean
+      Declare Property FixedWidthTabs( ByVal nValue As boolean)
+      Declare Property ButtonStyle() As boolean
+      Declare Property ButtonStyle( ByVal nValue As boolean)
+      Declare Property ForceImageLeft() As boolean
+      Declare Property ForceImageLeft( ByVal nValue As boolean)
+      Declare Property ForceLabelLeft() As boolean
+      Declare Property ForceLabelLeft( ByVal nValue As boolean)
       Declare Property ResizeTabPages() As boolean
       Declare Property ResizeTabPages( ByVal nValue As boolean)
       Declare Property SelectedIndex() As long
       Declare Property SelectedIndex( ByVal nValue As long)
+      Declare Property TabTopPadding() As long
+      Declare Property TabTopPadding( ByVal nValue As long)
+      Declare Property TabSidePadding() As long
+      Declare Property TabSidePadding( ByVal nValue As long)
+      Declare Property TabImageSize() As ControlImageSize
+      Declare Property TabImageSize( ByVal nValue As ControlImageSize)
       Declare Property TabHeight() As long
       Declare Property TabHeight( ByVal nValue As long)
       Declare Property TabWidth() As long

@@ -21,6 +21,7 @@ constructor wfxTabControl( byref wszName as wstring = "" )
 end constructor
 
 destructor wfxTabControl
+   if this.hImageList then ImageList_Destroy(this.hImageList)
 end destructor
 
 
@@ -40,6 +41,22 @@ property wfxTabControl.TabWidth() as Long
    property = _TabWidth 
 end property
 
+property wfxTabControl.TabTopPadding( byval nValue as long )
+   _TabTopPadding = nValue
+end property
+
+property wfxTabControl.TabTopPadding() as Long
+   property = _TabTopPadding 
+end property
+
+property wfxTabControl.TabSidePadding( byval nValue as long )
+   _TabSidePadding = nValue
+end property
+
+property wfxTabControl.TabSidePadding() as Long
+   property = _TabSidePadding 
+end property
+
 property wfxTabControl.SelectedIndex( byval nValue as long )
    _SelectedIndex = nValue
 end property
@@ -48,15 +65,15 @@ property wfxTabControl.SelectedIndex() as Long
    property = _SelectedIndex 
 end property
 
+property wfxTabControl.TabImageSize( byval nValue as ControlImageSize )
+   _TabImageSize = nValue
+end property
+
+property wfxTabControl.TabImageSize() as ControlImageSize
+   property = _TabImageSize
+end property
 
 Function wfxTabControl.TabPage( ByVal nIndex As Long ) ByRef As wfxTabPage
-'   if _IsLoading then
-'      return this.TabPages.ByIndex(nIndex)
-'   else
-'      this._TempItem.hWindow = this.hWindow
-'      this._TempItem.Index = nIndex
-'      return this._TempItem
-'   end if
    return this.TabPages.ByIndex(nIndex)
 END function
 
@@ -103,6 +120,63 @@ end property
 Property wfxTabControl.ResizeTabPages( ByVal nValue As boolean)
    _ResizeTabPages = nValue
 end property
+
+Property wfxTabControl.FixedWidthTabs() As boolean
+   property = _FixedWidthTabs
+end property
+
+Property wfxTabControl.FixedWidthTabs( ByVal nValue As boolean)
+   _FixedWidthTabs = nValue
+end property
+
+Property wfxTabControl.ButtonStyle() As boolean
+   property = _ButtonStyle
+end property
+
+Property wfxTabControl.ButtonStyle( ByVal nValue As boolean)
+   _ButtonStyle = nValue
+end property
+
+Property wfxTabControl.ForceImageLeft() As boolean
+   property = _ForceImageLeft
+end property
+
+Property wfxTabControl.ForceImageLeft( ByVal nValue As boolean)
+   _ForceImageLeft = nValue
+end property
+
+Property wfxTabControl.ForceLabelLeft() As boolean
+   property = _ForceLabelLeft
+end property
+
+Property wfxTabControl.ForceLabelLeft( ByVal nValue As boolean)
+   _ForceLabelLeft = nValue
+end property
+
+Property wfxTabControl.AllowFocus() As boolean
+   property = _AllowFocus
+end property
+
+Property wfxTabControl.AllowFocus( ByVal nValue As boolean)
+   _AllowFocus = nValue
+end property
+
+Property wfxTabControl.HotTracking() As boolean
+   property = _HotTracking
+end property
+
+Property wfxTabControl.HotTracking( ByVal nValue As boolean)
+   _HotTracking = nValue
+end property
+
+Property wfxTabControl.hImageList() As HANDLE
+   property = _hImageList
+end property
+
+Property wfxTabControl.hImageList( ByVal nValue As HANDLE)
+   _hImageList = nValue
+end property
+
 
 
 function wfxTabControl.ShowTabPage( byval nIndex as long ) as long
@@ -165,12 +239,46 @@ function wfxTabControl.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    Dim As Long dwExStyle = WS_EX_CONTROLPARENT
-   dim as long dwStyle = WS_TABSTOP OR WS_CLIPCHILDREN OR WS_CLIPSIBLINGS OR _
-                         TCS_TABS OR TCS_SINGLELINE OR TCS_RAGGEDRIGHT
+   dim as long dwStyle = WS_CLIPCHILDREN OR WS_CLIPSIBLINGS
   
    if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
    
+   if _HotTracking THEN dwStyle = dwStyle OR TCS_HOTTRACK
+
+   if _AllowFocus THEN 
+      dwStyle = dwStyle OR TCS_FOCUSONBUTTONDOWN
+   else   
+      dwStyle = dwStyle OR TCS_FOCUSNEVER
+   end if
+   
+   if _ButtonStyle then 
+      dwStyle = dwStyle or TCS_BUTTONS or TCS_FLATBUTTONS
+   else
+      dwStyle = dwStyle or TCS_TABS
+   end if
+
+   if _FixedWidthTabs then
+      dwStyle = dwStyle or TCS_FIXEDWIDTH
+   else
+      dwStyle = dwStyle or TCS_RAGGEDRIGHT
+   end if
+
+   if _MultiLine then 
+      dwStyle = dwStyle or TCS_MULTILINE
+   else   
+      dwStyle = dwStyle or TCS_SINGLELINE
+   end if
+         
+   if _ForceLabelLeft then
+      ' This will force the label and icon left
+      dwStyle = dwStyle or TCS_FORCELABELLEFT
+   else
+      if _ForceImageLeft then
+         dwStyle = dwStyle or TCS_FORCEICONLEFT
+      end if
+   end if
+            
    _CtrlID = this.Parent->GetNextCtrlID()
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
@@ -198,6 +306,7 @@ function wfxTabControl.Show(byval hWndParent as hwnd = 0) as long
    this.BorderStyle = _BorderStyle
    this.Enabled     = _Enabled
 
+         
    if len(_ToolTip) then
       _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
    end if
@@ -214,6 +323,18 @@ function wfxTabControl.Show(byval hWndParent as hwnd = 0) as long
    if pNode then pNode->hWindow = this.hWindow
 
    ' Set the text for the tabs.
+   dim as boolean bHasImages 
+   For i As Long = 0 To this.TabPages.Count - 1
+      if len(rtrim(TabPage(i).Image)) then 
+         bHasImages = true: exit for
+      end if
+   next
+   if bHasImages then
+      dim as long cx = _TabImageSize * (this.Parent->pWindow->DPI \ 96)
+      this.hImageList = ImageList_Create(cx, cx, ILC_MASK Or ILC_COLOR32, 1, 0)
+   end if
+
+   
    dim pForm as wfxForm ptr
    For i As Long = 0 To this.TabPages.Count - 1
       ' Get the tab text prior to assigning the TabControl window handle otherwise the
@@ -221,9 +342,14 @@ function wfxTabControl.Show(byval hWndParent as hwnd = 0) as long
       ' that text hasn't even been assigned yet.
       Dim As CWSTR wszItemText = this.TabPage(i).Text
 
+      dim as long nImageIndex = -1
+      if len(rtrim(this.TabPage(i).Image)) then
+         nImageIndex = AfxGdipAddIconFromRes( _hImageList, this.Parent->pWindow->InstanceHandle, this.TabPage(i).Image )
+      end if
+
       Dim As Long nData32 = this.TabPage(i).data32
       this.TabPage(i).hWindow = this.hWindow
-      TabCtrl_AddTab( this.hWindow, 0, wszItemText, nData32 )
+      TabCtrl_AddTab( this.hWindow, nImageIndex, wszItemText, nData32 )
 
       ' Create the child TabPage and assign window handle to TabPage object.
       pForm = Application.GetpFormObjectByName( this.TabPage(i).ChildFormName )
@@ -234,6 +360,9 @@ function wfxTabControl.Show(byval hWndParent as hwnd = 0) as long
          pForm->Visible = false
       end if
    Next
+   
+   if _hImageList then SendMessage( this.hWindow, TCM_SETIMAGELIST, 0, cast(LPARAM, _hImageList) )
+   
    TabCtrl_SetCurSel( this.hWindow, _SelectedIndex )
    TabCtrl_SetCurFocus( this.hWindow, _SelectedIndex )
    this.AutoResizeTabPages
@@ -241,6 +370,19 @@ function wfxTabControl.Show(byval hWndParent as hwnd = 0) as long
    
    ' Set the hWindow for the collection
    this.TabPages.hWindow = this.hWindow
+
+   if _FixedWidthTabs then
+      dim as long nWidth  = AfxScaleX(_TabWidth)
+      dim as long nHeight = AfxScaleY(_TabHeight)
+      if (nWidth * nHeight) <> 0 then  ' neither can be zero
+         TabCtrl_SetItemSize( this.hWindow, nWidth, nHeight )
+      end if   
+   end if
+         
+   ' Set the horizontal and vertical padding
+   dim as long nHorizPadding = AfxScaleX(_TabSidePadding)
+   dim as long nVertPadding  = AfxScaleY(_TabTopPadding)
+   TabCtrl_SetPadding( this.hWindow, nHorizPadding, nVertPadding )
 
    function = 0
 END FUNCTION

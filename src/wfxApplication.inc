@@ -980,6 +980,10 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
                   pTabControl->SelectedIndex = TabCtrl_GetCurSel(pNMHDR->hwndFrom)
                   
+                  if lNotification = NM_CLICK then
+                     if pTabControl->OnClick Then pTabControl->OnClick(*pTabControl, e)
+                  end if
+                  
                   if lNotification = TCN_SELCHANGING then
                      if pTabControl->OnSelecting Then 
                         if pTabControl->OnSelecting(*pTabControl, e) = true then return true

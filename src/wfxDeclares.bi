@@ -197,6 +197,12 @@ enum DateTimePickerFormat
    CustomFormat
 end enum
 
+enum ControlImageSize
+   Size16 = 16
+   Size24 = 24
+   Size32 = 32
+   Size48 = 48
+end enum   
 
 
 type EventArgs as wfxEventArgs    ' forward reference
