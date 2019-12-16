@@ -57,7 +57,8 @@ END TYPE
 type wfxListViewSubItem
    private:
       _hWindow     as hwnd
-      _Index       as Long
+      _ItemIndex   as Long   ' index within the items collection
+      _Index       as Long   ' index within the subitems collection
       _Text        as CWSTR
       _BackColor   As COLORREF = Colors.SystemWindow
       _ForeColor   As COLORREF = Colors.SystemWindowText
@@ -65,6 +66,8 @@ type wfxListViewSubItem
    public:
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
+      Declare Property ItemIndex() As long
+      Declare Property ItemIndex( ByVal nValue As long)
       Declare Property Index() As long
       Declare Property Index( ByVal nValue As long)
       declare property Text() as CWSTR
@@ -81,8 +84,12 @@ type wfxListViewSubItemsCollection
    private:
       _hWindow    as hwnd
       _Collection As wfxLList
+      _ItemIndex  as Long   ' index within the items collection
        
    public:
+      UpdateFlag as Boolean = false
+      Declare Property ItemIndex() As long
+      Declare Property ItemIndex( ByVal nValue As long)
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Clear() as long 

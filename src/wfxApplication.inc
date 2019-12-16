@@ -1112,7 +1112,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      if (plvdi->item.mask and LVIF_TEXT) then
                         ' Do an array bounds check because it is possible that the user
                         ' has not defined all subitems to match the number of columns.
-                        if nSubItem <= pListView->Item(nItem).SubItems.Count - 1 then
+                        if (nItem >= 0) and (nSubItem <= pListView->Item(nItem).SubItems.Count - 1) then
                            plvdi->item.pszText = pListView->Item(nItem).SubItem(nSubItem).Text.sptr
                            plvdi->item.cchTextMax = len(pListView->Item(nItem).SubItem(nSubItem).Text)
                         end if
@@ -1519,7 +1519,7 @@ static Function wfxApplication.SubclassProc ( _
          
          If pNode Then
             Select Case pNode->CtrlType 
-               case ControlType.ListView
+               case ControlType.ListBox
                   dim pListBox as wfxListBox Ptr = Cast(wfxListBox Ptr, pNode->pData)
 
                   ' Only erase the bottom portion of the listbox that extends from the last item
