@@ -792,6 +792,11 @@ function wfxListViewSubItemsCollection.Clear() as long
       Delete cast(wfxListViewSubItem ptr, pNode->pData)
    next
    _Collection.Clear
+   If this.hWindow Then 
+      if this.UpdateFlag = false then
+         AfxRedrawWindow(this.hWindow)
+      end if
+   end if
    function = 0
 END FUNCTION
 
