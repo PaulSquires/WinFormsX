@@ -219,14 +219,11 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    this.BorderStyle = _BorderStyle
    this.Enabled     = _Enabled
 
-   this.BorderStyle        = _BorderStyle
-   this.CheckBoxes         = _CheckBoxes
-   this.FullRowSelect      = _FullRowSelect
-   this.Sorting            = _Sorting
-
-   if len(_ToolTip) then
-      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
-   end if
+   this.BorderStyle   = _BorderStyle
+   this.CheckBoxes    = _CheckBoxes
+   this.FullRowSelect = _FullRowSelect
+   this.Sorting       = _Sorting
+   this.ToolTip       = _ToolTip
 
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to

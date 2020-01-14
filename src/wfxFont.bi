@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ Constructor wfxFont( ByRef wszFontName As WString, _
                      ByVal nPointSize  As Single, _
                      ByVal nFontStyles As Long = FontStyles.Normal, _
                      ByVal nCharSet    As FontCharset = FontCharset.Default )
+
    _wszFontName = wszFontName
    _PointSize   = nPointSize
    _FontStyles  = nFontStyles
@@ -52,6 +53,7 @@ Constructor wfxFont( ByRef wszFontName As WString, _
    ' Create a font for the class and store it in _hFont
    Dim tlfw As LOGFONT
    Dim hDC As HDC = GetDC(HWND_DESKTOP)
+
    tlfw.lfHeight         = -MulDiv(nPointSize, GetDeviceCaps(hDC, LOGPIXELSY), 72)  ' logical font height
    tlfw.lfWidth          =  0                                                        ' average character width
    tlfw.lfEscapement     =  0                                                        ' escapement

@@ -358,10 +358,7 @@ Function wfxButton.Show(ByVal hWndParent As HWnd = 0) As Long
    this.ImageMargin  = _ImageMargin
    this.TextMargin   = _TextMargin
    this.Enabled      = _Enabled
-
-   if len(_ToolTip) then
-      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
-   end if
+   this.ToolTip      = _ToolTip
    
    function = 0
 END FUNCTION

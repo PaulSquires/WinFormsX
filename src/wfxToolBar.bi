@@ -63,6 +63,7 @@ type wfxToolBarButtonsCollection
    public:
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
+      declare function Clear() as Long
       Declare function Count() as long 
       declare function Add() as long 
       declare function ByIndex( byval nIndex as long ) byref as wfxToolBarButton

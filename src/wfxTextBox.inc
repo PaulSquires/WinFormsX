@@ -357,11 +357,8 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
    this.PasswordChar    = _PasswordChar
    this.CueBannerText   = _CueBannerText
    this.MaxLength       = _MaxLength
+   this.ToolTip         = _ToolTip
 
-   if len(_ToolTip) then
-      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
-   end if
-   
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.

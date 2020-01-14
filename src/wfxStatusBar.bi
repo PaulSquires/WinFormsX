@@ -84,6 +84,7 @@ type wfxStatusBarPanelsCollection
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Count() as long 
+      declare function Clear() as Long
       declare function Add() as long 
       declare function ByIndex( byval nIndex as long ) byref as wfxStatusBarPanel
       Declare Constructor
@@ -92,7 +93,6 @@ END TYPE
 
 type wfxStatusBar extends wfxControl
    private:
-      _hWindow    as hwnd
       _SizingGrip as boolean
       _ClickIndex as long  
       _PanelsCollection as wfxStatusBarPanelsCollection
@@ -101,8 +101,6 @@ type wfxStatusBar extends wfxControl
       Declare function Panel( byval nIndex as long) byref as wfxStatusBarPanel 
       declare function Panels byref As wfxStatusBarPanelsCollection
       
-      Declare Property hWindow() As hwnd
-      Declare Property hWindow( ByVal nValue As hwnd)
       Declare Property SizingGrip() As boolean
       Declare Property SizingGrip( ByVal nValue As Boolean)
       Declare Property ClickIndex() As long

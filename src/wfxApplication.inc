@@ -681,6 +681,18 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          End If
          
       
+      Case WM_KEYDOWN
+         WINFORMSX_HANDLE_MESSAGE(OnKeyDown)
+         
+
+      Case WM_KEYUP
+         WINFORMSX_HANDLE_MESSAGE(OnKeyUp)
+         
+
+      Case WM_CHAR
+         WINFORMSX_HANDLE_MESSAGE(OnKeyPress)
+         
+
       Case WM_SETFOCUS
          WINFORMSX_HANDLE_MESSAGE(OnGotFocus)
 
@@ -758,33 +770,50 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   EnableWindow( pForm->hWindowParent, True)
                end if
             end if      
-            DestroyWindow(hWin)
          End If   
-          
+         DestroyWindow(hWin)
       
       
       case WM_NCDESTROY
          ' At this point all of the child controls and main form have been destroyed
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
-            ' Remove any previously added controls from this form. This would have been done
-            ' in the initial form constructor. We do it here because each time the form is
-            ' shown we need to re-initialize any of the defautl form properties.
-            dim pNode as wfxLListNode ptr = pForm->Controls.get_first
-            do until pNode = 0
-               ' Remove returns the next control in the list and deletes the node passed to it.
-               pNode = pForm->Controls.remove( pNode )
-            loop 
+            ' Remove any previously added controls from this form. We do it here because 
+            ' each time the form is shown we need to re-initialize any of the default 
+            ' control/form properties.
+            pForm->Controls.clear
+            'dim pNode as wfxLListNode ptr = pForm->Controls.get_first
+            'do until pNode = 0
+            '   ' Remove returns the next control in the list and deletes the node passed to it.
+            '   pNode = pForm->Controls.remove( pNode )
+            'loop 
                
             ' Add the form to the Application Form collection if it does not already exist.
-            if Application.Forms.search_data( pForm ) = 0 then
-               Application.Forms.Add(ControlType.Form, pForm)
-            end if
+            'if Application.Forms.search_data( pForm ) = 0 then
+            '   Application.Forms.Add(ControlType.Form, pForm)
+            'end if
+            
+            ' Set any necessary Window handles to zero to ensure that they get re-created.
+            pForm->hWindow = 0
+            
+#ifdef CODEGEN_MAINMENU
+            pForm->MainMenu.Handle = 0
+            pForm->MainMenu.MenuItems.Handle = 0
+#endif
+#ifdef CODEGEN_TOOLBAR
+            pForm->ToolBar.hWindow = 0
+            pForm->ToolBar.hRebar = 0
+#endif
+#ifdef CODEGEN_STATUSBAR
+            pForm->StatusBar.hWindow = 0
+            pForm->StatusBar.Panels.hWindow = 0
+#endif      
             
             ' Re-Initialize the properties of the controls and the form itself so that the
             ' user can continue to interact with fresh copy of the form in case they want
             ' to show that form again.
             pForm->InitializeComponent( pForm )
+
          end if
          
          
@@ -805,7 +834,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   end if
                end if
             next
-            
+
             If pForm->pWindow Then 
                ' Delete the CWindow of the form.
                Delete pForm->pWindow
@@ -1112,7 +1141,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      if (plvdi->item.mask and LVIF_TEXT) then
                         ' Do an array bounds check because it is possible that the user
                         ' has not defined all subitems to match the number of columns.
-                        if nSubItem <= pListView->Item(nItem).SubItems.Count - 1 then
+                        if (nItem >= 0) and (nSubItem <= pListView->Item(nItem).SubItems.Count - 1) then
                            plvdi->item.pszText = pListView->Item(nItem).SubItem(nSubItem).Text.sptr
                            plvdi->item.cchTextMax = len(pListView->Item(nItem).SubItem(nSubItem).Text)
                         end if
@@ -1161,10 +1190,12 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                                  plvcd->clrTextBk = pListView->Item(nItem).SubItem(nSubItem).BackColor
                               end if
                                  
-                              if pListView->OddRowColor <> plvcd->clrTextBk then
-                                 if (nItem mod 2) = 0 then
-                                    plvcd->clrTextBk = pListView->OddRowColor
-                                 end if   
+                              if pListView->OddRowColorEnabled then
+                                 if pListView->OddRowColor <> plvcd->clrTextBk then
+                                    if (nItem mod 2) = 0 then
+                                       plvcd->clrTextBk = pListView->OddRowColor
+                                    end if   
+                                 end if
                               end if
                                  
                               return CDRF_NEWFONT
@@ -1519,7 +1550,7 @@ static Function wfxApplication.SubclassProc ( _
          
          If pNode Then
             Select Case pNode->CtrlType 
-               case ControlType.ListView
+               case ControlType.ListBox
                   dim pListBox as wfxListBox Ptr = Cast(wfxListBox Ptr, pNode->pData)
 
                   ' Only erase the bottom portion of the listbox that extends from the last item

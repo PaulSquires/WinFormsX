@@ -59,7 +59,9 @@ end property
 
 property wfxControl.ToolTip( byref cwzValue as wstring )
    if this.hWindow then
-      if _hWndToolTip then
+      if IsWindow(_hWndToolTip) = 0 then
+         _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
+      else
          AfxSetTooltipText(_hWndToolTip, this.hWindow, cwzValue)
       end if
    end if
@@ -71,7 +73,14 @@ Property wfxControl.ToolTipBalloon() As boolean
 End Property
 
 Property wfxControl.ToolTipBalloon( ByVal nValue As boolean )
+   ' If the ToolTip changes to a different type from/to balloon style
+   ' then we will destroy the original tooltip and create a new one.
    _ToolTipBalloon = nValue
+   if IsWindow(_hWndToolTip) then
+      DestroyWindow(_hWndToolTip)
+      _hWndToolTip = 0
+      this.ToolTip = _ToolTip
+   end if
 End Property
 
 property wfxControl.CtrlID() as LONG
@@ -138,12 +147,15 @@ end property
 
 Property wfxControl.Font( ByVal wfxFontPtr As wfxFont Ptr )
    If (_wfxFontPtr <> 0) AndAlso (_wfxFontPtr <> wfxFontPtr) Then Delete(_wfxFontPtr)
+? "wfxControl.Font: "; wfxFontPtr
    _wfxFontPtr = wfxFontPtr
+? "this.hWindow: "; this.hWindow
    If this.hWindow Then 
       If _wfxFontPtr Then
          if this.CtrlType = ControlType.DateTimePicker then
             SendMessage( this.hWindow, DTM_SETMCFONT, CAST(WPARAM, _wfxFontPtr->FontHandle), CTRUE )
          else   
+? "FontHandle: "; _wfxFontPtr->FontHandle
             AfxSetWindowFont( this.hWindow, _wfxFontPtr->FontHandle, CTRUE )
          end if   
       End If

@@ -210,10 +210,7 @@ Function wfxMonthCalendar.Show(ByVal hWndParent As HWnd = 0) As Long
    this.Font      = _wfxFontPtr
    this.BackColor = _BackColor
    this.SelectedDate = _SelectedDate 
-
-   if len(_ToolTip) then
-      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
-   end if
+   this.ToolTip     = _ToolTip
 
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to

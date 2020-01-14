@@ -57,14 +57,18 @@ END TYPE
 type wfxListViewSubItem
    private:
       _hWindow     as hwnd
-      _Index       as Long
+      _ItemIndex   as Long   ' index within the items collection
+      _Index       as Long   ' index within the subitems collection
       _Text        as CWSTR
       _BackColor   As COLORREF = Colors.SystemWindow
       _ForeColor   As COLORREF = Colors.SystemWindowText
       
    public:
+      UpdateFlag as Boolean = false
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
+      Declare Property ItemIndex() As long
+      Declare Property ItemIndex( ByVal nValue As long)
       Declare Property Index() As long
       Declare Property Index( ByVal nValue As long)
       declare property Text() as CWSTR
@@ -81,8 +85,12 @@ type wfxListViewSubItemsCollection
    private:
       _hWindow    as hwnd
       _Collection As wfxLList
+      _ItemIndex  as Long   ' index within the items collection
        
    public:
+      UpdateFlag as Boolean = false
+      Declare Property ItemIndex() As long
+      Declare Property ItemIndex( ByVal nValue As long)
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Clear() as long 
@@ -171,6 +179,7 @@ Type wfxListView Extends wfxControl
       _ColumnsCollection as wfxListViewColumnsCollection
       _IsLoading as Boolean = true   ' internal
       _OddRowColor As COLORREF = Colors.SystemWindow
+      _OddRowColorEnabled as boolean = False
       
    Public:
       Declare Function Item( ByVal nIndex As Long) ByRef As wfxListViewItem
@@ -205,6 +214,8 @@ Type wfxListView Extends wfxControl
       Declare Property Sorting( ByVal nValue As SortOrder)
       Declare Property OddRowColor() As COLORREF
       Declare Property OddRowColor( ByVal nValue As COLORREF )
+      Declare Property OddRowColorEnabled() As boolean
+      Declare Property OddRowColorEnabled( ByVal nValue As boolean)
       Declare Property HeaderForeColor() As COLORREF
       Declare Property HeaderForeColor( ByVal nValue As COLORREF )
       Declare Property HeaderBackColor() As COLORREF

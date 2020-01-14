@@ -39,14 +39,6 @@ function wfxStatusBar.Panels byref As wfxStatusBarPanelsCollection
    return this._PanelsCollection
 END function
 
-property wfxStatusBar.hWindow() as hwnd
-   property = _hWindow
-end property
-
-property wfxStatusBar.hWindow( byVal nValue as hwnd)
-   _hWindow = nValue
-end property
-
 property wfxStatusBar.SizingGrip() as boolean
    property = _SizingGrip
 end property
@@ -89,6 +81,7 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
    
    _CtrlID = this.Parent->GetNextCtrlID()
 
+
    this.hWindow = _
          this.Parent->pWindow->AddControl ( _
          "STATUSBAR", _                    ' Class name
@@ -107,6 +100,9 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
          Cast(DWORD_PTR, 0) _              ' Pointer to reference data
          )
 
+   ' Apply properties that require a valid window handle
+   this.Font = _wfxFontPtr
+   
    ' Update the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
@@ -262,6 +258,12 @@ function wfxStatusBarPanelsCollection.ByIndex( byval nIndex as long ) byref as w
       return *pPanel
    end if   
 end function
+
+function wfxStatusBarPanelsCollection.Clear() as long
+   _Collection.Clear
+   function = 0
+END FUNCTION
+
 
 
 

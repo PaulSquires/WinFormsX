@@ -329,6 +329,10 @@ function wfxToolBarButtonsCollection.ByIndex( byval nIndex as long ) byref as wf
    end if   
 end function
 
+function wfxToolBarButtonsCollection.Clear() as long
+   _Collection.Clear
+   function = 0
+END FUNCTION
 
 
 

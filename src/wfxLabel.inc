@@ -171,10 +171,7 @@ function wfxLabel.Show(byval hWndParent as hwnd = 0) as long
    this.TextAlign   = _TextAlign
    this.BorderStyle = _BorderStyle
    this.Enabled     = _Enabled
-
-   if len(_ToolTip) then
-      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
-   end if
+   this.ToolTip     = _ToolTip
 
    ' Store the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.

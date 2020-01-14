@@ -481,6 +481,7 @@ end function
 Function wfxForm.SizeStatusBar() As Long
 
 #ifdef CODEGEN_STATUSBAR
+
    Dim pNode      As wfxLListNode Ptr
    dim pStatusBar as wfxStatusBar ptr
             
@@ -800,6 +801,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
       ' Message loop
       Dim As MSG uMsg 
       Do While GetMessage(@uMsg, Null, 0, 0)
+         If IsWindow(this.hWindow) = 0 Then Exit Do  ' popup modal window closed
          ' Processes accelerator keys for menu commands
          If (this.pWindow->AccelHandle = 0) Or _
             (TranslateAccelerator(this.hWindow, this.pWindow->AccelHandle, @uMsg)) = 0 Then
@@ -840,7 +842,6 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
                End If
             End If
          End If
-         If IsWindow(this.hWindow) = 0 Then Exit Do  ' popup modal window closed
       Loop
 
       ' Set the focus back to the control that had focus prior to the modal window being displayed.

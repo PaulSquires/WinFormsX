@@ -180,15 +180,12 @@ function wfxProgressBar.Show(byval hWndParent as hwnd = 0) as long
    this.Minimum   = _Minimum
    this.Value     = _Value
    this.Enabled   = _Enabled
+   this.ToolTip   = _ToolTip
 
    if this.Marquee then
       ProgressBar_SetMarquee( this.hWindow, false, _MarqueeAnimationSpeed )
    end if
    
-   if len(_ToolTip) then
-      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
-   end if
-
    ' Store the hWindow in the form's linked list in order to allow
    ' for fast lookups via GetControlByHandle.
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)

@@ -50,15 +50,34 @@ END function
 function wfxListView.BeginUpdate() As long
    SendMessage( this.hWindow, WM_SETREDRAW, false, 0 )
    this.Items.UpdateFlag = true
+   for iRow as long = 0 to this.Items.Count - 1
+      for iCol as long = 0 to this.Item(iRow).SubItems.Count - 1
+         this.Item(iRow).SubItem(iCol).UpdateFlag = this.Items.UpdateFlag
+      next 
+   next
    function = 0
 end function
 
 function wfxListView.EndUpdate() as Long
    SendMessage( this.hWindow, WM_SETREDRAW, true, 0 )
    this.Items.UpdateFlag = false
+   for iRow as long = 0 to this.Items.Count - 1
+      for iCol as long = 0 to this.Item(iRow).SubItems.Count - 1
+         this.Item(iRow).SubItem(iCol).UpdateFlag = this.Items.UpdateFlag
+      next 
+   next
    ListView_SetItemCountEx( this.hWindow, this.Items.Count, 0 )
+   this.Refresh
    function = 0
 end function
+
+Property wfxListView.OddRowColorEnabled() As boolean
+   Property = _OddRowColorEnabled
+End Property
+
+property wfxListView.OddRowColorEnabled( byval nValue as boolean )
+   _OddRowColorEnabled = nValue
+end property
 
 property wfxListView.OddRowColor() as COLORREF
    property = _OddRowColor
@@ -480,10 +499,7 @@ function wfxListView.Show(byval hWndParent as hwnd = 0) as long
    this.FullRowSelect      = _FullRowSelect
    this.GridLines          = _GridLines
    this.Sorting            = _Sorting
-
-   if len(_ToolTip) then
-      _hWndToolTip = AfxAddTooltip( this.hWindow, _ToolTip, _ToolTipBalloon, false )
-   end if
+   this.ToolTip            = _ToolTip
 
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
@@ -627,6 +643,14 @@ property wfxListViewSubItem.hWindow( ByVal nValue As hwnd)
    _hWindow = nValue
 END PROPERTY
 
+property wfxListViewSubItem.ItemIndex() as long
+   property = _ItemIndex
+end property
+
+property wfxListViewSubItem.ItemIndex( byVal nValue as long)
+   _ItemIndex = nValue
+end property
+
 property wfxListViewSubItem.Index() as long
    property = _Index
 End Property
@@ -641,7 +665,13 @@ end property
 
 property wfxListViewSubItem.Text( byref wszValue as wstring )
    _Text = wszValue
-   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+   if this.hWindow THEN 
+      if this.UpdateFlag = false then
+         if ListView_IsItemVisible(this.hWindow, this.ItemIndex) then
+            AfxRedrawWindow(this.hWindow)
+         end if   
+      end if
+   end if
 end property
 
 property wfxListViewSubItem.BackColor() as COLORREF
@@ -650,7 +680,13 @@ end property
 
 property wfxListViewSubItem.BackColor( byval nValue as COLORREF )
    _BackColor = nValue
-   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+   if this.hWindow THEN 
+      if this.UpdateFlag = false then
+         if ListView_IsItemVisible(this.hWindow, this.ItemIndex) then
+            AfxRedrawWindow(this.hWindow)
+         end if   
+      end if
+   end if
 end property
 
 property wfxListViewSubItem.ForeColor() as COLORREF
@@ -659,7 +695,13 @@ end property
 
 property wfxListViewSubItem.ForeColor( byval nValue as COLORREF )
    _ForeColor = nValue
-   if this.hWindow THEN AfxRedrawWindow(this.hWindow)
+   if this.hWindow THEN 
+      if this.UpdateFlag = false then
+         if ListView_IsItemVisible(this.hWindow, this.ItemIndex) then
+            AfxRedrawWindow(this.hWindow)
+         end if   
+      end if
+   end if
 end property
 
 
@@ -671,6 +713,14 @@ END CONSTRUCTOR
 destructor wfxListViewSubItemsCollection
    this.Clear
 end destructor
+
+property wfxListViewSubItemsCollection.ItemIndex() as long
+   property = _ItemIndex
+end property
+
+property wfxListViewSubItemsCollection.ItemIndex( byVal nValue as long)
+   _ItemIndex = nValue
+end property
 
 property wfxListViewSubItemsCollection.hWindow() as hwnd
    property = _hWindow
@@ -686,14 +736,20 @@ end function
 
 Function wfxListViewSubItemsCollection.Add( ByRef wszValue As WString = "" ) As Long
    Dim pData As wfxListViewSubItem Ptr = New wfxListViewSubItem
-   if pData = 0 then
-      AfxMsg( "Memory allocation failed. wfxListViewSubItemsCollection.Add" )
-      exit function
-   end if
+   if pData = 0 then exit function
+   pData->UpdateFlag = this.UpdateFlag
    pData->hWindow = this.hWindow
+   pData->ItemIndex = this.ItemIndex
    pData->Index = (this.Count - 1) + 1
    pData->Text = wszValue
    _Collection.Add( ControlType.ListView, pData ) 
+   If this.hWindow Then 
+      if this.UpdateFlag = false then
+         if ListView_IsItemVisible(this.hWindow, pData->Index) then
+            AfxRedrawWindow(this.hWindow)
+         end if   
+      end if
+   end if
    function = pData->Index
 end function
 
@@ -703,6 +759,13 @@ function wfxListViewSubItemsCollection.Remove( byval nIndex as long ) as long
        Delete cast(wfxListViewSubItem ptr, pNode->pData)
       _Collection.Remove(pNode)
    end if   
+   If this.hWindow Then 
+      if this.UpdateFlag = false then
+         if ListView_IsItemVisible(this.hWindow, nIndex) then
+            AfxRedrawWindow(this.hWindow)
+         end if   
+      end if
+   end if
    function = _Collection.Size
 end function
 
@@ -765,7 +828,11 @@ END PROPERTY
 
 property wfxListViewItem.Checked( ByVal nValue As boolean) 
    _Checked = nValue
-   AfxRedrawWindow(this.hWindow)
+   if this.hWindow THEN 
+      if ListView_IsItemVisible(this.hWindow, this.Index) then
+         AfxRedrawWindow(this.hWindow)
+      end if   
+   end if
 END PROPERTY
 
 property wfxListViewItem.Index() as long
@@ -785,7 +852,6 @@ end property
 property wfxListViewItem.Text( byref wszValue as wstring )
    if this.SubItems.Count > 0 then
       this.SubItem(0).Text = wszValue
-      if this.hWindow THEN AfxRedrawWindow(this.hWindow)
    end if   
 end property
 
@@ -806,7 +872,6 @@ end property
 property wfxListViewItem.BackColor( byval nValue as COLORREF )
    if this.SubItems.Count > 0 then
       this.SubItem(0).BackColor = nValue
-      if this.hWindow THEN AfxRedrawWindow(this.hWindow)
    end if
 end property
 
@@ -819,7 +884,6 @@ end property
 property wfxListViewItem.ForeColor( byval nValue as COLORREF )
    if this.SubItems.Count > 0 then
       this.SubItem(0).ForeColor = nValue
-      if this.hWindow THEN AfxRedrawWindow(this.hWindow)
    end if   
 end property
 
@@ -988,49 +1052,58 @@ End Function
 
 Function wfxListViewItemsCollection.Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
    Dim pData As wfxListViewItem Ptr = New wfxListViewItem
-   if pData = 0 then
-      AfxMsg( "Memory allocation failed. wfxListViewItemsCollection.Add" )
-      exit function
-   end if
+   if pData = 0 then exit function
    if this.hWindow then pData->hWindow = this.hWindow
    if this.hWindow then pData->SubItems.hWindow = this.hWindow
+   pData->SubItems.UpdateFlag = pData->SubItems.UpdateFlag
    pData->Index = (this.Count - 1) + 1
    pData->Data32 = nValue
+   pData->SubItems.ItemIndex = pData->Index
    pData->SubItems.Add( wszValue )
    _Collection.Add( ControlType.ListView, pData ) 
    If this.hWindow Then 
       if this.UpdateFlag = false then
          ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
-      end if   
+         if ListView_IsItemVisible(this.hWindow, pData->Index) then
+            AfxRedrawWindow(this.hWindow)
+         end if   
+      end if
    end if
    function = pData->Index
 end function
 
 Function wfxListViewItemsCollection.Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
    Dim pData As wfxListViewItem Ptr = New wfxListViewItem
-   if pData = 0 then
-      AfxMsg( "Memory allocation failed. wfxListViewItemsCollection.Insert" )
-      exit function
-   end if
+   if pData = 0 then exit function
    if this.hWindow then pData->hWindow = this.hWindow
    if this.hWindow then pData->SubItems.hWindow = this.hWindow
+   pData->SubItems.UpdateFlag = pData->SubItems.UpdateFlag
    pData->Index = nIndex
    pData->Data32 = nValue
    pData->SubItems.Add( wszValue )
    _Collection.Insert( nIndex, ControlType.ListView, pData ) 
 
-   ' Renumber the Index property for each item in the collectio.
+   ' Renumber the Index property for each item in the collection.
    dim pNode as wfxLListNode ptr 
    dim pListViewItem as wfxListViewItem ptr
    for i as long = 0 to _Collection.Size - 1
       pNode = _Collection.get_index(i)
       pListViewItem = cast(wfxListViewItem ptr, pNode->pData)
-      if pListViewItem then pListViewItem->Index = i
+      if pListViewItem then 
+         pListViewItem->Index = i
+         pListViewItem->SubItems.ItemIndex = i
+         for ii as long = 0 to pListViewItem->SubItems.Count - 1
+            pListViewItem->SubItem(ii).ItemIndex = i
+         next   
+      end if
    next
 
    If this.hWindow Then 
       if this.UpdateFlag = false then
          ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
+         if ListView_IsItemVisible(this.hWindow, nIndex) then
+            AfxRedrawWindow(this.hWindow)
+         end if   
       end if   
    end if
    function = pData->Index
@@ -1043,17 +1116,27 @@ function wfxListViewItemsCollection.Remove( byval nIndex as long ) as long
       Delete cast(wfxListViewItem ptr, pNode->pData)
       _Collection.Remove(pNode)
 
-      ' Renumber the Index property for each item in the collectio.
+      ' Renumber the Index property for each item in the collection.
+      dim pNode as wfxLListNode ptr 
       dim pListViewItem as wfxListViewItem ptr
       for i as long = 0 to _Collection.Size - 1
          pNode = _Collection.get_index(i)
          pListViewItem = cast(wfxListViewItem ptr, pNode->pData)
-         if pListViewItem then pListViewItem->Index = i
+         if pListViewItem then 
+            pListViewItem->Index = i
+            pListViewItem->SubItems.ItemIndex = i
+            for ii as long = 0 to pListViewItem->SubItems.Count - 1
+               pListViewItem->SubItem(ii).ItemIndex = i
+            next   
+         end if
       next
       
       If this.hWindow Then 
          if this.UpdateFlag = false then
             ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
+            if ListView_IsItemVisible(this.hWindow, nIndex) then
+               AfxRedrawWindow(this.hWindow)
+            end if   
          end if   
       end if
    end if   
@@ -1089,7 +1172,8 @@ function wfxListViewItemsCollection.Clear() as long
    _Collection.Clear
    If this.hWindow Then 
       if this.UpdateFlag = false then
-         ListView_SetItemCountEx( this.hWindow, this.Count, 0 )
+         ListView_SetItemCountEx( this.hWindow, this.Count, LVSICF_NOINVALIDATEALL or LVSICF_NOSCROLL)
+         AfxRedrawWindow(this.hWindow)
       end if   
    end if
    function = 0
