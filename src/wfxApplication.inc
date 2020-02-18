@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -95,6 +95,8 @@ Property wfxApplication.StartupPath() As CWSTR
    return wszText
 END Property
 
+
+
 ''
 ''  Processes all Windows messages currently in the message queue.
 ''
@@ -170,6 +172,9 @@ end function
 #ifdef CODEGEN_TABCONTROL
    Dim pTabControl As wfxTabControl Ptr
 #endif
+#ifdef CODEGEN_UPDOWN
+   Dim pUpDown As wfxUpDown Ptr
+#endif
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
@@ -232,6 +237,9 @@ end function
 #endif
 #ifdef CODEGEN_TABCONTROL
          Case ControlType.TabControl: pTabControl = Cast(wfxTabControl Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_UPDOWN
+         Case ControlType.UpDown: pUpDown = Cast(wfxUpDown Ptr, pNode->pData)
 #endif
       End Select
    End If   
@@ -303,6 +311,9 @@ end function
 #endif
 #ifdef CODEGEN_TABCONTROL
    If pTabControl AndAlso pTabControl->##msg Then pTabControl->##msg(*pTabControl, e)
+#endif
+#ifdef CODEGEN_UPDOWN
+   If pUpDown AndAlso pUpDown->##msg Then pUpDown->##msg(*pUpDown, e)
 #endif
 #EndMacro
 ''
@@ -463,14 +474,19 @@ Function wfxApplication.PreprocessMessage( ByVal hWndForm As HWnd, _
             If e.Handled Then Return True  ' do not process any subsequent control handlers
          End If
    End Select   
+
+      
    ' After form preview, pass the message to any defined control handler.
    Select Case pMsg->message
       Case WM_KEYDOWN
          WINFORMSX_HANDLE_MESSAGE(OnKeyDown)
+         If e.Handled Then Return True
       Case WM_KEYUP
          WINFORMSX_HANDLE_MESSAGE(OnKeyUp)
+         If e.Handled Then Return True
       Case WM_CHAR
          WINFORMSX_HANDLE_MESSAGE(OnKeyPress)
+         If e.Handled Then Return True
    End Select
    
    ' If this is a multiline textbox then test to see if a TAB key should be
@@ -607,13 +623,35 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
 
       Case WM_MOUSEMOVE
          WINFORMSX_HANDLE_MESSAGE(OnMouseMove)
-         ' If this is a Label/ListBox then redraw so hot colors will be used
+         ' If this is a Label/ListBox/StatusBar then redraw so hot colors will be used
 #ifdef CODEGEN_LABEL
          if pLabel then pLabel->Refresh
 #endif
 #ifdef CODEGEN_LISTBOX
          if pListBox then pListBox->Refresh
 #endif         
+#ifdef CODEGEN_STATUSBAR
+         if pStatusBar then 
+            ' Determine which Panel the mouse is over and set it to Hot
+            dim as Boolean bHit = false
+            dim as RECT rcPanel
+            dim as POINT pt
+            GetCursorPos( @pt )
+            MapWindowPoints( 0, hWin, cast( POINT ptr, @pt ), 1 )
+            for i as long = 0 to pStatusBar->Panels.Count - 1
+               StatusBar_GetRect( hWin, i, @rcPanel )
+               pStatusBar->Panel(i).IsHot = PtInRect(@rcPanel, pt) 
+               ' Set a Tooltip for the panel
+               if pStatusBar->Panel(i).IsHot then
+                  bHit = true
+                  pStatusBar->ToolTip = pStatusBar->Panel(i).ToolTip
+               end if   
+            next   
+            ' If the mouse has left a Panel but is still over a portion
+            ' of the uncovered statusbar control then clear the tooltip.
+            if bHit = false then pStatusBar->ToolTip = ""
+         end if
+#endif
          ' There is no such thing as a WM_MOUSEENTER message so we need to simulate it
          ' here by using a tracking variable and TRACKMOUSEEVENT.
          dim as DWORD dwFlags = TME_HOVER Or TME_LEAVE
@@ -638,13 +676,22 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
       Case WM_MOUSELEAVE
          If pCtrl Then pCtrl->IsTracking = False 
          WINFORMSX_HANDLE_MESSAGE(OnMouseLeave)
-         ' If this is a Label/ListBox then redraw so normal colors will be used
+         ' If this is a Label/ListBox/StatusBar then redraw so normal colors will be used
 #ifdef CODEGEN_LABEL
          if pLabel then pLabel->Refresh
 #endif
 #ifdef CODEGEN_LISTBOX
          if pListBox then pListBox->Refresh
 #endif         
+#ifdef CODEGEN_STATUSBAR
+         if pStatusBar then 
+            ' Mouse has left the control so set all Panels to not Hot.
+            for i as long = 0 to pStatusBar->Panels.Count - 1
+               pStatusBar->Panel(i).IsHot = false
+               pStatusBar->ToolTip = ""
+            next
+         end if
+#endif
        
        
       Case WM_MOUSEHOVER
@@ -681,18 +728,6 @@ Function wfxApplication.HandleCommonMessages( ByVal hWin   As HWnd, _
          End If
          
       
-      Case WM_KEYDOWN
-         WINFORMSX_HANDLE_MESSAGE(OnKeyDown)
-         
-
-      Case WM_KEYUP
-         WINFORMSX_HANDLE_MESSAGE(OnKeyUp)
-         
-
-      Case WM_CHAR
-         WINFORMSX_HANDLE_MESSAGE(OnKeyPress)
-         
-
       Case WM_SETFOCUS
          WINFORMSX_HANDLE_MESSAGE(OnGotFocus)
 
@@ -1003,11 +1038,32 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
             Select Case pNode->CtrlType 
 
+#ifdef CODEGEN_UPDOWN
+               case ControlType.UpDown
+                  pUpDown = Cast(wfxUpDown Ptr, pNode->pData)
+
+                  if lNotification = UDN_DELTAPOS then
+                     dim lpnmud as NMUPDOWN ptr = cast(NMUPDOWN ptr, pNMHDR)
+                     ' The Win32 api documentation appears to be incorrect for
+                     ' value of the iDelta field:
+                     ' From the docs: The iDelta member of the structure is a 
+                     ' signed integer that contains the proposed change in position. 
+                     ' If the user has clicked the up button, this is a positive value. 
+                     ' If the user has clicked the down button, this is a negative value.
+                     ' It appears to be the opposite in practice so I will invert the
+                     ' value before assigning it to the UpDown control's Delta property.
+                     pUpDown->Delta = (lpnmud->iDelta * -1)
+                     if pUpDown->OnClick Then pUpDown->OnClick(*pUpDown, e)
+                     if e.Cancel then return true
+                  end if
+#endif
+
+
 #ifdef CODEGEN_TABCONTROL
                case ControlType.TabControl
                   pTabControl = Cast(wfxTabControl Ptr, pNode->pData)
 
-                  pTabControl->SelectedIndex = TabCtrl_GetCurSel(pNMHDR->hwndFrom)
+                  dim as long nTabIndex = TabCtrl_GetCurSel(pNMHDR->hwndFrom)
                   
                   if lNotification = NM_CLICK then
                      if pTabControl->OnClick Then pTabControl->OnClick(*pTabControl, e)
@@ -1018,13 +1074,13 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         if pTabControl->OnSelecting(*pTabControl, e) = true then return true
                      end if
                      if e.Cancel then return true
-                     pTabControl->HideTabPage( pTabControl->SelectedIndex )
+                     pTabControl->HideTabPage( nTabIndex )
                   end if
 
                   if lNotification = TCN_SELCHANGE then
                      if pTabControl->OnSelected Then pTabControl->OnSelected(*pTabControl, e)
                      ' Show the current TabPage
-                     pTabControl->ShowTabPage( pTabControl->SelectedIndex )
+                     pTabControl->ShowTabPage( nTabIndex )
                   end if   
 #endif
 
@@ -1353,11 +1409,104 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             if pCtrl = 0 then exit function
             SaveDC(lpdis->hDC)
              
+#ifdef CODEGEN_STATUSBAR
+            pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
+            if pStatusBar = 0 then exit function
+            rc = lpdis->rcItem
+            
+            dim as long nItem = lpdis->itemID
+            If (nItem < 0) or (nItem > pStatusBar->Panels.Count-1) Then Exit Function
+
+            dim as long nImageWidth 
+            dim as long nImageHeight
+
+            ' The image/text output rectangle is positioned within the main rc rectangle
+            ' depending on the alignment.
+            dim as RECT rc1 = rc
+            
+            dim wszImageName as wstring * MAX_PATH
+            wszImageName = pStatusBar->Panel(nItem).Icon
+         
+            dim as HANDLE hIcon
+            dim hImageListNormal As HIMAGELIST 
+            if len(wszImageName) then
+               Dim cx As Long = AfxScaleX(16) 
+               hImageListNormal = ImageList_Create( cx, cx, ILC_COLOR32 Or ILC_MASK, 1, 1)
+               dim as long ii = AfxGdipAddIconFromRes( hImageListNormal, GetModuleHandle(null), wszImageName )
+               hIcon = ImageList_GetIcon( hImageListNormal, ii, ILD_NORMAL )
+               if hIcon then
+                  nImageWidth = AfxScaleX(16)
+                  nImageHeight = AfxScaleY(16)
+               end if   
+            End If   
+            
+            wszText = " " & pStatusBar->Panel(nItem).Text & " "
+            dim as long nTextWidth = WinFBE_GetTextWidthPixels( lpdis->hwndItem, wszText )  
+
+            dim as long nTotalWidth 
+            if nImageWidth then nTotalWidth = nImageWidth + AfxScaleX(4)
+            if nTextWidth  then nTotalWidth = nTotalWidth + nTextWidth
+            
+            select case pStatusBar->Panel(nItem).Alignment
+               case StatusBarPanelAlignment.Left
+                  ' No need to do anything because rc1 is already the full size of rc.
+               case StatusBarPanelAlignment.Center
+                  dim as long nPad = MAX(0, (rc.right - rc.left - nTotalWidth) / 2)
+                  rc1.left = rc1.left + nPad
+               case StatusBarPanelAlignment.Right
+                  rc1.left  = rc1.right - nTotalWidth
+            end select
+            
+            memDC = CreateCompatibleDC( lpdis->hDC )
+            hbit  = CreateCompatibleBitmap( lpdis->hDC, rc.right, rc.bottom )
+            If hbit Then hbit = SelectObject( memDC, hbit )
+
+            dim as HFONT _hFont = AfxGetWindowFont( lpdis->hwndItem )
+            SelectObject( memDC, _hFont )
+
+            ' Paint the entire background
+            dim as HBRUSH hBackBrush
+            if pStatusBar->Panel(nItem).IsHot then
+               SetBkColor( memDC, pStatusBar->Panel(nItem).BackColorHot )   
+               SetTextColor( memDC, pStatusBar->Panel(nItem).ForeColorHot )
+               hBackBrush = CreateSolidBrush(pStatusBar->Panel(nItem).BackColorHot)
+            else
+               SetBkColor( memDC, pStatusBar->Panel(nItem).BackColor )   
+               SetTextColor( memDC, pStatusBar->Panel(nItem).ForeColor )
+               hBackBrush = CreateSolidBrush(pStatusBar->Panel(nItem).BackColor)
+            end if
+            FillRect( memDC, @rc, hBackBrush )
+            DeleteObject(hBackBrush)
+
+            ' Output any defined icon for the panel
+            if hIcon then
+               ' Center the image vertically within rc1
+               dim as long nPad = (rc1.bottom - rc1.top - nImageHeight) / 2
+               DrawIconEx( memDC, rc1.left, rc1.top + nPad, _
+                                  hIcon, _
+                                  nImageWidth, nImageHeight, 0, null, DI_NORMAL ) 
+               DeleteObject( hIcon )
+               ImageList_Destroy( hImageListNormal )
+               rc1.left = rc1.left + nImageWidth + AfxScaleX(4)
+            end if
+            
+            ' Output any panel text
+            dim as long lFormat = DT_LEFT Or DT_VCENTER or DT_SINGLELINE
+            wszText = pStatusBar->Panel(nItem).Text
+            DrawText( memDC, wszText, -1, Cast(lpRect, @rc1), lFormat )
+
+            BitBlt lpdis->hDC, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY 
+
+            ' Cleanup
+            If hbit  Then DeleteObject SelectObject(memDC, hbit)
+            If memDC Then DeleteDC memDC
+#endif
+
             if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
                ( lpdis->itemAction = ODA_SELECT ) orelse _
                ( lpdis->itemAction = ODA_FOCUS ) then
 
-               Select Case pNode->CtrlType 
+               select case pNode->CtrlType 
 #ifdef CODEGEN_LABEL
                   Case ControlType.Label   '' LABEL CONTROL
                      pLabel = cast(wfxLabel ptr, pNode->pData)
@@ -1525,12 +1674,6 @@ static Function wfxApplication.SubclassProc ( _
            WM_MOUSELEAVE, WM_MOUSEHOVER
          If Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) Then Return 0
 
-      
-      Case WM_KEYDOWN, WM_KEYUP, WM_CHAR
-         ' If the key was handled then the WndProc will return True.
-         ' Return 0 to prevent beep
-         If Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) Then Return 0
-         
       
       case WM_SIZE
 #ifdef CODEGEN_TABCONTROL

@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -147,15 +147,12 @@ end property
 
 Property wfxControl.Font( ByVal wfxFontPtr As wfxFont Ptr )
    If (_wfxFontPtr <> 0) AndAlso (_wfxFontPtr <> wfxFontPtr) Then Delete(_wfxFontPtr)
-? "wfxControl.Font: "; wfxFontPtr
    _wfxFontPtr = wfxFontPtr
-? "this.hWindow: "; this.hWindow
    If this.hWindow Then 
       If _wfxFontPtr Then
          if this.CtrlType = ControlType.DateTimePicker then
             SendMessage( this.hWindow, DTM_SETMCFONT, CAST(WPARAM, _wfxFontPtr->FontHandle), CTRUE )
          else   
-? "FontHandle: "; _wfxFontPtr->FontHandle
             AfxSetWindowFont( this.hWindow, _wfxFontPtr->FontHandle, CTRUE )
          end if   
       End If

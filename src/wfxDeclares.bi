@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ enum ControlType
    RichEdit
    ToolBar
    ToolBarButton
+   UpDown
 End Enum
 
 Enum FontStyles
@@ -228,6 +229,17 @@ Type wfxEventArgs Extends Object
       ListViewRow       as long        ' zero based value of current Listview row
       ListViewColumn    as long        ' zero based value of current Listview column
 end type
+
+function WinFBE_GetTextWidthPixels( byval hWin as HWND, byref wszText as WString ) as Long
+   dim as HDC _hdc = GetDC(hWin)
+   dim as SIZE _size 
+   dim as HFONT oldfont = SelectObject( _hdc, AfxGetWindowFont(hWin) )
+   GetTextExtentPoint32( _hdc, wszText, len(wszText), @_size)
+   SelectObject( _hdc, oldfont )
+   ReleaseDC( hWin, _hdc )
+   function = _size.cx
+end function
+               
 
 
 

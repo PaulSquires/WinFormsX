@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -1168,6 +1168,9 @@ function wfxListViewItemsCollection.Clear() as long
    ' the collection and deallocate the ListViewItems. We then call
    ' the LList's method Clear to quickly deallocate the list nodes
    ' and erase the list.
+   ' Disabling drawing updates until all of the nodes are deleted, 
+   ' otherwise we could get a GPF on a redraw while the node is being deleted.
+   SendMessage( this.hWindow, WM_SETREDRAW, false, 0 )
    dim pNode as wfxLListNode ptr 
    for i as long = 0 to _Collection.Size - 1
       pNode = _Collection.get_index(i)
@@ -1175,6 +1178,8 @@ function wfxListViewItemsCollection.Clear() as long
       Delete cast(wfxListViewItem ptr, pNode->pData)
    next
    _Collection.Clear
+   SendMessage( this.hWindow, WM_SETREDRAW, true, 0 )
+
    If this.hWindow Then 
       if this.UpdateFlag = false then
          ListView_SetItemCountEx( this.hWindow, this.Count, LVSICF_NOINVALIDATEALL or LVSICF_NOSCROLL)

@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -218,6 +218,8 @@ property wfxButton.Image( byref cwzValue as wstring )
       If len(cwzValue) Then
          if this.Parent->pWindow then
             _XpButtonPtr->SetImageFromRes( this.Parent->pWindow->InstanceHandle, cwzValue )
+            ' Ensure that the image honors the HighDPI setting for the button.
+            this.ImageHighDPI = _ImageHighDPI
          end if   
       End If    
    End If

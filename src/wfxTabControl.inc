@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ constructor wfxTabControl( byref wszName as wstring = "" )
 end constructor
 
 destructor wfxTabControl
-   if this.hImageList then ImageList_Destroy(this.hImageList)
+   if this.TabPages.hImageList then ImageList_Destroy(this.TabPages.hImageList)
 end destructor
 
 
@@ -58,11 +58,17 @@ property wfxTabControl.TabSidePadding() as Long
 end property
 
 property wfxTabControl.SelectedIndex( byval nValue as long )
-   _SelectedIndex = nValue
+   if this.hWindow then
+      this.HideTabPage( this.TabPages.SelectedIndex )
+      TabCtrl_SetCurSel( this.hWindow, nValue )
+      TabCtrl_SetCurFocus( this.hWindow, nValue )
+      this.ShowTabPage( nValue )
+   end if      
+   this.TabPages.SelectedIndex = nValue
 end property
 
 property wfxTabControl.SelectedIndex() as Long
-   property = _SelectedIndex 
+   property = this.TabPages.SelectedIndex 
 end property
 
 property wfxTabControl.TabImageSize( byval nValue as ControlImageSize )
@@ -170,11 +176,11 @@ Property wfxTabControl.HotTracking( ByVal nValue As boolean)
 end property
 
 Property wfxTabControl.hImageList() As HANDLE
-   property = _hImageList
+   property = this.TabPages.hImageList
 end property
 
 Property wfxTabControl.hImageList( ByVal nValue As HANDLE)
-   _hImageList = nValue
+   this.TabPages.hImageList = nValue
 end property
 
 
@@ -183,6 +189,7 @@ function wfxTabControl.ShowTabPage( byval nIndex as long ) as long
    ' Show the current TabPage
    if (nIndex >= 0) and (nIndex <= this.TabPages.Count - 1) then
       ShowWindow( this.TabPage(nIndex).hWindowChildForm, SW_SHOW )
+      this.TabPages.SelectedIndex = nIndex
    end if   
    function = 0
 end function
@@ -224,6 +231,7 @@ function wfxTabControl.AutoResizeTabPages() as long
 
    function = 0
 end function
+
 
 
 function wfxTabControl.Show(byval hWndParent as hwnd = 0) as long
@@ -327,45 +335,25 @@ function wfxTabControl.Show(byval hWndParent as hwnd = 0) as long
    next
    if bHasImages then
       dim as long cx = _TabImageSize * (this.Parent->pWindow->DPI \ 96)
-      this.hImageList = ImageList_Create(cx, cx, ILC_MASK Or ILC_COLOR32, 1, 0)
+      this.TabPages.hImageList = ImageList_Create(cx, cx, ILC_MASK Or ILC_COLOR32, 1, 0)
    end if
 
-   
-   dim pForm as wfxForm ptr
-   For i As Long = 0 To this.TabPages.Count - 1
-      ' Get the tab text prior to assigning the TabControl window handle otherwise the
-      ' library will try to retrieve the text from the actual window control and
-      ' that text hasn't even been assigned yet.
-      Dim As CWSTR wszItemText = this.TabPage(i).Text
-
-      dim as long nImageIndex = -1
-      if len(rtrim(this.TabPage(i).Image)) then
-         nImageIndex = AfxGdipAddIconFromRes( _hImageList, this.Parent->pWindow->InstanceHandle, this.TabPage(i).Image )
-      end if
-
-      Dim As Long nData32 = this.TabPage(i).data32
-      this.TabPage(i).hWindow = this.hWindow
-      TabCtrl_AddTab( this.hWindow, nImageIndex, wszItemText, nData32 )
-
-      ' Create the child TabPage and assign window handle to TabPage object.
-      pForm = Application.GetpFormObjectByName( this.TabPage(i).ChildFormName )
-      if pForm then
-         pForm->ShowChild( this.hWindow )
-         this.TabPage(i).hWindowChildForm = pForm->hWindow
-         ' ensure the child is not visible
-         pForm->Visible = false
-      end if
-   Next
-   
-   if _hImageList then SendMessage( this.hWindow, TCM_SETIMAGELIST, 0, cast(LPARAM, _hImageList) )
-   
-   TabCtrl_SetCurSel( this.hWindow, _SelectedIndex )
-   TabCtrl_SetCurFocus( this.hWindow, _SelectedIndex )
-   this.AutoResizeTabPages
-   this.ShowTabPage(_SelectedIndex)
+   if this.TabPages.hImageList then 
+      SendMessage( this.hWindow, TCM_SETIMAGELIST, 0, cast(LPARAM, this.TabPages.hImageList) )
+   end if
    
    ' Set the hWindow for the collection
    this.TabPages.hWindow = this.hWindow
+
+   For i As Long = 0 To this.TabPages.Count - 1
+      this.TabPages.CreateTabPageInternal(i)
+   Next
+   
+   TabCtrl_SetCurSel( this.hWindow, this.TabPages.SelectedIndex )
+   TabCtrl_SetCurFocus( this.hWindow, this.TabPages.SelectedIndex )
+   this.AutoResizeTabPages
+   this.ShowTabPage(this.TabPages.SelectedIndex)
+   
 
    if _FixedWidthTabs then
       dim as long nWidth  = AfxScaleX(_TabWidth)
@@ -402,69 +390,35 @@ property wfxTabPage.Index( ByVal nValue As long)
 END PROPERTY
 
 Property wfxTabPage.Selected() As boolean
-'   if this.hWindow then 
-'      _Selected = false
-'      DIM nSelCount AS LONG = SendMessage(this.hWindow, LB_GETSELCOUNT, 0, 0)
-'      if nSelCount = 0 then return false
-'      dim iSel(nSelCount) as Long
-'      SendMessage(this.hWindow, LB_GETSELITEMS, nSelCount, cast(LPARAM, @iSel(0)) )
-'      for i as long = 0 to nSelCount - 1
-'         if iSel(i) = _Index then 
-'            _Selected = true: exit for
-'         end if   
-'      NEXT
-'   end if
+   if this.hWindow then 
+      _Selected = iif( TabCtrl_GetCurSel(this.hWindow) = this.Index, true, false )
+   end if
    property = _Selected
 END PROPERTY
 
 property wfxTabPage.Selected( ByVal nValue As boolean) 
-'   if this.hWindow then 
-'      SendMessage(this.hWindow, LB_SETSEL, nValue, cast(LPARAM, _Index) )
-'   end if
+   if this.hWindow then 
+      if nValue = true then
+         TabCtrl_SetCurSel( this.hWindow, this.Index )
+         TabCtrl_SetCurFocus( this.hWindow, this.Index )
+      end if   
+   end if
    _Selected = nValue
 END PROPERTY
 
 property wfxTabPage.Text() as CWSTR
-'   if this.hWindow then 
-'      DIM cbLen AS LONG = SendMessage(this.hWindow, LB_GETTEXTLEN, _Index, 0)
-'      IF cbLen THEN 
-'         _Text = space(cbLen * 2)
-'         SendMessage( this.hWindow, LB_GETTEXT, _Index, CAST(LPARAM, _Text.vptr))
-'      end if   
-'   end if   
    property = _Text
 end property
 
 property wfxTabPage.Text( byref wszValue as wstring )
-'   if this.hWindow then 
-'      dim as long nCurSel = SendMessage( this.hWindow, LB_GETCURSEL, 0, 0)
-'      SendMessage( this.hWindow, LB_DELETESTRING, _Index, 0)
-'      dim as long nCount = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0)
-'      _Index = SendMessage( this.hWindow, LB_INSERTSTRING, iif(_Index > nCount - 1, -1, _Index), CAST(LPARAM, @wszValue))
-'      SendMessage( this.hWindow, LB_SETCURSEL, nCurSel, 0)
-'   end if   
    _Text = wszValue
 end property
 
 property wfxTabPage.ChildFormName() as CWSTR
-'   if this.hWindow then 
-'      DIM cbLen AS LONG = SendMessage(this.hWindow, LB_GETTEXTLEN, _Index, 0)
-'      IF cbLen THEN 
-'         _Text = space(cbLen * 2)
-'         SendMessage( this.hWindow, LB_GETTEXT, _Index, CAST(LPARAM, _Text.vptr))
-'      end if   
-'   end if   
    property = _ChildFormName
 end property
 
 property wfxTabPage.ChildFormName( byref wszValue as wstring )
-'   if this.hWindow then 
-'      dim as long nCurSel = SendMessage( this.hWindow, LB_GETCURSEL, 0, 0)
-'      SendMessage( this.hWindow, LB_DELETESTRING, _Index, 0)
-'      dim as long nCount = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0)
-'      _Index = SendMessage( this.hWindow, LB_INSERTSTRING, iif(_Index > nCount - 1, -1, _Index), CAST(LPARAM, @wszValue))
-'      SendMessage( this.hWindow, LB_SETCURSEL, nCurSel, 0)
-'   end if   
    _ChildFormName = wszValue
 end property
 
@@ -477,39 +431,30 @@ property wfxTabPage.hWindowChildForm( ByVal nValue As hwnd)
 END PROPERTY
 
 property wfxTabPage.Image() as CWSTR
-'   if this.hWindow then 
-'      DIM cbLen AS LONG = SendMessage(this.hWindow, LB_GETTEXTLEN, _Index, 0)
-'      IF cbLen THEN 
-'         _Text = space(cbLen * 2)
-'         SendMessage( this.hWindow, LB_GETTEXT, _Index, CAST(LPARAM, _Text.vptr))
-'      end if   
-'   end if   
    property = _Image
 end property
 
 property wfxTabPage.Image( byref wszValue as wstring )
-'   if this.hWindow then 
-'      dim as long nCurSel = SendMessage( this.hWindow, LB_GETCURSEL, 0, 0)
-'      SendMessage( this.hWindow, LB_DELETESTRING, _Index, 0)
-'      dim as long nCount = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0)
-'      _Index = SendMessage( this.hWindow, LB_INSERTSTRING, iif(_Index > nCount - 1, -1, _Index), CAST(LPARAM, @wszValue))
-'      SendMessage( this.hWindow, LB_SETCURSEL, nCurSel, 0)
-'   end if   
    _Image = wszValue
 end property
 
 property wfxTabPage.Data32() as long
-'   if this.hWindow then 
-'      _Data32 = SendMessage( this.hWindow, LB_GETITEMDATA, _Index, 0)
-'      if _Data32 = LB_ERR then _Data32 = 0
-'   end if
+   if this.hWindow then 
+      DIM ttc_item AS TCITEM
+      ttc_item.mask = TCIF_PARAM
+      SendMessage( this.hWindow, TCM_GETITEM, cast(WPARAM, this.Index), cast(LPARAM, @ttc_item))
+      _Data32 = ttc_item.lParam
+   end if
    property = _Data32
 end property
 
 property wfxTabPage.Data32( byVal nValue as long)
-'   if this.hWindow then 
-'      SendMessage( this.hWindow, LB_SETITEMDATA, _Index, CAST(LPARAM, nValue))
-'   end if
+   if this.hWindow then 
+      DIM ttc_item AS TCITEM
+      ttc_item.mask = TCIF_PARAM
+      ttc_item.lParam = nValue
+      SendMessage( this.hWindow, TCM_SETITEM, cast(WPARAM, this.Index), cast(LPARAM, @ttc_item))
+   end if
    _Data32 = nValue
 end property
 
@@ -532,55 +477,74 @@ property wfxTabPageCollection.hWindow( byVal nValue as hwnd)
 end property
 
 function wfxTabPageCollection.Count() as Long
-'   if this.hWindow then
-'      function = SendMessage( this.hWindow, LB_GETCOUNT, 0, 0 )
-'   else
-      function = _Collection.Size
-'   end if
+   function = _Collection.Size
 end function
 
+
+function wfxTabPageCollection.CreateTabPageInternal( byval i as long ) as Long
+   ' The incoming i variable is the index of the tabpage within the collection to create.
+   dim pForm as wfxForm ptr
+   Dim As CWSTR wszItemText = this.ByIndex(i).Text
+
+   dim as long nImageIndex = -1
+   if len(rtrim(this.ByIndex(i).Image)) then
+      dim hInst AS HINSTANCE = GetModuleHandle(null)
+      nImageIndex = AfxGdipAddIconFromRes( this.hImageList, hInst, this.ByIndex(i).Image )
+   end if
+
+   Dim As Long nData32 = this.ByIndex(i).data32
+
+   TabCtrl_AddTab( this.hWindow, nImageIndex, wszItemText, nData32 )
+
+   ' Create the child TabPage.
+   pForm = Application.GetpFormObjectByName( this.ByIndex(i).ChildFormName )
+   if pForm then
+      pForm->ShowChild( this.hWindow )
+      this.ByIndex(i).hWindowChildForm = pForm->hWindow
+      ' ensure the child is not visible
+      pForm->Visible = false
+   end if
+   
+   function = 0
+end function
+
+
+''  ADD: Dynamically adding pages at run time not implemente dyet.
 Function wfxTabPageCollection.Add( ByRef wszText As WString = "", _
                                    ByRef wszTabPage As WString = "", _
                                    ByRef wszImage As WString = "", _
                                    ByVal nValue As Long = 0) As Long
-'   If this.hWindow Then
-'      Dim As Long idx = SendMessage( this.hWindow, LB_ADDSTRING, 0, Cast(LPARAM, @wszValue) )
-'      SendMessage( this.hWindow, LB_SETITEMDATA, idx, CAST(LPARAM, nValue))
-'      Function = idx
-'   Else
-      Dim pData As wfxTabPage Ptr = New wfxTabPage
-      pData->hWindow = this.hWindow
-      pData->Index   = (this.Count - 1) + 1
-      pData->Text    = wszText
-      pData->ChildFormName = wszTabPage
-      pData->Image   = wszImage
-      pData->Data32  = nValue
-      _Collection.Add( ControlType.TabControl, pData ) 
-      function = pData->Index
-'   END IF
+   Dim pData As wfxTabPage Ptr = New wfxTabPage
+   pData->hWindow = this.hWindow
+   pData->Index   = (this.Count - 1) + 1
+   pData->Text    = wszText
+   pData->ChildFormName = wszTabPage
+   pData->Image   = wszImage
+   pData->Data32  = nValue
+   _Collection.Add( ControlType.TabControl, pData ) 
+   function = pData->Index
+
+   If this.hWindow Then
+      this.CreateTabPageInternal(pData->Index)
+   END IF
 end function
 
+''  INSERT: Dynamically inserting pages at run time not implemente dyet.
 Function wfxTabPageCollection.Insert( byval nIndex as long, _
                                       ByRef wszText As WString = "", _
                                       ByRef wszTabPage As WString = "", _
                                       ByRef wszImage As WString = "", _
                                       ByVal nValue As Long = 0) As Long
-'   If this.hWindow Then
-'      Dim As Long idx = SendMessage( this.hWindow, LB_INSERTSTRING, nIndex, Cast(LPARAM, @wszValue) )
-'      SendMessage( this.hWindow, LB_SETITEMDATA, idx, CAST(LPARAM, nValue))
-'      Function = idx
-'   Else
-      Dim pData As wfxTabPage Ptr = New wfxTabPage
-      pData->hWindow = this.hWindow
-      pData->Index   = nIndex
-      pData->Text    = wszText
-      pData->ChildFormName = wszTabPage
-      pData->Image   = wszImage
-      pData->Data32  = nValue
-      _Collection.Insert( nIndex, ControlType.ListBox, pData ) 
-      function = pData->Index
-'   END IF
-   
+   Dim pData As wfxTabPage Ptr = New wfxTabPage
+   pData->hWindow = this.hWindow
+   pData->Index   = nIndex
+   pData->Text    = wszText
+   pData->ChildFormName = wszTabPage
+   pData->Image   = wszImage
+   pData->Data32  = nValue
+   _Collection.Insert( nIndex, ControlType.ListBox, pData ) 
+   function = pData->Index
+    
    ' Renumber the Index property for each item in the collection.
    dim pNode as wfxLListNode ptr 
    dim pTabPage as wfxTabPage ptr
@@ -589,26 +553,39 @@ Function wfxTabPageCollection.Insert( byval nIndex as long, _
       pTabPage = cast(wfxTabPage ptr, pNode->pData)
       if pTabPage then pTabPage->Index = i
    next
+
+   If this.hWindow Then
+      this.CreateTabPageInternal(pData->Index)
+   END IF
 end function
 
 function wfxTabPageCollection.Remove( byval nIndex as long ) as long
-'   if this.hWindow then
-'      function = SendMessage( this.hWindow, LB_DELETESTRING, nIndex, 0)
-'   else
-      dim pNode as wfxLListNode ptr = _Collection.get_index(nIndex)
-      if pNode then
-         Delete cast(wfxTabPage ptr, pNode->pData)
-         _Collection.Remove(pNode)
-      end if   
-'   END IF
+   if nIndex < 0 then exit function
+   if this.hWindow then
+      ShowWindow( this.ByIndex(nIndex).hWindowChildForm, SW_HIDE )
+      TabCtrl_DeleteItem( this.hWindow, nIndex )
+   end if
+   
+   dim pNode as wfxLListNode ptr = _Collection.get_index(nIndex)
+   if pNode then
+      Delete cast(wfxTabPage ptr, pNode->pData)
+      _Collection.Remove(pNode)
+   end if   
+
    ' Renumber the Index property for each item in the collection.
-'   dim pNode as wfxLListNode ptr 
    dim pTabPage as wfxTabPage ptr
    for i as long = 0 to _Collection.Size - 1
       pNode = _Collection.get_index(i)
       pTabPage = cast(wfxTabPage ptr, pNode->pData)
       if pTabPage then pTabPage->Index = i
    next
+   this.SelectedIndex = Min( this.SelectedIndex, _Collection.Size - 1 )
+   if this.SelectedIndex >= 0 then
+      TabCtrl_SetCurSel( this.hWindow, this.SelectedIndex )
+      TabCtrl_SetCurFocus( this.hWindow, this.SelectedIndex )
+      ShowWindow( this.ByIndex(this.SelectedIndex).hWindowChildForm, SW_SHOW )
+   end if
+   
    function = _Collection.Size
 end function
 
@@ -623,16 +600,12 @@ function wfxTabPageCollection.ByIndex( byval nIndex as long ) byref as wfxTabPag
 end function
 
 function wfxTabPageCollection.Clear() as long
-'   if this.hWindow then
-'      SendMessage( this.hWindow, LB_RESETCONTENT, 0, 0)
-'   else
-      ' Deallocate elements in the Items collection.
-      dim pNode as wfxLListNode ptr = _Collection.get_first
-      do until pNode = 0
-         Delete cast(wfxTabPage ptr, pNode->pData)
-         pNode = _Collection.remove(pNode)
-      LOOP
-'   end if
+   ' Deallocate elements in the Items collection.
+   dim pNode as wfxLListNode ptr = _Collection.get_first
+   do until pNode = 0
+      Delete cast(wfxTabPage ptr, pNode->pData)
+      pNode = _Collection.remove(pNode)
+   LOOP
    function = 0
 END FUNCTION
 

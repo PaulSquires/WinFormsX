@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -141,6 +141,10 @@ namespace WinFormsX
 #Include Once "wfxTabControl.bi"
 #endif
 
+#ifdef CODEGEN_UPDOWN
+#Include Once "wfxUpDown.bi"
+#endif
+
 #Include Once "wfxApplication.bi"
 
 #Include Once "wfxSize.inc"
@@ -215,6 +219,10 @@ namespace WinFormsX
 
 #ifdef CODEGEN_TABCONTROL
 #Include Once "wfxTabControl.inc"
+#endif
+
+#ifdef CODEGEN_UPDOWN
+#Include Once "wfxUpDown.inc"
 #endif
 
 #ifdef CODEGEN_MAINMENU

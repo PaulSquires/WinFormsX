@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -44,12 +44,6 @@ property wfxStatusBar.SizingGrip() as boolean
 end property
 
 property wfxStatusBar.SizingGrip( byval nValue as boolean )
-   if this.hWindow then 
-      ' Add and/or Remove the sizing grip
-      AfxRemoveWindowStyle(this.hWindow, SBARS_SIZEGRIP)
-      if nValue then AfxAddWindowStyle(this.hWindow, SBARS_SIZEGRIP)
-      this.Refresh
-   end if
    _SizingGrip = nValue
 end property
 
@@ -74,7 +68,7 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    dim as long dwExStyle = 0
-   dim as long dwStyle = WS_CLIPCHILDREN OR WS_CLIPSIBLINGS OR CCS_BOTTOM or SBARS_TOOLTIPS
+   dim as long dwStyle = WS_CLIPCHILDREN OR WS_CLIPSIBLINGS OR CCS_BOTTOM 
 
    if this.SizingGrip THEN dwStyle = dwStyle OR SBARS_SIZEGRIP
    if this.Visible THEN dwStyle = dwStyle OR WS_VISIBLE
@@ -148,43 +142,39 @@ property wfxStatusBarPanel.AutoSize( byval nValue as StatusBarPanelAutoSize)
    _AutoSize = nValue
 end property
 
-property wfxStatusBarPanel.BorderStyle() as StatusBarPanelBorderStyle
-   property = _BorderStyle
-end property
-
-property wfxStatusBarPanel.BorderStyle( byval nValue as StatusBarPanelBorderStyle)
-   _BorderStyle = nValue
-end property
+' BorderStyle is deprecated as of v2.0.4 as it has no effect
+' in WinFBE programs where Windows Themes are enabled.
+'property wfxStatusBarPanel.BorderStyle() as StatusBarPanelBorderStyle
+'   property = _BorderStyle
+'end property
+'
+'property wfxStatusBarPanel.BorderStyle( byval nValue as StatusBarPanelBorderStyle)
+'   _BorderStyle = nValue
+'end property
 
 property wfxStatusBarPanel.Text() as CWSTR
-   if this.hWindow then 
-      _Text = string( MAX_PATH, 0 )
-      StatusBar_GetText(this.hWindow, this.Index, _Text.vptr)
+   if this.hWindow then
+      ' StatusBar text is now ownerdraw so retrieve directly from Panel class.
+      '_Text = string( MAX_PATH, 0 )
+      'StatusBar_GetText(this.hWindow, this.Index, _Text.vptr)
       ' remove any leading TAB characters that handle the alignments
-      _Text = ltrim(_Text, chr(9))
+      '_Text = ltrim(_Text, chr(9))
    end if   
    property = _Text
 end property
 
 property wfxStatusBarPanel.Text( byref wszValue as wstring )
    if this.hWindow then 
-      StatusBar_SetText(this.hWindow, this.Index, @wszValue, this.BorderStyle) 
+      StatusBar_SetText(this.hWindow, this.Index, @wszValue, SBT_OWNERDRAW) 
    end if   
    _Text = wszValue
 end property
 
 property wfxStatusBarPanel.ToolTip() as CWSTR
-   if this.hWindow then 
-      _ToolTip = string( MAX_PATH, 0 )
-      StatusBar_GetTipText( this.hWindow, this.Index, _ToolTip.vptr, MAX_PATH )
-   end if   
    property = _ToolTip
 end property
 
 property wfxStatusBarPanel.ToolTip( byref wszValue as wstring )
-   if this.hWindow then 
-      StatusBar_SetTipText( this.hWindow, this.Index, @wszValue )
-   end if   
    _ToolTip = wszValue
 end property
 
@@ -210,6 +200,84 @@ end property
 
 property wfxStatusBarPanel.Icon( byref cwzValue as wstring )
    _Icon = cwzValue
+end property
+
+property wfxStatusBarPanel.IsHot() as boolean
+   property = _IsHot
+end property
+
+property wfxStatusBarPanel.IsHot( byval nValue as boolean )
+   ' If the IsHot state has changed then refresh the control
+   if nValue <> _IsHot then 
+      _IsHot = nValue
+      ' Only redraw if the back/fore colors differ between
+      ' the two states in order to reduce flicker.
+      if (_BackColor <> _BackColorHot) or _
+         (_ForeColor <> _ForeColorHot) then
+         ' Only redraw the Panel rather than the whole control
+         ' in order to avoid flicker.
+         dim as RECT rcPanel
+         StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
+         InvalidateRect(this.hWindow, @rcPanel, CTRUE)
+         UpdateWindow(this.hWindow)
+      end if
+   end if
+end property
+
+property wfxStatusBarPanel.BackColor() as COLORREF
+   property = _BackColor
+end property
+
+property wfxStatusBarPanel.BackColor( byval nValue as COLORREF )
+   if nValue <> _BackColor then
+      _BackColor = nValue
+      dim as RECT rcPanel
+      StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
+      InvalidateRect(this.hWindow, @rcPanel, CTRUE)
+      UpdateWindow(this.hWindow)
+   end if
+end property
+
+property wfxStatusBarPanel.BackColorHot() as COLORREF
+   property = _BackColorHot
+end property
+
+property wfxStatusBarPanel.BackColorHot( byval nValue as COLORREF )
+   if nValue <> _BackColorHot then
+      _BackColorHot = nValue
+      dim as RECT rcPanel
+      StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
+      InvalidateRect(this.hWindow, @rcPanel, CTRUE)
+      UpdateWindow(this.hWindow)
+   end if
+end property
+
+property wfxStatusBarPanel.ForeColor() as COLORREF
+   property = _ForeColor
+end property
+
+property wfxStatusBarPanel.ForeColor( byval nValue as COLORREF )
+   if nValue <> _ForeColor then
+      _ForeColor = nValue
+      dim as RECT rcPanel
+      StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
+      InvalidateRect(this.hWindow, @rcPanel, CTRUE)
+      UpdateWindow(this.hWindow)
+   end if
+end property
+
+property wfxStatusBarPanel.ForeColorHot() as COLORREF
+   property = _ForeColorHot
+end property
+
+property wfxStatusBarPanel.ForeColorHot( byval nValue as COLORREF )
+   if nValue <> _ForeColorHot then
+      _ForeColorHot = nValue
+      dim as RECT rcPanel
+      StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
+      InvalidateRect(this.hWindow, @rcPanel, CTRUE)
+      UpdateWindow(this.hWindow)
+   end if
 end property
 
 

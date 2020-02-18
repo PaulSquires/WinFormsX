@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -24,11 +24,13 @@ enum StatusBarPanelAutoSize
    Spring   = 2
 END ENUM
 
-enum StatusBarPanelBorderStyle
-   Sunken = 0
-   None   = SBT_NOBORDERS
-   Raised = SBT_POPOUT
-END ENUM
+' BorderStyle is deprecated as of v2.0.4 as it has no effect
+' in WinFBE programs where Windows Themes are enabled.
+'enum StatusBarPanelBorderStyle
+'   Sunken = 0
+'   None   = SBT_NOBORDERS
+'   Raised = SBT_POPOUT
+'END ENUM
 
 enum StatusBarPanelAlignment
    Left   = ES_LEFT 
@@ -39,17 +41,24 @@ end enum
 
 type wfxStatusBarPanel
    private:
-      _hWindow     as hwnd
-      _Index       as Long
-      _Alignment   as StatusBarPanelAlignment
-      _AutoSize    as StatusBarPanelAutoSize
-      _BorderStyle as StatusBarPanelBorderStyle 
-      _Icon        as wstring * MAX_PATH
-      _Text        as CWSTR
-      _ToolTip     as CWSTR
-      _Width       as Long = 100
-      _MinWidth    as Long = 0
-      _CtrlID      as long = 100
+      _hWindow      as hwnd
+      _Index        as Long
+      _Alignment    as StatusBarPanelAlignment
+      _AutoSize     as StatusBarPanelAutoSize
+      ' BorderStyle is deprecated as of v2.0.4 as it has no effect
+      ' in WinFBE programs where Windows Themes are enabled.
+      '_BorderStyle as StatusBarPanelBorderStyle 
+      _Icon         as wstring * MAX_PATH
+      _Text         as CWSTR
+      _ToolTip      as CWSTR
+      _Width        as Long = 100
+      _MinWidth     as Long = 0
+      _CtrlID       as long = 100
+      _IsHot        as boolean = false
+      _BackColor    as COLORREF = GetSysColor(COLOR_3DFACE)
+      _BackColorHot as COLORREF = GetSysColor(COLOR_3DFACE)
+      _ForeColor    as COLORREF = GetSysColor(COLOR_BTNTEXT)
+      _ForeColorHot as COLORREF = GetSysColor(COLOR_BTNTEXT)
      
    public:
       Declare Property hWindow() As hwnd
@@ -60,8 +69,10 @@ type wfxStatusBarPanel
       Declare Property Alignment( ByVal nValue As StatusBarPanelAlignment)
       Declare Property AutoSize() As StatusBarPanelAutoSize
       Declare Property AutoSize( ByVal nValue As StatusBarPanelAutoSize)
-      Declare Property BorderStyle() As StatusBarPanelBorderStyle
-      Declare Property BorderStyle( ByVal nValue As StatusBarPanelBorderStyle)
+      ' BorderStyle is deprecated as of v2.0.4 as it has no effect
+      ' in WinFBE programs where Windows Themes are enabled.
+      'Declare Property BorderStyle() As StatusBarPanelBorderStyle
+      'Declare Property BorderStyle( ByVal nValue As StatusBarPanelBorderStyle)
       declare property Text() as CWSTR
       declare property Text( byref wszValue as wstring )
       declare property ToolTip() as CWSTR
@@ -72,7 +83,16 @@ type wfxStatusBarPanel
       Declare Property MinWidth( ByVal nValue As long)
       declare property Icon() as CWSTR
       declare property Icon( byref cwzValue as wstring )
-
+      Declare Property IsHot() As boolean
+      Declare Property IsHot( ByVal nValue As Boolean)
+      declare property BackColor() as COLORREF
+      declare property BackColor( byval nValue as COLORREF ) 
+      declare property BackColorHot() as COLORREF
+      declare property BackColorHot( byval nValue as COLORREF ) 
+      declare property ForeColor() as COLORREF
+      declare property ForeColor( byval nValue as COLORREF ) 
+      declare property ForeColorHot() as COLORREF
+      declare property ForeColorHot( byval nValue as COLORREF ) 
 END TYPE
 
 type wfxStatusBarPanelsCollection
@@ -93,7 +113,7 @@ END TYPE
 
 type wfxStatusBar extends wfxControl
    private:
-      _SizingGrip as boolean
+      _SizingGrip as boolean 
       _ClickIndex as long  
       _PanelsCollection as wfxStatusBarPanelsCollection
       

@@ -1,5 +1,5 @@
 '    WinFormsX - Windows GUI Framework for the FreeBASIC Compiler
-'    Copyright (C) 2018-2019 Paul Squires, PlanetSquires Software
+'    Copyright (C) 2018-2020 Paul Squires, PlanetSquires Software
 '
 '    This program is free software: you can redistribute it and/or modify
 '    it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ type wfxTabPage
       _Index            as Long
       _Text             as CWSTR
       _ChildFormName    as CWSTR
+      _ChildForm        as wfxForm
       _hWindowChildForm as HWND
       _Image            as CWSTR
       _Data32           as Long 
@@ -50,6 +51,8 @@ type wfxTabPageCollection
       _Collection As wfxLList
       
    public:
+      SelectedIndex as Long
+      hImageList as HANDLE
       Declare Property hWindow() As hwnd
       Declare Property hWindow( ByVal nValue As hwnd)
       Declare function Clear() as long 
@@ -65,6 +68,7 @@ type wfxTabPageCollection
                             ByRef wszImage As WString = "", _
                             ByVal nValue As Long = 0) As Long
       declare function ByIndex( byval nIndex as long ) byref as wfxTabPage
+      declare function CreateTabPageInternal( byval i as long ) as Long
       Declare Constructor
       declare destructor 
 END TYPE
@@ -76,7 +80,6 @@ Type wfxTabControl Extends wfxControl
       _TabHeight as long = 24
       _TabWidth as long = 100
       _BorderStyle As ControlBorderStyle = ControlBorderStyle.None
-      _SelectedIndex as Long
       _IsLoading as Boolean = true   ' internal
       _ResizeTabPages as Boolean = true   
       _TabImageSize as ControlImageSize = ControlImageSize.Size16
@@ -88,7 +91,6 @@ Type wfxTabControl Extends wfxControl
       _FixedWidthTabs as Boolean = false
       _HotTracking as Boolean = true
       _MultiLine as Boolean = false
-      _hImageList as HANDLE
       
    Public:
       Declare Property AllowFocus() As boolean
@@ -132,7 +134,7 @@ Type wfxTabControl Extends wfxControl
       declare function ShowTabPage( byval nIndex as long ) as long
       declare function HideTabPage( byval nIndex as long ) as long
       declare function AutoResizeTabPages() as long
-
+      
       OnAllEvents        as function( byref sender as wfxTabControl, byref e as EventArgs ) as LRESULT
       OnDestroy          as function( byref sender as wfxTabControl, byref e as EventArgs ) as LRESULT
       OnClick            as function( byref sender as wfxTabControl, byref e as EventArgs ) as LRESULT
