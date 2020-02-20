@@ -775,17 +775,21 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
    
    
    ' Check for new focus control in case it was set in the OnLoad/OnShown event.
+   ' Also, redraw any Frame controls because they could disappear if a modal dialog
+   ' is shown during the Load event.
    idx = 0
    pNode = this.Controls.get_first
    do until pNode = 0
       pCtrl = cast(wfxControl ptr, pNode->pData)
       if pCtrl then
          If pCtrl->Focused Then pCtrlFocus = pCtrl
+         If pCtrl->CtrlType = ControlType.Frame then AfxRedrawWindow( pCtrl->hWindow )
       End If
       idx = idx + 1
       pNode = this.Controls.get_next(idx)
    LOOP
 
+   
    ' Set the focus/selected control which will also cause the Activate 
    ' message for the Form to fire. 
    If pCtrlFocus Then 

@@ -1178,14 +1178,12 @@ function wfxListViewItemsCollection.Clear() as long
       Delete cast(wfxListViewItem ptr, pNode->pData)
    next
    _Collection.Clear
-   SendMessage( this.hWindow, WM_SETREDRAW, true, 0 )
 
    If this.hWindow Then 
-      if this.UpdateFlag = false then
-         ListView_SetItemCountEx( this.hWindow, this.Count, LVSICF_NOINVALIDATEALL or LVSICF_NOSCROLL)
-         AfxRedrawWindow(this.hWindow)
-      end if   
+      ListView_SetItemCountEx( this.hWindow, this.Count, LVSICF_NOINVALIDATEALL or LVSICF_NOSCROLL)
+      if this.UpdateFlag = false then AfxRedrawWindow(this.hWindow)
    end if
+   SendMessage( this.hWindow, WM_SETREDRAW, true, 0 )
    function = 0
 END FUNCTION
 

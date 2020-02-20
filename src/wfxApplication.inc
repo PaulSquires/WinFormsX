@@ -1227,7 +1227,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   
 
                   if lNotification = NM_CUSTOMDRAW then
-                
+                     
                      dim plvcd as NMLVCUSTOMDRAW ptr = cast(NMLVCUSTOMDRAW ptr, pNMHDR)
                      Select Case plvcd->nmcd.dwDrawStage
                      
