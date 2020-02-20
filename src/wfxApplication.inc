@@ -1410,96 +1410,98 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             SaveDC(lpdis->hDC)
              
 #ifdef CODEGEN_STATUSBAR
-            pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
-            if pStatusBar = 0 then exit function
-            rc = lpdis->rcItem
-            
-            dim as long nItem = lpdis->itemID
-            If (nItem < 0) or (nItem > pStatusBar->Panels.Count-1) Then Exit Function
+            if pNode->CtrlType = ControlType.StatusBar then
+               pStatusBar = cast(wfxStatusBar ptr, pNode->pData)
+               if pStatusBar = 0 then exit function
+               rc = lpdis->rcItem
+               
+               dim as long nItem = lpdis->itemID
+               If (nItem < 0) or (nItem > pStatusBar->Panels.Count-1) Then Exit Function
 
-            dim as long nImageWidth 
-            dim as long nImageHeight
+               dim as long nImageWidth 
+               dim as long nImageHeight
 
-            ' The image/text output rectangle is positioned within the main rc rectangle
-            ' depending on the alignment.
-            dim as RECT rc1 = rc
+               ' The image/text output rectangle is positioned within the main rc rectangle
+               ' depending on the alignment.
+               dim as RECT rc1 = rc
+               
+               dim wszImageName as wstring * MAX_PATH
+               wszImageName = pStatusBar->Panel(nItem).Icon
             
-            dim wszImageName as wstring * MAX_PATH
-            wszImageName = pStatusBar->Panel(nItem).Icon
-         
-            dim as HANDLE hIcon
-            dim hImageListNormal As HIMAGELIST 
-            if len(wszImageName) then
-               Dim cx As Long = AfxScaleX(16) 
-               hImageListNormal = ImageList_Create( cx, cx, ILC_COLOR32 Or ILC_MASK, 1, 1)
-               dim as long ii = AfxGdipAddIconFromRes( hImageListNormal, GetModuleHandle(null), wszImageName )
-               hIcon = ImageList_GetIcon( hImageListNormal, ii, ILD_NORMAL )
+               dim as HANDLE hIcon
+               dim hImageListNormal As HIMAGELIST 
+               if len(wszImageName) then
+                  Dim cx As Long = AfxScaleX(16) 
+                  hImageListNormal = ImageList_Create( cx, cx, ILC_COLOR32 Or ILC_MASK, 1, 1)
+                  dim as long ii = AfxGdipAddIconFromRes( hImageListNormal, GetModuleHandle(null), wszImageName )
+                  hIcon = ImageList_GetIcon( hImageListNormal, ii, ILD_NORMAL )
+                  if hIcon then
+                     nImageWidth = AfxScaleX(16)
+                     nImageHeight = AfxScaleY(16)
+                  end if   
+               End If   
+               
+               wszText = " " & pStatusBar->Panel(nItem).Text & " "
+               dim as long nTextWidth = WinFBE_GetTextWidthPixels( lpdis->hwndItem, wszText )  
+
+               dim as long nTotalWidth 
+               if nImageWidth then nTotalWidth = nImageWidth + AfxScaleX(4)
+               if nTextWidth  then nTotalWidth = nTotalWidth + nTextWidth
+               
+               select case pStatusBar->Panel(nItem).Alignment
+                  case StatusBarPanelAlignment.Left
+                     ' No need to do anything because rc1 is already the full size of rc.
+                  case StatusBarPanelAlignment.Center
+                     dim as long nPad = MAX(0, (rc.right - rc.left - nTotalWidth) / 2)
+                     rc1.left = rc1.left + nPad
+                  case StatusBarPanelAlignment.Right
+                     rc1.left  = rc1.right - nTotalWidth
+               end select
+               
+               memDC = CreateCompatibleDC( lpdis->hDC )
+               hbit  = CreateCompatibleBitmap( lpdis->hDC, rc.right, rc.bottom )
+               If hbit Then hbit = SelectObject( memDC, hbit )
+
+               dim as HFONT _hFont = AfxGetWindowFont( lpdis->hwndItem )
+               SelectObject( memDC, _hFont )
+
+               ' Paint the entire background
+               dim as HBRUSH hBackBrush
+               if pStatusBar->Panel(nItem).IsHot then
+                  SetBkColor( memDC, pStatusBar->Panel(nItem).BackColorHot )   
+                  SetTextColor( memDC, pStatusBar->Panel(nItem).ForeColorHot )
+                  hBackBrush = CreateSolidBrush(pStatusBar->Panel(nItem).BackColorHot)
+               else
+                  SetBkColor( memDC, pStatusBar->Panel(nItem).BackColor )   
+                  SetTextColor( memDC, pStatusBar->Panel(nItem).ForeColor )
+                  hBackBrush = CreateSolidBrush(pStatusBar->Panel(nItem).BackColor)
+               end if
+               FillRect( memDC, @rc, hBackBrush )
+               DeleteObject(hBackBrush)
+
+               ' Output any defined icon for the panel
                if hIcon then
-                  nImageWidth = AfxScaleX(16)
-                  nImageHeight = AfxScaleY(16)
-               end if   
-            End If   
-            
-            wszText = " " & pStatusBar->Panel(nItem).Text & " "
-            dim as long nTextWidth = WinFBE_GetTextWidthPixels( lpdis->hwndItem, wszText )  
+                  ' Center the image vertically within rc1
+                  dim as long nPad = (rc1.bottom - rc1.top - nImageHeight) / 2
+                  DrawIconEx( memDC, rc1.left, rc1.top + nPad, _
+                                     hIcon, _
+                                     nImageWidth, nImageHeight, 0, null, DI_NORMAL ) 
+                  DeleteObject( hIcon )
+                  ImageList_Destroy( hImageListNormal )
+                  rc1.left = rc1.left + nImageWidth + AfxScaleX(4)
+               end if
+               
+               ' Output any panel text
+               dim as long lFormat = DT_LEFT Or DT_VCENTER or DT_SINGLELINE
+               wszText = pStatusBar->Panel(nItem).Text
+               DrawText( memDC, wszText, -1, Cast(lpRect, @rc1), lFormat )
 
-            dim as long nTotalWidth 
-            if nImageWidth then nTotalWidth = nImageWidth + AfxScaleX(4)
-            if nTextWidth  then nTotalWidth = nTotalWidth + nTextWidth
-            
-            select case pStatusBar->Panel(nItem).Alignment
-               case StatusBarPanelAlignment.Left
-                  ' No need to do anything because rc1 is already the full size of rc.
-               case StatusBarPanelAlignment.Center
-                  dim as long nPad = MAX(0, (rc.right - rc.left - nTotalWidth) / 2)
-                  rc1.left = rc1.left + nPad
-               case StatusBarPanelAlignment.Right
-                  rc1.left  = rc1.right - nTotalWidth
-            end select
-            
-            memDC = CreateCompatibleDC( lpdis->hDC )
-            hbit  = CreateCompatibleBitmap( lpdis->hDC, rc.right, rc.bottom )
-            If hbit Then hbit = SelectObject( memDC, hbit )
+               BitBlt lpdis->hDC, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY 
 
-            dim as HFONT _hFont = AfxGetWindowFont( lpdis->hwndItem )
-            SelectObject( memDC, _hFont )
-
-            ' Paint the entire background
-            dim as HBRUSH hBackBrush
-            if pStatusBar->Panel(nItem).IsHot then
-               SetBkColor( memDC, pStatusBar->Panel(nItem).BackColorHot )   
-               SetTextColor( memDC, pStatusBar->Panel(nItem).ForeColorHot )
-               hBackBrush = CreateSolidBrush(pStatusBar->Panel(nItem).BackColorHot)
-            else
-               SetBkColor( memDC, pStatusBar->Panel(nItem).BackColor )   
-               SetTextColor( memDC, pStatusBar->Panel(nItem).ForeColor )
-               hBackBrush = CreateSolidBrush(pStatusBar->Panel(nItem).BackColor)
+               ' Cleanup
+               If hbit  Then DeleteObject SelectObject(memDC, hbit)
+               If memDC Then DeleteDC memDC
             end if
-            FillRect( memDC, @rc, hBackBrush )
-            DeleteObject(hBackBrush)
-
-            ' Output any defined icon for the panel
-            if hIcon then
-               ' Center the image vertically within rc1
-               dim as long nPad = (rc1.bottom - rc1.top - nImageHeight) / 2
-               DrawIconEx( memDC, rc1.left, rc1.top + nPad, _
-                                  hIcon, _
-                                  nImageWidth, nImageHeight, 0, null, DI_NORMAL ) 
-               DeleteObject( hIcon )
-               ImageList_Destroy( hImageListNormal )
-               rc1.left = rc1.left + nImageWidth + AfxScaleX(4)
-            end if
-            
-            ' Output any panel text
-            dim as long lFormat = DT_LEFT Or DT_VCENTER or DT_SINGLELINE
-            wszText = pStatusBar->Panel(nItem).Text
-            DrawText( memDC, wszText, -1, Cast(lpRect, @rc1), lFormat )
-
-            BitBlt lpdis->hDC, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY 
-
-            ' Cleanup
-            If hbit  Then DeleteObject SelectObject(memDC, hbit)
-            If memDC Then DeleteDC memDC
 #endif
 
             if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
