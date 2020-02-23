@@ -155,19 +155,13 @@ end property
 property wfxStatusBarPanel.Text() as CWSTR
    if this.hWindow then
       ' StatusBar text is now ownerdraw so retrieve directly from Panel class.
-      '_Text = string( MAX_PATH, 0 )
-      'StatusBar_GetText(this.hWindow, this.Index, _Text.vptr)
-      ' remove any leading TAB characters that handle the alignments
-      '_Text = ltrim(_Text, chr(9))
    end if   
    property = _Text
 end property
 
 property wfxStatusBarPanel.Text( byref wszValue as wstring )
-   if this.hWindow then 
-      StatusBar_SetText(this.hWindow, this.Index, @wszValue, SBT_OWNERDRAW) 
-   end if   
    _Text = wszValue
+   if this.hWindow then this.Refresh
 end property
 
 property wfxStatusBarPanel.ToolTip() as CWSTR
@@ -216,13 +210,18 @@ property wfxStatusBarPanel.IsHot( byval nValue as boolean )
          (_ForeColor <> _ForeColorHot) then
          ' Only redraw the Panel rather than the whole control
          ' in order to avoid flicker.
-         dim as RECT rcPanel
-         StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
-         InvalidateRect(this.hWindow, @rcPanel, CTRUE)
-         UpdateWindow(this.hWindow)
+         this.Refresh
       end if
    end if
 end property
+
+function wfxStatusBarPanel.Refresh() as Long
+   dim as RECT rcPanel
+   StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
+   InvalidateRect(this.hWindow, @rcPanel, CTRUE)
+   UpdateWindow(this.hWindow)
+   function = 0
+end function
 
 property wfxStatusBarPanel.BackColor() as COLORREF
    property = _BackColor
@@ -231,10 +230,7 @@ end property
 property wfxStatusBarPanel.BackColor( byval nValue as COLORREF )
    if nValue <> _BackColor then
       _BackColor = nValue
-      dim as RECT rcPanel
-      StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
-      InvalidateRect(this.hWindow, @rcPanel, CTRUE)
-      UpdateWindow(this.hWindow)
+      this.Refresh
    end if
 end property
 
@@ -245,10 +241,7 @@ end property
 property wfxStatusBarPanel.BackColorHot( byval nValue as COLORREF )
    if nValue <> _BackColorHot then
       _BackColorHot = nValue
-      dim as RECT rcPanel
-      StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
-      InvalidateRect(this.hWindow, @rcPanel, CTRUE)
-      UpdateWindow(this.hWindow)
+      this.Refresh
    end if
 end property
 
@@ -259,10 +252,7 @@ end property
 property wfxStatusBarPanel.ForeColor( byval nValue as COLORREF )
    if nValue <> _ForeColor then
       _ForeColor = nValue
-      dim as RECT rcPanel
-      StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
-      InvalidateRect(this.hWindow, @rcPanel, CTRUE)
-      UpdateWindow(this.hWindow)
+      this.Refresh
    end if
 end property
 
@@ -273,10 +263,7 @@ end property
 property wfxStatusBarPanel.ForeColorHot( byval nValue as COLORREF )
    if nValue <> _ForeColorHot then
       _ForeColorHot = nValue
-      dim as RECT rcPanel
-      StatusBar_GetRect( this.hWindow, this.Index, @rcPanel )
-      InvalidateRect(this.hWindow, @rcPanel, CTRUE)
-      UpdateWindow(this.hWindow)
+      this.Refresh
    end if
 end property
 

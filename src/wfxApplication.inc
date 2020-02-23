@@ -1385,8 +1385,10 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                ' Set the height of the List box items. 
                pListBox = cast( wfxListBox ptr, pNode->pData )
                if pListBox then
-                  lpmis->itemHeight = pListBox->Parent->pWindow->ScaleY( pListBox->ItemHeight )
-                  return true
+                  if pListBox->CtrlID = wParam then
+                     lpmis->itemHeight = pListBox->Parent->pWindow->ScaleY( pListBox->ItemHeight )
+                     return true
+                  end if   
                end if
             end if
             idx = idx + 1

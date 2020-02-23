@@ -92,7 +92,8 @@ type wfxStatusBarPanel
       declare property ForeColor() as COLORREF
       declare property ForeColor( byval nValue as COLORREF ) 
       declare property ForeColorHot() as COLORREF
-      declare property ForeColorHot( byval nValue as COLORREF ) 
+      declare property ForeColorHot( byval nValue as COLORREF )
+      declare function Refresh() as Long 
 END TYPE
 
 type wfxStatusBarPanelsCollection
