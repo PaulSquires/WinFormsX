@@ -175,6 +175,9 @@ end function
 #ifdef CODEGEN_UPDOWN
    Dim pUpDown As wfxUpDown Ptr
 #endif
+#ifdef CODEGEN_TREEVIEW
+   Dim pTreeView As wfxTreeView Ptr
+#endif
 
    pNode = Application.GetControlByHandle(hWin)
    If pNode Then 
@@ -240,6 +243,9 @@ end function
 #endif
 #ifdef CODEGEN_UPDOWN
          Case ControlType.UpDown: pUpDown = Cast(wfxUpDown Ptr, pNode->pData)
+#endif
+#ifdef CODEGEN_TREEVIEW
+         Case ControlType.TreeView: pTreeView = Cast(wfxTreeView Ptr, pNode->pData)
 #endif
       End Select
    End If   
@@ -314,6 +320,9 @@ end function
 #endif
 #ifdef CODEGEN_UPDOWN
    If pUpDown AndAlso pUpDown->##msg Then pUpDown->##msg(*pUpDown, e)
+#endif
+#ifdef CODEGEN_TREEVIEW
+   If pTreeView AndAlso pTreeView->##msg Then pTreeView->##msg(*pTreeView, e)
 #endif
 #EndMacro
 ''
@@ -746,6 +755,41 @@ End Function
 
 
 ''    
+''  wfxApplication General Timer control handling procedure
+''
+static sub wfxApplication.TimerProc( byval hWin    as HWND, _
+                                     byval uMsg    as UINT, _
+                                     byval TimerID as UINT ptr, _
+                                     byval dwTime  as DWORD _
+                                     )
+               
+#ifdef CODEGEN_TIMER
+   ' Fill the EventArgs variable with any info related to this message
+   Dim e As wfxEventArgs
+   Application.SetEventArgs(uMsg, 0, 0, e)
+
+   ' Determine the Form that the incoming timer belongs to and then
+   ' dispatch to any defined TimedEvent event.
+   dim pTimer as wfxTimer ptr
+   dim pNode as wfxLListNode ptr
+   dim pForm as wfxForm ptr = Application.GetpFormObject(hWin)
+   if pForm then
+      for i as long = 0 to pForm->Controls.size - 1
+         pNode = pForm->Controls.get_index(i)
+         if pNode then
+            pTimer = Cast(wfxTimer Ptr, pNode->pData)
+            If pTimer AndAlso pTimer->TimerID = TimerID then
+               if pTimer->OnElapsed Then pTimer->OnElapsed(*pTimer, e)
+               if pTimer->AutoReset = false then pTimer->StopTimer
+            end if
+         end if
+      next
+   end if   
+#endif
+end sub
+
+
+''    
 ''  wfxApplication General Window procedure
 ''
 static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
@@ -767,7 +811,21 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    ' Attempt to process the message using any defined functions
    Select Case uMsg
 
-       Case WM_GETMINMAXINFO
+      case MSG_WINFORMS_AFTERCHECK
+#ifdef CODEGEN_TREEVIEW
+         ' Custom message fired via PostMessage to simulate AfterCheck when a user
+         ' clicks on a TreeView checkbox.
+         ' wParam = hTree item
+         ' lParam = pTreeView pointer
+         pTreeView = Cast(wfxTreeView Ptr, lParam)
+         if pTreeView = 0 then exit function
+         dim pTreeViewNode as wfxTreeViewNode ptr 
+         pTreeViewNode = cast(wfxTreeViewNode ptr, TreeView_GetlParam( pTreeView->hWindow, cast(HTREEITEM, wParam)))
+         if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
+         if pTreeView->OnAfterCheck Then pTreeView->OnAfterCheck(*pTreeView, e)
+#endif         
+          
+      Case WM_GETMINMAXINFO
          pForm = Application.GetpFormObject(hWin)
          If pForm Then 
             DefWindowProc(hWin, uMsg, wParam, lParam)
@@ -858,8 +916,24 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             If pForm->OnFormClosed Then pForm->OnFormClosed(*pForm, e)
             ' Always let the WM_DESTROY complete
             e.Handled = False
+
+#ifdef CODEGEN_TIMER
+            ' Kill any Timers that may still be firing
+            dim pTimer as wfxTimer ptr
+            for i as long = 0 to pForm->Controls.size - 1
+               pNode = pForm->Controls.get_index(i)
+               if pNode then
+                  pTimer = Cast(wfxTimer Ptr, pNode->pData)
+                  If pTimer andalso pTimer->CtrlType = ControlType.Timer then
+                     pTimer->StopTimer
+                     If pTimer->OnDestroy Then pTimer->OnDestroy(*pTimer, e)
+                  end if
+               end if
+            next
+#endif
+
             ' Make sure to delete all controls so that their subclasses are reset
-            dim pNode as wfxLListNode ptr = pForm->Controls.get_first
+            dim pNode as wfxLListNode ptr 
             for i as long = 0 to pForm->Controls.size - 1
                pNode = pForm->Controls.get_index(i)
                if pNode then
@@ -1231,35 +1305,146 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      dim plvcd as NMLVCUSTOMDRAW ptr = cast(NMLVCUSTOMDRAW ptr, pNMHDR)
                      Select Case plvcd->nmcd.dwDrawStage
                      
-                         Case CDDS_PREPAINT, CDDS_ITEMPREPAINT
-                              return CDRF_NOTIFYSUBITEMDRAW
+                        Case CDDS_PREPAINT
+                           return CDRF_NOTIFYITEMDRAW 
+                            
+                        case CDDS_ITEMPREPAINT
+                           return CDRF_NOTIFYSUBITEMDRAW or CDRF_NOTIFYPOSTPAINT
                               
-                         Case CDDS_ITEMPREPAINT Or CDDS_SUBITEM
-                              ' to retrieve the line and column number of the cell
-                              dim as long nItem = plvcd->nmcd.dwItemSpec 
-                              dim as long nSubItem = plvcd->iSubItem     
-                             
-                              ' Do an array bounds check because it is possible that the user
-                              ' has not defined all subitems to match the number of columns.
-                              if nSubItem <= pListView->Item(nItem).SubItems.Count - 1 then
-                                 plvcd->clrText   = pListView->Item(nItem).SubItem(nSubItem).ForeColor
-                                 plvcd->clrTextBk = pListView->Item(nItem).SubItem(nSubItem).BackColor
+                        Case (CDDS_ITEMPREPAINT or CDDS_SUBITEM)
+                           ' to retrieve the line and column number of the cell
+                           dim as long nItem = plvcd->nmcd.dwItemSpec 
+                           dim as long nSubItem = plvcd->iSubItem     
+                          
+                           ' Do an array bounds check because it is possible that the user
+                           ' has not defined all subitems to match the number of columns.
+                           if nSubItem <= pListView->Item(nItem).SubItems.Count - 1 then
+                              plvcd->clrText   = pListView->Item(nItem).SubItem(nSubItem).ForeColor
+                              plvcd->clrTextBk = pListView->Item(nItem).SubItem(nSubItem).BackColor
+                              if pListView->SelectedIndex = nItem then
+                                 plvcd->clrText   = colors.Yellow
+                                 plvcd->clrTextBk = colors.Red
+                              end if   
+                           end if
+                              
+                           if pListView->OddRowColorEnabled then
+                              if pListView->OddRowColor <> plvcd->clrTextBk then
+                                 if (nItem mod 2) = 0 then
+                                    plvcd->clrTextBk = pListView->OddRowColor
+                                 end if   
                               end if
-                                 
-                              if pListView->OddRowColorEnabled then
-                                 if pListView->OddRowColor <> plvcd->clrTextBk then
-                                    if (nItem mod 2) = 0 then
-                                       plvcd->clrTextBk = pListView->OddRowColor
-                                    end if   
-                                 end if
-                              end if
-                                 
-                              return CDRF_NEWFONT
+                           end if
+                              
+                           return CDRF_DODEFAULT 
                                                         
                      End Select
                   End if
 #endif
                   
+
+#ifdef CODEGEN_TREEVIEW
+               case ControlType.TreeView
+                  pTreeView = Cast(wfxTreeView Ptr, pNode->pData)
+                  if pTreeView = 0 then exit function
+                  Dim pnmtv As NMTREEVIEW Ptr = Cast(NMTREEVIEW Ptr, pNMHDR)
+                  dim pTreeViewNode as wfxTreeViewNode ptr
+                  
+                  select case lNotification
+                     case TVN_SELCHANGED, TVN_SELCHANGING, TVN_ITEMEXPANDED, TVN_ITEMEXPANDING 
+                        ' Get the TreeView class node related to the hItem handle. The pointer
+                        ' to the TreeViewNode is stored in the lParam of the node.
+                        pTreeViewNode = cast(wfxTreeViewNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, pnmtv->itemNew.hItem))
+                        if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
+                  end select
+                  
+                  if lNotification = TVN_SELCHANGING then
+                     if pTreeView->OnBeforeSelect Then 
+                        if pTreeView->OnBeforeSelect(*pTreeView, e) then return true
+                        if e.Cancel then return true
+                     end if
+                  end if
+                  if lNotification = TVN_SELCHANGED then
+                     if pTreeView->OnAfterSelect Then pTreeView->OnAfterSelect(*pTreeView, e)
+                     if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
+                  end if
+
+                  if lNotification = TVN_ITEMEXPANDING then
+                     if pnmtv->action = TVE_EXPAND then
+                        if pTreeView->OnBeforeExpand Then 
+                           if pTreeView->OnBeforeExpand(*pTreeView, e) then return true
+                        end if
+                     end if
+                     if pnmtv->action = TVE_COLLAPSE then
+                        if pTreeView->OnBeforeCollapse Then 
+                           if pTreeView->OnBeforeCollapse(*pTreeView, e) then return true
+                        end if
+                     end if
+                     if e.Cancel then return true
+                  end if
+                  if lNotification = TVN_ITEMEXPANDED then
+                     if pnmtv->action = TVE_EXPAND then
+                        if pTreeView->OnAfterExpand Then pTreeView->OnAfterExpand(*pTreeView, e)
+                     end if
+                     if pnmtv->action = TVE_COLLAPSE then
+                        if pTreeView->OnAfterCollapse Then pTreeView->OnAfterCollapse(*pTreeView, e)
+                     end if
+                  end if
+
+                  select case lNotification 
+                     case NM_RETURN
+                        ' Invoke the Click event
+                        e.KeyChar = 13
+                        e.KeyCode = VK_RETURN
+                        pTreeViewNode = cast(wfxTreeViewNode ptr, _
+                                        TreeView_GetlParam( pNMHDR->hwndFrom, pTreeView->SelectedNode.hNode))
+                        if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
+                        if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
+                     
+                     case NM_CLICK, NM_RCLICK
+                        ' Test to see if the checkbox was clicked.
+                        dim hitinfo as TVHITTESTINFO
+                        dim as POINT pt
+                        
+                        GetCursorPos( @pt )
+                        ScreenToClient( pNMHDR->hwndFrom, @pt )
+                        hitinfo.pt = pt
+                        SendMessage( pNMHDR->hwndFrom, TVM_HITTEST, 0, cast(ULONG_PTR, @hitinfo) ) 
+         
+                        pTreeViewNode = cast(wfxTreeViewNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, hitinfo.hItem))
+                        if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
+
+                        ' If the checkbox was clicked then attempt to call the user defined OnBeforeCheck
+                        ' to see if the user wishes to cancel the action. If not cancelled, then post
+                        ' a message to simulate a notification for OnAfterCheck.
+                        if lNotification = NM_CLICK then 
+                           if (hitinfo.flags and TVHT_ONITEMSTATEICON) = TVHT_ONITEMSTATEICON then
+                              if pTreeView->OnBeforeCheck Then 
+                                 if pTreeView->OnBeforeCheck(*pTreeView, e) then return true
+                                 if e.Cancel then return true
+                                 ' Post a message to handle the OnAfterCheck
+                                 PostMessage(hWin, MSG_WINFORMS_AFTERCHECK, _
+                                                   cast(UINT_PTR, hitinfo.hItem), cast(LONG_PTR, pTreeView))
+                              end if
+                           end if
+                        end if
+                           
+                        ' Allow a click event if FullRowSelect is active and the hittest returns
+                        ' the area to the right of the label, or if clicked on the label itself.
+                        dim as Boolean bHit = false
+                        if pTreeView->FullRowSelect then
+                           if (hitinfo.flags and TVHT_ONITEMRIGHT) = TVHT_ONITEMRIGHT then bHit = true
+                        end if
+                        if (hitinfo.flags and TVHT_ONITEMLABEL) = TVHT_ONITEMLABEL then bHit = true                        
+                        if bHit then  ' Invoke the Click event
+                           if lNotification = NM_RCLICK then e.RButton = true
+                           if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
+                        end if   
+
+                  end select
+
+#endif
+
+
 #ifdef CODEGEN_TOOLBAR
                case ControlType.ToolBar
                   pToolBar = Cast(wfxToolBar Ptr, pNode->pData)
@@ -1869,8 +2054,6 @@ static Function wfxApplication.SubclassProc ( _
 
                            ' Cleanup
                            IF hBrush THEN DeleteObject hBrush
-                           'IF hOldFont THEN SelectObject plvcd->nmcd.hdc, hOldFont
-                           'IF hFont THEN DeleteObject hFont
 
                            ' Tell Windows the item has already been drawn
                            FUNCTION = CDRF_SKIPDEFAULT

@@ -33,7 +33,7 @@ Function wfxTreeView.Node( ByVal nIndex As Long ) ByRef As wfxTreeViewNode
 END function
 
 function wfxTreeView.Nodes byref As wfxTreeViewNodesCollection
-   return this.Nodes
+   return this._NodesCollection
 END function
 
 Property wfxTreeView.BorderStyle() As ControlBorderStyle
@@ -70,102 +70,155 @@ End Property
 
 
 Property wfxTreeView.CheckBoxes() As boolean
-'   If this.hWindow Then 
-'      dim as DWORD dwExStyle = ListView_GetExtendedListViewStyle( this.hWindow )
-'      _CheckBoxes = iif( dwExStyle and LVS_EX_CHECKBOXES, true, false )
-'   End If
    Property = _CheckBoxes
 End Property
 
 property wfxTreeView.CheckBoxes( byval nValue as boolean )
-'   If this.hWindow Then
-'      dim as DWORD dwExStyle = ListView_GetExtendedListViewStyle( this.hWindow )
-'      if nValue = false then
-'         ListView_SetExtendedListViewStyle( this.hWindow, dwExStyle and (not LVS_EX_CHECKBOXES) )
-'      else   
-'         ListView_SetExtendedListViewStyle( this.hWindow, dwExStyle or LVS_EX_CHECKBOXES )
-'      end if
-'      this.Refresh
-'   End If   
    _CheckBoxes = nValue
 end property
 
 Property wfxTreeView.FullRowSelect() As boolean
-'   If this.hWindow Then 
-'      dim as DWORD dwExStyle = ListView_GetExtendedListViewStyle( this.hWindow )
-'      _FullRowSelect = iif( dwExStyle and LVS_EX_FULLROWSELECT, true, false )
-'   End If
    Property = _FullRowSelect
 End Property
 
 property wfxTreeView.FullRowSelect( byval nValue as boolean )
-'   If this.hWindow Then
-'      dim as DWORD dwExStyle = ListView_GetExtendedListViewStyle( this.hWindow )
-'      if nValue = false then
-'         ListView_SetExtendedListViewStyle( this.hWindow, dwExStyle and (not LVS_EX_FULLROWSELECT) )
-'      else   
-'         ListView_SetExtendedListViewStyle( this.hWindow, dwExStyle or LVS_EX_FULLROWSELECT )
-'      end if
-'      this.Refresh
-'   End If   
+   ' FullRowSelect only works if Lines between nodes styles are inactive 
    _FullRowSelect = nValue
 end property
 
 Property wfxTreeView.HideSelection() As boolean
-'   If this.hWindow Then 
-'      _HideSelection = Iif( (AfxGetWindowStyle(this.hWindow) And LVS_SHOWSELALWAYS), false, true)
-'   End If
    Property = _HideSelection
 End Property
 
 property wfxTreeView.HideSelection( byval nValue as boolean )
-'   If this.hWindow Then 
-'      AfxRemoveWindowStyle(this.hWindow, LVS_SHOWSELALWAYS)
-'      If nValue = false Then AfxAddWindowStyle(this.hWindow, LVS_SHOWSELALWAYS)
-'      this.Refresh
-'   End If   
    _HideSelection = nValue
 end property
 
 property wfxTreeView.SelectedNode() byref as wfxTreeViewNode
-'   if this.hWindow then 
-'      _SelectedNode = this.Node(this.SelectedIndex)
-'   end if
    property = _SelectedNode
 end property
 
-property wfxTreeView.SelectedNode( byref lbItem as wfxTreeViewNode )
-'   if this.hWindow then 
-'      ListView_SelectItem( this.hWindow, lbItem.Index )
-'   end if
-   _SelectedNode = lbItem
+property wfxTreeView.SelectedNode( byref tvItem as wfxTreeViewNode )
+   _SelectedNode = tvItem
+end property
+
+property wfxTreeView.TreeNode() byref as wfxTreeViewNode
+   property = _TreeNode
+end property
+
+property wfxTreeView.TreeNode( byref tvItem as wfxTreeViewNode )
+   _TreeNode = tvItem
 end property
 
 Property wfxTreeView.Sorting() As SortOrder
-'   if this.hWindow then 
-'      if (AfxGetWindowStyle(this.hWindow) And LVS_SORTASCENDING) then
-'         _Sorting = SortOrder.Ascending
-'      elseif (AfxGetWindowStyle(this.hWindow) And LVS_SORTDESCENDING) then
-'         _Sorting = SortOrder.Descending
-'      else
-'         _Sorting = SortOrder.None   
-'      end if
-'   end if
    property = _Sorting
 end property
 
 property wfxTreeView.Sorting( byval nValue as SortOrder )
-'   if this.hWindow then 
-'      AfxRemoveWindowStyle(this.hWindow, LVS_SORTASCENDING)
-'      AfxRemoveWindowStyle(this.hWindow, LVS_SORTDESCENDING)
-'      select case nValue 
-'         case SortOrder.Ascending:  AfxAddWindowStyle(this.hWindow, LVS_SORTASCENDING)
-'         case SortOrder.Descending: AfxAddWindowStyle(this.hWindow, LVS_SORTDESCENDING)
-'      end select
-'      this.Refresh
-'   end if
    _Sorting = nValue
 end property
+
+Property wfxTreeView.Scrollable() As boolean
+   Property = _Scrollable
+End Property
+
+property wfxTreeView.Scrollable( byval nValue as boolean )
+   _Scrollable = nValue
+end property
+
+Property wfxTreeView.BackColor() As COLORREF
+   if this.hWindow then
+      _BackColor = TreeView_GetBkColor( this.hWindow )
+   end if   
+   property = _BackColor
+end property
+
+Property wfxTreeView.BackColor( ByVal nValue As COLORREF )
+   if this.hWindow then
+      TreeView_SetBkColor( this.hWindow, nValue )
+   end if
+   _BackColor = nValue
+end property
+
+Property wfxTreeView.ForeColor() As COLORREF
+   if this.hWindow then
+      _ForeColor = TreeView_GetTextColor( this.hWindow )
+   end if   
+   property = _ForeColor
+end property
+
+Property wfxTreeView.ForeColor( ByVal nValue As COLORREF )
+   if this.hWindow then
+      TreeView_SetTextColor( this.hWindow, nValue )
+   end if
+   _ForeColor = nValue
+end property
+
+Property wfxTreeView.ItemHeight() As long
+   if this.hWindow then
+      _ItemHeight = TreeView_GetItemHeight( this.hWindow )
+   end if   
+   property = _ItemHeight
+end property
+
+Property wfxTreeView.ItemHeight( ByVal nValue As long)
+   if this.hWindow then
+      TreeView_SetItemHeight( this.hWindow, AfxScaleY(nValue) )
+   end if   
+   _ItemHeight = nValue
+end property
+
+Property wfxTreeView.ShowLines() As boolean
+   property = _ShowLines
+end property
+
+Property wfxTreeView.ShowLines( ByVal nValue As boolean)
+   _ShowLines = nValue
+end property
+   
+Property wfxTreeView.ShowRootLines() As boolean
+   property = _ShowRootLines
+end property
+
+Property wfxTreeView.ShowRootLines( ByVal nValue As boolean)
+   _ShowRootLines = nValue
+end property
+
+Property wfxTreeView.ShowPlusMinus() As boolean
+   property = _ShowPlusMinus
+end property
+
+Property wfxTreeView.ShowPlusMinus( ByVal nValue As boolean)
+   _ShowPlusMinus = nValue
+end property
+
+Property wfxTreeView.HotTracking() As boolean
+   property = _HotTracking
+end property
+
+Property wfxTreeView.HotTracking( ByVal nValue As boolean)
+   _HotTracking = nValue
+end property
+
+Property wfxTreeView.FadeButtons() As boolean
+   property = _FadeButtons
+end property
+
+Property wfxTreeView.FadeButtons( ByVal nValue As boolean)
+   _FadeButtons = nValue
+end property
+
+function wfxTreeView.PopulateTree( byref ParentNode as wfxTreeViewNode ) as Long
+   for i as long = 0 to ParentNode.Nodes.count - 1
+      ParentNode.Nodes.hWindow = ParentNode.hWindow
+      ParentNode.Node(i).hWindow = ParentNode.hWindow
+      ParentNode.Node(i).hNode = _
+         TreeView_AppendItem( this.hWindow, ParentNode.hNode, _
+                              ParentNode.Node(i).Text, ParentNode.Node(i).Data32 )
+      this.PopulateTree( ParentNode.Node(i) )
+   next      
+   function = 0
+end function
 
 
 function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
@@ -183,15 +236,20 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    Dim As Long dwExStyle = 0
-   dim as long dwStyle = WS_CLIPCHILDREN 
+   dim as long dwStyle = WS_CLIPCHILDREN or TVS_INFOTIP 
 
-   if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
-   if _Visible THEN dwStyle = dwStyle OR WS_VISIBLE
-   if _HideSelection = false then dwStyle = dwStyle OR TVS_SHOWSELALWAYS
-
- '        TVS_HASBUTTONS OR TVS_HASLINES OR TVS_LINESATROOT 
-
+   if _TabStop       then dwStyle = dwStyle OR WS_TABSTOP 
+   if _Visible       THEN dwStyle = dwStyle OR WS_VISIBLE
+   if _CheckBoxes    then dwStyle = dwStyle OR TVS_CHECKBOXES
+   if _FullRowSelect then dwStyle = dwStyle OR TVS_FULLROWSELECT
+   if _ShowLInes     then dwStyle = dwStyle OR TVS_HASLINES
+   if _ShowRootLines then dwStyle = dwStyle OR TVS_LINESATROOT
+   if _ShowPlusMinus then dwStyle = dwStyle OR TVS_HASBUTTONS
+   if _HotTracking   then dwStyle = dwStyle OR TVS_TRACKSELECT
    
+   if _HideSelection = false then dwStyle = dwStyle OR TVS_SHOWSELALWAYS
+   if _Scrollable    = false then dwStyle = dwStyle OR TVS_NOSCROLL
+
    _CtrlID = this.Parent->GetNextCtrlID()
 
    this.hWindow = this.Parent->pWindow->AddControl ( _
@@ -211,19 +269,29 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
 
+   ' Use the new style Explorer Treeview (triangles instead of boxes).
+   ' Set an undocumented extended style that enables the treeview glyphs to resize
+   ' according to the high dpi setting.
+   ' https://stackoverflow.com/questions/38772670/ctreectrl-with-explorer-theme-not-dpi-aware
+   TreeView_SetExtendedStyle( this.hWindow, &H1000, &H1000 )
+   SetWindowTheme(this.hWindow, @wstr("EXPLORER"), 0)
+   TreeView_SetExtendedStyle( this.hWindow, TVS_EX_DOUBLEBUFFER, TVS_EX_DOUBLEBUFFER )
+   TreeView_SetExtendedStyle( this.hWindow, TVS_EX_AUTOHSCROLL, TVS_EX_AUTOHSCROLL )
+
    ' Should we enable drag and drop files
    If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
 
    ' Apply properties that require a valid window handle
+   if _FadeButtons then TreeView_SetExtendedStyle( this.hWindow, TVS_EX_FADEINOUTEXPANDOS, TVS_EX_FADEINOUTEXPANDOS )
+   
    this.Font        = _wfxFontPtr
+   this.BackColor   = _BackColor
+   this.ForeColor   = _ForeColor
    this.BorderStyle = _BorderStyle
+   this.ItemHeight  = _ItemHeight
    this.Enabled     = _Enabled
 
-   this.BorderStyle   = _BorderStyle
-   this.CheckBoxes    = _CheckBoxes
-   this.FullRowSelect = _FullRowSelect
-   this.Sorting       = _Sorting
-   this.ToolTip       = _ToolTip
+   this.ToolTip     = _ToolTip
 
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
@@ -236,17 +304,17 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
       
-  
-'   ' Set the text for the Items.
-'   ListView_SetItemCount( this.hWindow, this.Nodes.Count )
-    
-'   For i As Long = 0 To this.Nodes.Count - 1
-'      this.Node(i).hWindow = this.hWindow
-'   Next
-'   ListView_SelectItem( this.hWindow, _SelectedIndex )
+   this.Nodes.hWindow = this.hWindow
+   
+   ' Recursively load all of the nodes...
+   for i as long = 0 to this.Nodes.count - 1
+      ' Set the hWindow for the collection
+      this.Node(i).hWindow = this.hWindow
+      this.Node(i).hNode = _
+         TreeView_AddRootItem( this.hWindow, this.Node(i).Text, this.Node(i).Data32 )
+      this.PopulateTree( this.Node(i) )
+   next      
 
-'   ' Set the hWindow for the collection
-'   this.Nodes.hWindow = this.hWindow
    _IsLoading = false
 
    function = 0
@@ -254,11 +322,27 @@ END FUNCTION
 
 
 
-'' TreeView ITEM
+'' TreeView Node
 
 destructor wfxTreeViewNode
    '
 end destructor
+
+property wfxTreeViewNode.hNode() as HTREEITEM
+   property = _hNode
+end property
+
+property wfxTreeViewNode.hNode( byVal nValue as HTREEITEM)
+   _hNode = nValue
+end property
+
+property wfxTreeViewNode.hWindow() as hwnd
+   property = _hWindow
+end property
+
+property wfxTreeViewNode.hWindow( byVal nValue as hwnd)
+   _hWindow = nValue
+end property
 
 Property wfxTreeViewNode.Selected() As boolean
    property = _Selected
@@ -296,6 +380,9 @@ property wfxTreeViewNode.Text( byref wszValue as wstring )
 end property
 
 property wfxTreeViewNode.Data32() as long
+   ' The Data32 is only held in the classes, not the TreeView itself. The lParam
+   ' of the Treeview node is actually a pointer to the TreeViewNode class for
+   ' this node. That makes it fast to cross reference between the class and the node.
    property = _Data32
 end property
 
@@ -303,18 +390,17 @@ property wfxTreeViewNode.Data32( byval nValue as long )
    _Data32 = nValue
 end property
 
-Function wfxTreeViewNode.Node( ByVal nIndex As Long ) ByRef As _wfxTreeViewNode
+Function wfxTreeViewNode.Node( ByVal nIndex As Long ) ByRef As wfxTreeViewNode
    return this.Nodes.ByIndex(nIndex)
 END function
 
-function wfxTreeViewNode.Nodes byref As _wfxTreeViewNodesCollection
-   return this.Nodes
+function wfxTreeViewNode.Nodes byref As wfxTreeViewSubNodesCollection
+   return this._NodesCollection 
 END function
 
 
 
-
-'' ITEMSCOLLECTION
+'' NODESCOLLECTION
 constructor wfxTreeViewNodesCollection
    '
 END CONSTRUCTOR
@@ -338,11 +424,16 @@ end function
 Function wfxTreeViewNodesCollection.Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
    Dim pData As wfxTreeViewNode Ptr = New wfxTreeViewNode
    pData->hWindow = this.hWindow
+   pData->Nodes.hWindow = this.hWindow
    pData->Index = (this.Count - 1) + 1
+   pData->Text = wszValue
    pData->Data32 = nValue
-   pData->Nodes.Add( wszValue )
    _Collection.Add( ControlType.TreeView, pData ) 
-'   If this.hWindow Then ListView_SetItemCount( this.hWindow, this.Count )
+   If this.hWindow Then 
+      ' Save the pointer to the TreeViewNode in the lParam of the node.
+      pData->hNode = TreeView_AddRootItem( this.hWindow, wszValue, cast(LPARAM, pData) )
+      pData->Nodes.hParentNode = pData->hNode
+   end if      
    function = pData->Index
 end function
 
@@ -350,10 +441,9 @@ Function wfxTreeViewNodesCollection.Insert( ByVal nIndex As Long, ByRef wszValue
    Dim pData As wfxTreeViewNode Ptr = New wfxTreeViewNode
    pData->hWindow = this.hWindow
    pData->Index = nIndex
+   pData->Text = wszValue
    pData->Data32 = nValue
-   pData->Nodes.Add( wszValue )
    _Collection.Insert( nIndex, ControlType.TreeView, pData ) 
-'   If this.hWindow Then ListView_SetItemCount( this.hWindow, this.Count )
    function = pData->Index
 end function
 
@@ -363,7 +453,6 @@ function wfxTreeViewNodesCollection.Remove( byval nIndex as long ) as long
       ' Delete ListViewItem fires destructor that deletes any subitems
       Delete cast(wfxTreeViewNode ptr, pNode->pData)
       _Collection.Remove(pNode)
-'      If this.hWindow Then ListView_SetItemCount( this.hWindow, this.Count )
    end if   
    function = _Collection.Size
 end function
@@ -371,10 +460,14 @@ end function
 function wfxTreeViewNodesCollection.ByIndex( byval nIndex as long ) byref as wfxTreeViewNode 
    dim pItem as wfxTreeViewNode ptr
    dim pNode as wfxLListNode ptr
-   pNode = _Collection.get_index(nIndex)
-   if pNode then
-      pItem = cast(wfxTreeViewNode ptr, pNode->pData)
-      return *pItem
+   if _Collection.Size then
+      if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) then
+         pNode = _Collection.get_index(nIndex)
+         if pNode then
+            pItem = cast(wfxTreeViewNode ptr, pNode->pData)
+            return *pItem
+         end if
+      end if      
    end if   
 end function
 
@@ -390,5 +483,95 @@ function wfxTreeViewNodesCollection.Clear() as long
    function = 0
 END FUNCTION
 
+
+'' SUBNODESCOLLECTION
+constructor wfxTreeViewSubNodesCollection
+   '
+END CONSTRUCTOR
+
+destructor wfxTreeViewSubNodesCollection
+   '
+end destructor
+
+property wfxTreeViewSubNodesCollection.hParentNode() as HTREEITEM
+   property = _hParentNode
+end property
+
+property wfxTreeViewSubNodesCollection.hParentNode( byVal nValue as HTREEITEM)
+   _hParentNode = nValue
+end property
+
+property wfxTreeViewSubNodesCollection.hWindow() as hwnd
+   property = _hWindow
+end property
+
+property wfxTreeViewSubNodesCollection.hWindow( byVal nValue as hwnd)
+   _hWindow = nValue
+end property
+
+function wfxTreeViewSubNodesCollection.Count() as Long
+   function = _Collection.Size
+end function
+
+Function wfxTreeViewSubNodesCollection.Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
+   Dim pData As wfxTreeViewNode Ptr = New wfxTreeViewNode
+   pData->hWindow = this.hWindow
+   pData->Nodes.hWindow = this.hWindow
+   pData->Index = (this.Count - 1) + 1
+   pData->Text = wszValue
+   pData->Data32 = nValue
+   _Collection.Add( ControlType.TreeView, pData ) 
+   If this.hWindow Then 
+      ' Save the pointer to the TreeViewNode in the lParam of the node.
+      pData->hNode = TreeView_AppendItem( this.hWindow, this.hParentNode, wszValue, cast(LPARAM, pData) )
+      pData->Nodes.hParentNode = pData->hNode    
+   end if
+   function = pData->Index
+end function
+
+Function wfxTreeViewSubNodesCollection.Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
+   Dim pData As wfxTreeViewNode Ptr = New wfxTreeViewNode
+   pData->hWindow = this.hWindow
+   pData->Index = nIndex
+   pData->Text = wszValue
+   pData->Data32 = nValue
+   _Collection.Insert( nIndex, ControlType.TreeView, pData ) 
+   function = pData->Index
+end function
+
+function wfxTreeViewSubNodesCollection.Remove( byval nIndex as long ) as long
+   dim pNode as wfxLListNode ptr = _Collection.get_index(nIndex)
+   if pNode then
+      ' Delete ListViewItem fires destructor that deletes any subitems
+      Delete cast(wfxTreeViewNode ptr, pNode->pData)
+      _Collection.Remove(pNode)
+   end if   
+   function = _Collection.Size
+end function
+
+function wfxTreeViewSubNodesCollection.ByIndex( byval nIndex as long ) byref as wfxTreeViewNode 
+   dim pItem as wfxTreeViewNode ptr
+   dim pNode as wfxLListNode ptr
+   if _Collection.Size then
+      if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) then
+         pNode = _Collection.get_index(nIndex)
+         if pNode then
+            pItem = cast(wfxTreeViewNode ptr, pNode->pData)
+            return *pItem
+         end if
+      end if      
+   end if   
+end function
+
+function wfxTreeViewSubNodesCollection.Clear() as long
+   ' Deallocate elements in the Items collection.
+   dim pNode as wfxLListNode ptr = _Collection.get_first
+   do until pNode = 0
+      ' Delete ListViewItem fires destructor that deletes any subitems
+      Delete cast(wfxTreeViewNode ptr, pNode->pData)
+      pNode = _Collection.remove(pNode)
+   LOOP
+   function = 0
+END FUNCTION
 
 

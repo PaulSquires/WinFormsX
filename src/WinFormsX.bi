@@ -59,6 +59,7 @@ namespace WinFormsX
 #Include once "wfxLList.bi"
 #include once "wfxControl.bi"
 
+
 #ifdef CODEGEN_BUTTON
 #include once "wfxButton.bi"
 #endif
@@ -125,10 +126,6 @@ namespace WinFormsX
 #Include Once "wfxListView.bi"
 #endif
 
-#ifdef CODEGEN_TREEVIEW
-#Include Once "wfxTreeView.bi"
-#endif
-
 #ifdef CODEGEN_MONTHCALENDAR
 #Include Once "wfxMonthCalendar.bi"
 #endif
@@ -143,6 +140,14 @@ namespace WinFormsX
 
 #ifdef CODEGEN_UPDOWN
 #Include Once "wfxUpDown.bi"
+#endif
+
+#ifdef CODEGEN_TIMER
+#Include Once "wfxTimer.bi"
+#endif
+
+#ifdef CODEGEN_TREEVIEW
+#Include Once "wfxTreeView.bi"
 #endif
 
 #Include Once "wfxApplication.bi"
@@ -223,6 +228,10 @@ namespace WinFormsX
 
 #ifdef CODEGEN_UPDOWN
 #Include Once "wfxUpDown.inc"
+#endif
+
+#ifdef CODEGEN_TIMER
+#Include Once "wfxTimer.inc"
 #endif
 
 #ifdef CODEGEN_MAINMENU

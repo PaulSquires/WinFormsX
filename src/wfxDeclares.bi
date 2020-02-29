@@ -11,6 +11,12 @@
 '    MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the
 '    GNU General Public License for more details.
 
+' User defined message that is fired via PostMessage in order to
+' simulate the DoAfterCheck notification for when a user clciks
+' on a TreeView checkbox.
+#Define MSG_WINFORMS_AFTERCHECK  WM_USER + 1000
+
+
 enum ControlType
    Form = 1
    Button
@@ -39,6 +45,7 @@ enum ControlType
    ToolBar
    ToolBarButton
    UpDown
+   Timer
 End Enum
 
 Enum FontStyles
