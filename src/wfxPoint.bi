@@ -19,15 +19,20 @@
 
 type wfxPoint
    private:
-      _x as Long
-      _y as long 
+      _pt as POINT 
 
    public:
       Declare Property x() As Long
       Declare Property x( ByVal nValue As Long )
       Declare Property y() As Long
       Declare Property y( ByVal nValue As Long )
+      Declare Property pt() As POINT
+      Declare Property pt( ByVal nValue As POINT )
       declare function IsEmpty() as Boolean
+      declare function Convert( byval hWndFrom as HWND, byval hWndTo as HWND ) as Long
+      declare function Convert( byval hWndTo as HWND ) as Long
+      declare OPERATOR @ () AS POINT ptr
       declare constructor ( byval xPos as long = 0, byval yPos as long = 0)
+      declare constructor ( byval nValue as POINT )
 END TYPE
 

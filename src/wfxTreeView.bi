@@ -14,11 +14,11 @@
 ' TreeView Class
 
 ' Forward references
-type _wfxTreeViewNodesCollection as wfxTreeViewNodesCollection
-type _wfxTreeViewNode as wfxTreeViewNode
+type _wfxTreeNodeCollection as wfxTreeNodeCollection
+type _wfxTreeNode as wfxTreeNode
 
 
-type wfxTreeViewSubNodesCollection
+type wfxTreeSubNodeCollection
    private:
       _hParentNode as HTREEITEM
       _hWindow     as hwnd
@@ -34,12 +34,13 @@ type wfxTreeViewSubNodesCollection
       Declare Function Remove( ByVal nIndex As Long ) As Long 
       Declare Function Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
       Declare Function Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
-      declare function ByIndex( byval nIndex as long ) byref as _wfxTreeViewNode
+      declare function ByIndex( byval nIndex as long ) byref as _wfxTreeNode
+      declare function DeallocateNodes( byref ParentNode as _wfxTreeNode ) as Long
       Declare Constructor
       declare destructor 
 END TYPE
 
-type wfxTreeViewNode
+type wfxTreeNode
    private:
       _hNode           as HTREEITEM
       _hWindow         as hwnd
@@ -49,7 +50,7 @@ type wfxTreeViewNode
       _Selected        as boolean
       _Text            as CWSTR
       _Data32          as long
-      _NodesCollection as wfxTreeViewSubNodesCollection
+      _NodesCollection as wfxTreeSubNodeCollection
       
    public:
       declare property hNode() as HTREEITEM
@@ -66,13 +67,13 @@ type wfxTreeViewNode
       declare property Text( byref wszValue as wstring )
       Declare Property Data32() As long
       Declare Property Data32( ByVal nValue As long)
-      Declare Function Node( ByVal nIndex As Long) ByRef As _wfxTreeViewNode
-      declare function Nodes byref As wfxTreeViewSubNodesCollection
+      Declare Function Node( ByVal nIndex As Long) ByRef As _wfxTreeNode
+      declare function Nodes byref As wfxTreeSubNodeCollection
       declare destructor 
 END TYPE
 
 
-type wfxTreeViewNodesCollection
+type wfxTreeNodeCollection
    private:
       _hWindow    as hwnd
       _Collection As wfxLList
@@ -85,7 +86,8 @@ type wfxTreeViewNodesCollection
       Declare Function Remove( ByVal nIndex As Long ) As Long 
       Declare Function Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
       Declare Function Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
-      declare function ByIndex( byval nIndex as long ) byref as wfxTreeViewNode
+      declare function ByIndex( byval nIndex as long ) byref as wfxTreeNode
+      declare function DeallocateNodes( byref ParentNode as _wfxTreeNode ) as Long
       Declare Constructor
       declare destructor 
 END TYPE
@@ -102,19 +104,20 @@ Type wfxTreeView Extends wfxControl
       _Scrollable as Boolean = true
       _HideSelection as Boolean = false
       _ItemHeight as long = 20
-      _SelectedNode as wfxTreeViewNode
-      _TreeNode as wfxTreeViewNode
+      _SelectedNode as wfxTreeNode
+      _TreeNode as wfxTreeNode
       _Sorting as SortOrder = SortOrder.None
       _IsLoading as Boolean = true   ' internal
       _ShowLines as Boolean = true
       _ShowRootLines as Boolean = true
       _ShowPlusMinus as Boolean = true
       _HotTracking as boolean = false
-      _NodesCollection as wfxTreeViewNodesCollection
+      _NodesCollection as wfxTreeNodeCollection
       
    Public:
-      Declare Function Node( ByVal nIndex As Long) ByRef As wfxTreeViewNode
-      declare function Nodes byref As wfxTreeViewNodesCollection
+      UpdateFlag as Boolean = false
+      Declare Function Node( ByVal nIndex As Long) ByRef As wfxTreeNode
+      declare function Nodes byref As wfxTreeNodeCollection
       Declare Property BorderStyle() As ControlBorderStyle
       Declare Property BorderStyle( ByVal nValue As ControlBorderStyle )
       Declare Property FadeButtons() As boolean
@@ -129,10 +132,11 @@ Type wfxTreeView Extends wfxControl
       Declare Property HideSelection( ByVal nValue As boolean)
       Declare Property ItemHeight() As long
       Declare Property ItemHeight( ByVal nValue As long)
-      Declare Property SelectedNode(byref as wfxTreeViewNode) 
-      Declare Property SelectedNode() byref as wfxTreeViewNode
-      Declare Property TreeNode(byref as wfxTreeViewNode) 
-      Declare Property TreeNode() byref as wfxTreeViewNode
+      declare property SelectedNode( byval hItem as HTREEITEM )
+      Declare Property SelectedNode(byref as wfxTreeNode) 
+      Declare Property SelectedNode() byref as wfxTreeNode
+      Declare Property TreeNode(byref as wfxTreeNode) 
+      Declare Property TreeNode() byref as wfxTreeNode
       Declare Property Sorting() As SortOrder
       Declare Property Sorting( ByVal nValue As SortOrder)
       Declare Property BackColor() As COLORREF
@@ -151,8 +155,15 @@ Type wfxTreeView Extends wfxControl
       Declare Constructor( byref wszName as wstring = "" )
       declare destructor
       declare function Show(byval hWndParent as hwnd = 0) as long override
-      declare function PopulateTree( byref ParentNode as wfxTreeViewNode ) as Long
-
+      declare function PopulateTree( byref ParentNode as wfxTreeNode ) as Long
+      declare function BeginUpdate() as Long
+      declare function EndUpdate() as Long
+      declare function ExpandAll() as Long
+      declare function CollapseAll() as Long
+      declare function GetNodeAt( byval x as long, byval y as Long ) byref as wfxTreeNode
+      declare function GetNodeAt( byval pt as POINT ) byref as wfxTreeNode
+      declare function GetNodeAt( byval pt as wfxPoint ) byref as wfxTreeNode
+      
       OnAllEvents        as function( byref sender as wfxTreeView, byref e as EventArgs ) as LRESULT
       OnBeforeSelect     As Function( ByRef sender As wfxTreeView, ByRef e As EventArgs ) As LRESULT
       OnAfterSelect      As Function( ByRef sender As wfxTreeView, ByRef e As EventArgs ) As LRESULT
@@ -174,6 +185,8 @@ Type wfxTreeView Extends wfxControl
       OnGotFocus         as function( byref sender as wfxTreeView, byref e as EventArgs ) as LRESULT
       OnLostFocus        as function( byref sender as wfxTreeView, byref e as EventArgs ) as LRESULT
       OnDropFiles        As Function( ByRef sender As wfxTreeView, ByRef e As EventArgs ) As LRESULT
-      
+      OnKeyDown          as function( byref sender as wfxTreeView, byref e as EventArgs ) as LRESULT
+      OnKeyUp            as function( byref sender as wfxTreeView, byref e as EventArgs ) as LRESULT
+      OnKeyPress         as function( byref sender as wfxTreeView, byref e as EventArgs ) as LRESULT
 End Type
 

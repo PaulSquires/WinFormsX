@@ -230,6 +230,7 @@ Type wfxEventArgs Extends Object
       LButton           as boolean     ' the left mouse button pressed
       MButton           as boolean     ' the middle mouse button pressed
       RButton           as boolean     ' the right mouse button pressed
+      pt                as POINT       ' point structure window coordinates of mouse click
       x                 as long        ' the x-coordinate of the mouse click
       y                 as long        ' the y-coordinate of the mouse click
       hDrop             as HDROP       ' handle used for WM_DROPFILES message

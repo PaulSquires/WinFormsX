@@ -19,15 +19,20 @@
 
 type wfxSize
    private:
-      _Width  as Long
-      _Height as long 
-
+      _Width   as Long
+      _Height  as long 
+      _hWindow as HWND
+      
    public:
       Declare Property Width() As Long
       Declare Property Width( ByVal nValue As Long )
       Declare Property Height() As Long
       Declare Property Height( ByVal nValue As Long )
+      Declare Property hWindow() As HWND
+      Declare Property hWindow( ByVal nValue As HWND )
       declare function IsEmpty() as Boolean
+      declare function Convert( byval hWin as HWND ) as Long
       declare constructor ( byval nWidth as long = 0, byval nHeight as long = 0)
+      declare constructor ( byval hWin as HWND )
 END TYPE
 

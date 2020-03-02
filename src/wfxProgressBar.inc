@@ -68,6 +68,13 @@ end property
 property wfxProgressBar.Value( byval nValue as long )
    _Value = nValue   
    if this.hWindow then 
+      ' // Note: When using the default green color and visual themes,
+      ' // ProgressBar_StepIt only renders half of the progress bar.
+      ' // Microsoft added fancy animations to the progress bar control in Vista.
+      ' // To provide a smoother visual feedback drawing is delayed when moving forward.
+      ' // By setting the position back to a smaller value, the ProgressBar drawing is
+      ' // forced to jump back (no delay in getting to a position smaller than the current).
+      ProgressBar_SetPos( this.hWindow, _Value + 1)
       ProgressBar_SetPos( this.hWindow, _Value )
    end if
 end property
@@ -127,7 +134,9 @@ end function
 
 function wfxProgressBar.PerformStep() as Long
    if this.hWindow then 
-      ProgressBar_StepIt( this.hWindow )
+      ' Call Value because we need to do the +1 hack in order to ensure
+      ' that the bar draws correctly with Themes.
+      this.Value = this.Value + this.StepValue
    end if
    function = 0
 end function   

@@ -17,27 +17,57 @@
 ''  https://msdn.microsoft.com/en-us/library/system.drawing.point(v=vs.110).aspx
 ''
 
-constructor wfxPoint( byval xPos as long = 0, byval yPos as long = 0)
-   this.x = xPos
-   this.y = yPos
+#include once "wfxPoint.bi"
+
+constructor wfxPoint( byval nValue as POINT )
+   _pt = nValue
 end constructor
 
+constructor wfxPoint( byval xPos as long = 0, byval yPos as long = 0)
+   _pt.x = xPos
+   _pt.y = yPos
+end constructor
+
+OPERATOR wfxPoint.@ () AS POINT ptr
+   OPERATOR = cast(POINT ptr, @_pt)
+END OPERATOR
+
+property wfxPoint.pt() as POINT
+   property = _pt
+end property
+
+property wfxPoint.pt( byval nValue as POINT )
+   _pt = nValue
+end property
+
 property wfxPoint.x() as LONG
-   property = _x
+   property = _pt.x
 end property
 
 property wfxPoint.x( byval nValue as long )
-   _x = nValue
+   _pt.x = nValue
 end property
 
 property wfxPoint.y() as LONG
-   property = _y
+   property = _pt.y
 end property
 
 property wfxPoint.y( byval nValue as long )
-   _y = nValue
+   _pt.y = nValue
 end property
 
 function wfxPoint.IsEmpty() as Boolean
-   function = iif(_x = 0 andalso _y = 0, true, false)
+   function = iif(_pt.x = 0 andalso _pt.y = 0, true, false)
 END FUNCTION
+
+function wfxPoint.Convert( byval hWndFrom as HWND, byval hWndTo as HWND ) as Long
+   MapWindowPoints( hWndFrom, hWndTo, cast(point ptr, @_pt), 2)
+   function = 0
+end function
+
+function wfxPoint.Convert( byval hWndTo as HWND ) as Long
+   MapWindowPoints( 0, hWndTo, cast(point ptr, @_pt), 2)
+   function = 0
+end function
+
+

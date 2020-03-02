@@ -17,10 +17,33 @@
 ''  https://msdn.microsoft.com/en-us/library/system.drawing.size(v=vs.110).aspx
 ''
 
+#include once "wfxSize.bi"
+
 constructor wfxSize( byval nWidth as long = 0, byval nHeight as long = 0)
-   this.Width = nWidth
-   this.Height = nHeight
+   _Width = nWidth
+   _Height = nHeight
 end constructor
+
+constructor wfxSize( byval hWin as HWND )
+   this.Convert(hWin)
+end constructor
+
+function wfxSize.Convert( byval hWin as HWND ) as Long
+   if IsWindow(hWin) then
+      _hWindow = hWin
+      _Width = AfxGetWindowWidth(hWin)
+      _Height = AfxGetWindowHeight(hWin)
+   end if
+   function = 0
+end function
+
+Property wfxSize.hWindow() As HWND
+   property = _hWindow
+end property
+
+Property wfxSize.hWindow( ByVal nValue As HWND )
+   this.Convert(nValue)
+end property
 
 property wfxSize.Width() as LONG
    property = _Width

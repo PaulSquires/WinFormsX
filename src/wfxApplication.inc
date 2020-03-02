@@ -346,10 +346,9 @@ Function wfxApplication.SetEventArgs( ByVal uMsg   As UINT, _
    e.Shift   = iif( GetKeyState(VK_SHIFT) < 0, true, false )
    e.ALT     = iif( GetKeyState(VK_MENU) < 0, true, false )
 
-   dim as POINT pt
-   GetCursorPos( @pt )
-   e.x = pt.x
-   e.y = pt.y
+   GetCursorPos( @e.pt )
+   e.x = e.pt.x
+   e.y = e.pt.y
    
    Select Case uMsg
       Case WM_MOUSEMOVE
@@ -819,8 +818,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          ' lParam = pTreeView pointer
          pTreeView = Cast(wfxTreeView Ptr, lParam)
          if pTreeView = 0 then exit function
-         dim pTreeViewNode as wfxTreeViewNode ptr 
-         pTreeViewNode = cast(wfxTreeViewNode ptr, TreeView_GetlParam( pTreeView->hWindow, cast(HTREEITEM, wParam)))
+         dim pTreeViewNode as wfxTreeNode ptr 
+         pTreeViewNode = cast(wfxTreeNode ptr, TreeView_GetlParam( pTreeView->hWindow, cast(HTREEITEM, wParam)))
          if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
          if pTreeView->OnAfterCheck Then pTreeView->OnAfterCheck(*pTreeView, e)
 #endif         
@@ -1347,13 +1346,13 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   pTreeView = Cast(wfxTreeView Ptr, pNode->pData)
                   if pTreeView = 0 then exit function
                   Dim pnmtv As NMTREEVIEW Ptr = Cast(NMTREEVIEW Ptr, pNMHDR)
-                  dim pTreeViewNode as wfxTreeViewNode ptr
+                  dim pTreeViewNode as wfxTreeNode ptr
                   
                   select case lNotification
-                     case TVN_SELCHANGED, TVN_SELCHANGING, TVN_ITEMEXPANDED, TVN_ITEMEXPANDING 
+                     case TVN_SELCHANGED, TVN_SELCHANGING, TVN_ITEMEXPANDED, TVN_ITEMEXPANDING
                         ' Get the TreeView class node related to the hItem handle. The pointer
                         ' to the TreeViewNode is stored in the lParam of the node.
-                        pTreeViewNode = cast(wfxTreeViewNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, pnmtv->itemNew.hItem))
+                        pTreeViewNode = cast(wfxTreeNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, pnmtv->itemNew.hItem))
                         if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
                   end select
                   
@@ -1362,8 +1361,10 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         if pTreeView->OnBeforeSelect(*pTreeView, e) then return true
                         if e.Cancel then return true
                      end if
+                     pTreeView->BeginUpdate
                   end if
                   if lNotification = TVN_SELCHANGED then
+                     pTreeView->EndUpdate
                      if pTreeView->OnAfterSelect Then pTreeView->OnAfterSelect(*pTreeView, e)
                      if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
                   end if
@@ -1395,7 +1396,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         ' Invoke the Click event
                         e.KeyChar = 13
                         e.KeyCode = VK_RETURN
-                        pTreeViewNode = cast(wfxTreeViewNode ptr, _
+                        pTreeViewNode = cast(wfxTreeNode ptr, _
                                         TreeView_GetlParam( pNMHDR->hwndFrom, pTreeView->SelectedNode.hNode))
                         if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
                         if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
@@ -1410,7 +1411,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         hitinfo.pt = pt
                         SendMessage( pNMHDR->hwndFrom, TVM_HITTEST, 0, cast(ULONG_PTR, @hitinfo) ) 
          
-                        pTreeViewNode = cast(wfxTreeViewNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, hitinfo.hItem))
+                        pTreeViewNode = cast(wfxTreeNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, hitinfo.hItem))
                         if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
 
                         ' If the checkbox was clicked then attempt to call the user defined OnBeforeCheck
