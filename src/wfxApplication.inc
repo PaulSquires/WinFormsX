@@ -346,7 +346,9 @@ Function wfxApplication.SetEventArgs( ByVal uMsg   As UINT, _
    e.Shift   = iif( GetKeyState(VK_SHIFT) < 0, true, false )
    e.ALT     = iif( GetKeyState(VK_MENU) < 0, true, false )
 
-   GetCursorPos( @e.pt )
+   dim as POINT pt
+   GetCursorPos( @pt )
+   e.pt = pt
    e.x = e.pt.x
    e.y = e.pt.y
    
@@ -1343,6 +1345,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
 #ifdef CODEGEN_TREEVIEW
                case ControlType.TreeView
+
                   pTreeView = Cast(wfxTreeView Ptr, pNode->pData)
                   if pTreeView = 0 then exit function
                   Dim pnmtv As NMTREEVIEW Ptr = Cast(NMTREEVIEW Ptr, pNMHDR)
@@ -1361,10 +1364,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         if pTreeView->OnBeforeSelect(*pTreeView, e) then return true
                         if e.Cancel then return true
                      end if
-                     pTreeView->BeginUpdate
                   end if
                   if lNotification = TVN_SELCHANGED then
-                     pTreeView->EndUpdate
                      if pTreeView->OnAfterSelect Then pTreeView->OnAfterSelect(*pTreeView, e)
                      if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
                   end if
@@ -1397,7 +1398,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         e.KeyChar = 13
                         e.KeyCode = VK_RETURN
                         pTreeViewNode = cast(wfxTreeNode ptr, _
-                                        TreeView_GetlParam( pNMHDR->hwndFrom, pTreeView->SelectedNode.hNode))
+                                        TreeView_GetlParam( pNMHDR->hwndFrom, pTreeView->GetSelectedNode.hNode))
                         if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
                         if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
                      
@@ -1405,12 +1406,12 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         ' Test to see if the checkbox was clicked.
                         dim hitinfo as TVHITTESTINFO
                         dim as POINT pt
-                        
+                         
                         GetCursorPos( @pt )
                         ScreenToClient( pNMHDR->hwndFrom, @pt )
                         hitinfo.pt = pt
                         SendMessage( pNMHDR->hwndFrom, TVM_HITTEST, 0, cast(ULONG_PTR, @hitinfo) ) 
-         
+          
                         pTreeViewNode = cast(wfxTreeNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, hitinfo.hItem))
                         if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
 
@@ -1428,7 +1429,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                               end if
                            end if
                         end if
-                           
+                            
                         ' Allow a click event if FullRowSelect is active and the hittest returns
                         ' the area to the right of the label, or if clicked on the label itself.
                         dim as Boolean bHit = false

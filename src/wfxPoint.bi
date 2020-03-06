@@ -31,8 +31,10 @@ type wfxPoint
       declare function IsEmpty() as Boolean
       declare function Convert( byval hWndFrom as HWND, byval hWndTo as HWND ) as Long
       declare function Convert( byval hWndTo as HWND ) as Long
-      declare OPERATOR @ () AS POINT ptr
+      declare OPERATOR @() AS POINT ptr
+      DECLARE OPERATOR LET (BYval nValue AS POINT)
       declare constructor ( byval xPos as long = 0, byval yPos as long = 0)
       declare constructor ( byval nValue as POINT )
+      declare constructor 
 END TYPE
 

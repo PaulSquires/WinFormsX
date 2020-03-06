@@ -19,6 +19,9 @@
 
 #include once "wfxPoint.bi"
 
+constructor wfxPoint
+end constructor
+
 constructor wfxPoint( byval nValue as POINT )
    _pt = nValue
 end constructor
@@ -30,6 +33,10 @@ end constructor
 
 OPERATOR wfxPoint.@ () AS POINT ptr
    OPERATOR = cast(POINT ptr, @_pt)
+END OPERATOR
+
+OPERATOR wfxPoint.Let (BYval nValue AS POINT)
+   _pt = nValue
 END OPERATOR
 
 property wfxPoint.pt() as POINT
@@ -61,12 +68,12 @@ function wfxPoint.IsEmpty() as Boolean
 END FUNCTION
 
 function wfxPoint.Convert( byval hWndFrom as HWND, byval hWndTo as HWND ) as Long
-   MapWindowPoints( hWndFrom, hWndTo, cast(point ptr, @_pt), 2)
+   MapWindowPoints( hWndFrom, hWndTo, cast(point ptr, @_pt), 1)
    function = 0
 end function
 
 function wfxPoint.Convert( byval hWndTo as HWND ) as Long
-   MapWindowPoints( 0, hWndTo, cast(point ptr, @_pt), 2)
+   this.Convert( HWND_DESKTOP, hWndTo )
    function = 0
 end function
 

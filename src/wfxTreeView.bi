@@ -16,19 +16,20 @@
 ' Forward references
 type _wfxTreeNodeCollection as wfxTreeNodeCollection
 type _wfxTreeNode as wfxTreeNode
+type _wfxTreeView as wfxTreeView
 
 
 type wfxTreeSubNodeCollection
    private:
+      _pTreeView as _wfxTreeView ptr
       _hParentNode as HTREEITEM
-      _hWindow     as hwnd
       _Collection  As wfxLList
        
    public:
       declare property hParentNode() as HTREEITEM
       declare property hParentNode( byval nValue as HTREEITEM)
-      Declare Property hWindow() As hwnd
-      Declare Property hWindow( ByVal nValue As hwnd)
+      Declare Property pTreeView() as _wfxTreeView ptr
+      Declare Property pTreeView( ByVal ptv as _wfxTreeView ptr)
       Declare function Clear() as long 
       Declare function Count() as long 
       Declare Function Remove( ByVal nIndex As Long ) As Long 
@@ -42,21 +43,20 @@ END TYPE
 
 type wfxTreeNode
    private:
+      _pTreeView as _wfxTreeView ptr
       _hNode           as HTREEITEM
-      _hWindow         as hwnd
       _Index           as Long
-      _IsLoading       as Boolean = true   ' internal
       _Checked         as boolean
       _Selected        as boolean
       _Text            as CWSTR
       _Data32          as long
       _NodesCollection as wfxTreeSubNodeCollection
-      
+       
    public:
+      Declare Property pTreeView() as _wfxTreeView ptr
+      Declare Property pTreeView( ByVal ptv as _wfxTreeView ptr)
       declare property hNode() as HTREEITEM
       declare property hNode( byval nValue as HTREEITEM)
-      Declare Property hWindow() As hwnd
-      Declare Property hWindow( ByVal nValue As hwnd)
       Declare Property Index() As long
       Declare Property Index( ByVal nValue As long)
       Declare Property Checked() As boolean
@@ -67,6 +67,12 @@ type wfxTreeNode
       declare property Text( byref wszValue as wstring )
       Declare Property Data32() As long
       Declare Property Data32( ByVal nValue As long)
+      declare function Remove() as boolean
+      declare function Expand() as long
+      declare function ExpandAll() as long
+      declare function Collapse() as long
+      declare function EnsureVisible() as long
+      declare function SortChildren() as long
       Declare Function Node( ByVal nIndex As Long) ByRef As _wfxTreeNode
       declare function Nodes byref As wfxTreeSubNodeCollection
       declare destructor 
@@ -75,12 +81,12 @@ END TYPE
 
 type wfxTreeNodeCollection
    private:
-      _hWindow    as hwnd
       _Collection As wfxLList
+      _pTreeView as _wfxTreeView ptr
        
    public:
-      Declare Property hWindow() As hwnd
-      Declare Property hWindow( ByVal nValue As hwnd)
+      Declare Property pTreeView() as _wfxTreeView ptr
+      Declare Property pTreeView( ByVal ptv as _wfxTreeView ptr)
       Declare function Clear() as long 
       Declare function Count() as long 
       Declare Function Remove( ByVal nIndex As Long ) As Long 
@@ -104,10 +110,17 @@ Type wfxTreeView Extends wfxControl
       _Scrollable as Boolean = true
       _HideSelection as Boolean = false
       _ItemHeight as long = 20
+      
+      ' Per FreeBasic Help file:
+      ' The arrays of references and the non-static reference fields for UDT are not supported yet.
+      ' Therefore we have to return a copy to _SelectedNoderather than a reference. This is a 
+      ' shame because now we have to do special additional checks when performing methods such
+      ' as Remove.
       _SelectedNode as wfxTreeNode
+      _pSelectedNode as wfxTreeNode ptr
+      
       _TreeNode as wfxTreeNode
-      _Sorting as SortOrder = SortOrder.None
-      _IsLoading as Boolean = true   ' internal
+      _Sorted as boolean = false
       _ShowLines as Boolean = true
       _ShowRootLines as Boolean = true
       _ShowPlusMinus as Boolean = true
@@ -115,7 +128,7 @@ Type wfxTreeView Extends wfxControl
       _NodesCollection as wfxTreeNodeCollection
       
    Public:
-      UpdateFlag as Boolean = false
+      UpdateFlag as Boolean = false  ' BeginUpdate/EndUpdate
       Declare Function Node( ByVal nIndex As Long) ByRef As wfxTreeNode
       declare function Nodes byref As wfxTreeNodeCollection
       Declare Property BorderStyle() As ControlBorderStyle
@@ -132,13 +145,21 @@ Type wfxTreeView Extends wfxControl
       Declare Property HideSelection( ByVal nValue As boolean)
       Declare Property ItemHeight() As long
       Declare Property ItemHeight( ByVal nValue As long)
-      declare property SelectedNode( byval hItem as HTREEITEM )
-      Declare Property SelectedNode(byref as wfxTreeNode) 
-      Declare Property SelectedNode() byref as wfxTreeNode
+
+'      declare property SelectedNode( byval hItem as HTREEITEM )
+'      Declare Property SelectedNode( byref nValue as wfxTreeNode ) 
+'      Declare Property SelectedNode() byref as wfxTreeNode
+      Declare function GetSelectedNode() byref as wfxTreeNode
+      declare function SetSelectedNode( byval hItem as HTREEITEM ) as Long
+      Declare function SetSelectedNode( byref nValue as wfxTreeNode ) as Long
+      
+      Declare Property pSelectedNode(byval nValue as wfxTreeNode ptr) 
+      Declare Property pSelectedNode() as wfxTreeNode ptr
+      
       Declare Property TreeNode(byref as wfxTreeNode) 
       Declare Property TreeNode() byref as wfxTreeNode
-      Declare Property Sorting() As SortOrder
-      Declare Property Sorting( ByVal nValue As SortOrder)
+      Declare Property Sorted() As boolean
+      Declare Property Sorted( ByVal nValue As boolean)
       Declare Property BackColor() As COLORREF
       Declare Property BackColor( ByVal nValue As COLORREF )
       Declare Property ForeColor() As COLORREF
@@ -163,7 +184,11 @@ Type wfxTreeView Extends wfxControl
       declare function GetNodeAt( byval x as long, byval y as Long ) byref as wfxTreeNode
       declare function GetNodeAt( byval pt as POINT ) byref as wfxTreeNode
       declare function GetNodeAt( byval pt as wfxPoint ) byref as wfxTreeNode
-      
+      declare function RecurseTreeNodeSearch( byref ParentNode as wfxTreeNode, _
+                                              byval pTreeNode as wfxTreeNode ptr ) as boolean
+      declare function Remove( byval pTreeNode as wfxTreeNode ptr ) as boolean  ' called from the TreeNode class
+      declare function Sort() as Long
+
       OnAllEvents        as function( byref sender as wfxTreeView, byref e as EventArgs ) as LRESULT
       OnBeforeSelect     As Function( ByRef sender As wfxTreeView, ByRef e As EventArgs ) As LRESULT
       OnAfterSelect      As Function( ByRef sender As wfxTreeView, ByRef e As EventArgs ) As LRESULT

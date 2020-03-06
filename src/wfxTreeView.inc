@@ -36,6 +36,7 @@ function wfxTreeView.Nodes byref As wfxTreeNodeCollection
    return this._NodesCollection
 END function
 
+
 Property wfxTreeView.BorderStyle() As ControlBorderStyle
    If this.hWindow Then 
       If (AfxGetWindowExStyle(this.hWindow) And WS_EX_CLIENTEDGE) Then
@@ -94,37 +95,90 @@ property wfxTreeView.HideSelection( byval nValue as boolean )
    _HideSelection = nValue
 end property
 
-property wfxTreeView.SelectedNode() byref as wfxTreeNode
+'property wfxTreeView.SelectedNode() byref as wfxTreeNode
+'   dim pTreeViewNode as wfxTreeNode ptr
+'   dim as HTREEITEM hItem
+'   if this.hWindow then
+'      hItem = TreeView_GetSelection( this.hWindow )
+'      if hItem then
+'         pTreeViewNode = cast(wfxTreeNode ptr, TreeView_GetlParam( this.hWindow, hItem))
+'         if pTreeViewNode then 
+'            _SelectedNode = *pTreeViewNode
+'            this.pSelectedNode = pTreeViewNode
+'         end if   
+'      end if
+'   end if
+'   if (hItem = 0) or (pTreeViewNode = 0) then
+'      ' Need to return a reference otherwise crash if trying to access the return reference.
+'      static tvNode as wfxTreeNode
+'      _SelectedNode = tvNode
+'   end if
+'   _SelectedNode.pTreeView = @this
+'   property = _SelectedNode
+'end property
+
+'property wfxTreeView.SelectedNode( byval hItem as HTREEITEM )
+'   if this.hWindow then
+'      TreeView_SelectItem( this.hWindow, hItem )
+'      dim pTreeViewNode as wfxTreeNode ptr = cast(wfxTreeNode ptr, TreeView_GetlParam( this.hWindow, hItem))
+'      if pTreeViewNode then _SelectedNode = *pTreeViewNode 
+'   end if
+'end property
+
+'property wfxTreeView.SelectedNode( byref tvNode as wfxTreeNode )
+'   if this.hWindow then
+'      TreeView_SelectItem( this.hWindow, tvNode.hNode )
+'   end if
+'   _SelectedNode = tvNode
+'end property
+
+function wfxTreeView.GetSelectedNode() byref as wfxTreeNode
+   dim pTreeViewNode as wfxTreeNode ptr
+   dim as HTREEITEM hItem
    if this.hWindow then
-      dim as HTREEITEM hItem = TreeView_GetSelection( this.hWindow )
+      hItem = TreeView_GetSelection( this.hWindow )
       if hItem then
-         dim pTreeViewNode as wfxTreeNode ptr
          pTreeViewNode = cast(wfxTreeNode ptr, TreeView_GetlParam( this.hWindow, hItem))
          if pTreeViewNode then 
             _SelectedNode = *pTreeViewNode
-         else
-            ' Need to return a reference otherwise crash if trying to access the return reference.
-            static tvNode as wfxTreeNode   
-            _SelectedNode = tvNode
+            this.pSelectedNode = pTreeViewNode
          end if   
       end if
    end if
-   property = _SelectedNode
-end property
+   if (hItem = 0) or (pTreeViewNode = 0) then
+      ' Need to return a reference otherwise crash if trying to access the return reference.
+      static tvNode as wfxTreeNode
+      _SelectedNode = tvNode
+      ' Do not set the pTreeView for the Nodes collection because we test for
+      ' an empty pointer in Add/Insert to differentiate that this is a fake node.
+   end if
+   _SelectedNode.pTreeView = @this
+   function = _SelectedNode
+end function
 
-property wfxTreeView.SelectedNode( byval hItem as HTREEITEM )
+function wfxTreeView.SetSelectedNode( byval hItem as HTREEITEM ) as Long
    if this.hWindow then
       TreeView_SelectItem( this.hWindow, hItem )
       dim pTreeViewNode as wfxTreeNode ptr = cast(wfxTreeNode ptr, TreeView_GetlParam( this.hWindow, hItem))
       if pTreeViewNode then _SelectedNode = *pTreeViewNode 
    end if
-end property
+   function = 0
+end function
 
-property wfxTreeView.SelectedNode( byref tvNode as wfxTreeNode )
+function wfxTreeView.SetSelectedNode( byref tvNode as wfxTreeNode ) as Long
    if this.hWindow then
       TreeView_SelectItem( this.hWindow, tvNode.hNode )
    end if
    _SelectedNode = tvNode
+   function = 0
+end function
+
+Property wfxTreeView.pSelectedNode(byval nValue as wfxTreeNode ptr) 
+   _pSelectedNode = nValue  
+end property
+
+Property wfxTreeView.pSelectedNode() as wfxTreeNode ptr
+   property = _pSelectedNode
 end property
 
 ' TreeNode is used to hold a reference to the node that is currently
@@ -137,13 +191,30 @@ property wfxTreeView.TreeNode( byref tvItem as wfxTreeNode )
    _TreeNode = tvItem
 end property
 
-Property wfxTreeView.Sorting() As SortOrder
-   property = _Sorting
+Property wfxTreeView.Sorted() As boolean
+   property = _Sorted
 end property
 
-property wfxTreeView.Sorting( byval nValue as SortOrder )
-   _Sorting = nValue
+property wfxTreeView.Sorted( byval nValue as boolean )
+   ' If the TreeView is switched from Non-Sorted to Sorted then
+   ' do a resorting of all of the nodes in the control.
+   if (_Sorted = false) and (nValue = true) then
+      ' Sort the root nodes and then all of the child nodes off of the root
+      TreeView_SortChildren( this.hWindow, 0, false )
+      for i as long = 0 to this.Nodes.Count - 1
+         TreeView_SortChildren( this.hWindow, this.Node(i).hNode, true )
+      next
+   end if
+   _Sorted = nValue
 end property
+
+function wfxTreeView.Sort() as Long
+   ' Re-sort the treeview by simply simply turning sort off and on again.
+   this.Sorted = false
+   this.Sorted = true
+   function = 0
+end function
+
 
 Property wfxTreeView.Scrollable() As boolean
    Property = _Scrollable
@@ -237,8 +308,8 @@ end property
 
 function wfxTreeView.PopulateTree( byref ParentNode as wfxTreeNode ) as Long
    for i as long = 0 to ParentNode.Nodes.count - 1
-      ParentNode.Nodes.hWindow = ParentNode.hWindow
-      ParentNode.Node(i).hWindow = ParentNode.hWindow
+      ParentNode.Nodes.pTreeView = ParentNode.pTreeView
+      ParentNode.Node(i).pTreeView = ParentNode.pTreeView
       ParentNode.Node(i).hNode = _
          TreeView_AppendItem( this.hWindow, ParentNode.hNode, _
                               ParentNode.Node(i).Text, ParentNode.Node(i).Data32 )
@@ -308,7 +379,10 @@ function wfxTreeView.GetNodeAt( byval x as long, byval y as Long ) byref as wfxT
       
       if bHit = false then
          ' Need to return a reference otherwise crash if trying to access the return reference.
-         static tvNode as wfxTreeNode   
+         static tvNode as wfxTreeNode
+         tvNode.pTreeView = @this   
+         ' Do not set the pTreeView for the Nodes collection because we test for
+         ' an empty pointer in Add/Insert to differentiate that this is a fake node.
          return tvNode
       end if
    end if
@@ -318,10 +392,35 @@ function wfxTreeView.GetNodeAt( byval pt as POINT ) byref as wfxTreeNode
    return this.GetNodeAt( pt.x, pt.y )
 end function
 
-function wfxTreeView.GetNodeAt( byval pt as wfxPoint ) byref as wfxTreeNode
-   return this.GetNodeAt( pt.pt.x, pt.pt.y )
+function wfxTreeView.GetNodeAt( byval wpt as wfxPoint ) byref as wfxTreeNode
+   return this.GetNodeAt( wpt.pt.x, wpt.pt.y )
 end function
 
+
+function wfxTreeView.RecurseTreeNodeSearch( byref ParentNode as wfxTreeNode, _ 
+                                            byval pTreeNode as wfxTreeNode ptr _
+                                            ) as boolean
+   for i as long = 0 to ParentNode.Nodes.count - 1
+      if @ParentNode.Node(i) = pTreeNode then
+         ParentNode.Nodes.Remove(i)
+         return true
+      end if   
+      if this.RecurseTreeNodeSearch( ParentNode.Node(i), pTreeNode ) = true then return true
+   next      
+   function = false
+end function
+
+function wfxTreeView.Remove( byval pTreeNode as wfxTreeNode ptr ) as boolean
+   if pTreeNode = 0 then return false
+   for i as long = 0 to this.Nodes.count - 1
+      if @this.Node(i) = pTreeNode then
+         this.Nodes.Remove(i)
+         return true
+      end if
+      if this.RecurseTreeNodeSearch( this.Node(i), pTreeNode ) then return true
+   next
+   function = false
+END function
 
 function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
 
@@ -338,8 +437,9 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    Dim As Long dwExStyle = 0
-   dim as long dwStyle = WS_CLIPCHILDREN or TVS_INFOTIP 
-
+   dim as long dwStyle = WS_CLIPCHILDREN or TVS_INFOTIP or TVS_DISABLEDRAGDROP
+   ' TreeView will eat the WM_LBUTTONUP message if TVS_DISABLEDRAGDROP is not specified
+   
    if _TabStop       then dwStyle = dwStyle OR WS_TABSTOP 
    if _Visible       THEN dwStyle = dwStyle OR WS_VISIBLE
    if _CheckBoxes    then dwStyle = dwStyle OR TVS_CHECKBOXES
@@ -370,7 +470,7 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
          _CtrlID, _                        ' // The subclass ID
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
-
+ 
    ' Use the new style Explorer Treeview (triangles instead of boxes).
    ' Set an undocumented extended style that enables the treeview glyphs to resize
    ' according to the high dpi setting.
@@ -385,6 +485,7 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    ' Apply properties that require a valid window handle
    if _FadeButtons then TreeView_SetExtendedStyle( this.hWindow, TVS_EX_FADEINOUTEXPANDOS, TVS_EX_FADEINOUTEXPANDOS )
    
+   ' No need to apply the Sorted property because it is applied every time a new node is inserted.
    this.Font        = _wfxFontPtr
    this.BackColor   = _BackColor
    this.ForeColor   = _ForeColor
@@ -393,6 +494,7 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    this.Enabled     = _Enabled
 
    this.ToolTip     = _ToolTip
+   
 
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
@@ -405,20 +507,18 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    dim pNode as wfxLListNode ptr = this.Parent->Controls.search_data(@this)
    if pNode then pNode->hWindow = this.hWindow
       
-   this.Nodes.hWindow = this.hWindow
+   ' Pass the Treeview pointer down to the subnode collection
+   this.Nodes.pTreeView = @this
    
    ' Recursively load all of the nodes...
    this.BeginUpdate
    for i as long = 0 to this.Nodes.count - 1
-      ' Set the hWindow for the collection
-      this.Node(i).hWindow = this.hWindow
+      this.Node(i).pTreeView = @this
       this.Node(i).hNode = _
          TreeView_AddRootItem( this.hWindow, this.Node(i).Text, this.Node(i).Data32 )
       this.PopulateTree( this.Node(i) )
    next
    this.EndUpdate      
-
-   _IsLoading = false
 
    function = 0
 END FUNCTION
@@ -428,7 +528,7 @@ END FUNCTION
 '' TreeView Node
 
 destructor wfxTreeNode
-   ? "Destructor: "; this.text 
+   '
 end destructor
 
 property wfxTreeNode.hNode() as HTREEITEM
@@ -439,39 +539,39 @@ property wfxTreeNode.hNode( byVal nValue as HTREEITEM)
    _hNode = nValue
 end property
 
-property wfxTreeNode.hWindow() as hwnd
-   property = _hWindow
+Property wfxTreeNode.pTreeView() as wfxTreeView ptr
+   property = _pTreeView 
 end property
 
-property wfxTreeNode.hWindow( byVal nValue as hwnd)
-   _hWindow = nValue
+Property wfxTreeNode.pTreeView( ByVal ptv as wfxTreeView ptr)
+   _pTreeView = ptv
 end property
 
 Property wfxTreeNode.Selected() As boolean
-   if this.hWindow then 
-      dim as HTREEITEM hItem = TreeView_GetSelection( this.hWindow )
+   if this.pTreeview->hWindow then 
+      dim as HTREEITEM hItem = TreeView_GetSelection( this.pTreeview->hWindow )
       _Selected = iif( hItem = this.hNode, true, false )
    end if
    property = _Selected
 END PROPERTY
 
 property wfxTreeNode.Selected( ByVal nValue As boolean) 
-   if this.hWindow then 
-      TreeView_SelectItem( this.hWindow, iif(nValue, this.hNode, 0) )
+   if this.pTreeview->hWindow then 
+      TreeView_SelectItem( this.pTreeview->hWindow, iif(nValue, this.hNode, 0) )
    end if
    _Selected = nValue
 END PROPERTY
 
 Property wfxTreeNode.Checked() As boolean
-   if this.hWindow then 
-      _Checked = TreeView_IsItemChecked( this.hWindow, this.hNode )
+   if this.pTreeview->hWindow then 
+      _Checked = TreeView_IsItemChecked( this.pTreeview->hWindow, this.hNode )
    end if
    property = _Checked
 END PROPERTY
 
 property wfxTreeNode.Checked( ByVal nValue As boolean) 
-   if this.hWindow then 
-      TreeView_SetCheckState( this.hWindow, this.hNode, nValue )
+   if this.pTreeview->hWindow then 
+      TreeView_SetCheckState( this.pTreeview->hWindow, this.hNode, nValue )
    end if
    _Checked = nValue
 END PROPERTY
@@ -485,17 +585,17 @@ property wfxTreeNode.Index( ByVal nValue As long)
 END PROPERTY
 
 property wfxTreeNode.Text() as CWSTR
-   if this.hWindow then 
+   if this.pTreeview->hWindow then 
       DIM wszText AS WSTRING * 260
-      TreeView_GetItemText( this.hWindow, this.hNode, @wszText, 260)
+      TreeView_GetItemText( this.pTreeview->hWindow, this.hNode, @wszText, 260)
       _Text = wszText
    end if   
    property = _Text 
 end property
 
 property wfxTreeNode.Text( byref wszValue as wstring )
-   if this.hWindow then 
-      TreeView_SetItemText( this.hWindow, this.hNode, wszValue )
+   if this.pTreeview->hWindow then 
+      TreeView_SetItemText( this.pTreeview->hWindow, this.hNode, wszValue )
    end if
    _Text = wszValue
 end property
@@ -519,6 +619,56 @@ function wfxTreeNode.Nodes byref As wfxTreeSubNodeCollection
    return this._NodesCollection 
 END function
 
+function wfxTreeNode.Remove() as boolean
+   ' Per FreeBasic Help file:
+   ' The arrays of references and the non-static reference fields for UDT are not supported yet.
+   ' Therefore we have to return a copy to _SelectedNode rather than a reference. This is a 
+   ' shame because now we have to do special additional checks when performing methods such
+   ' as Remove.
+   if this.Selected then
+      return this.pTreeView->Remove( this.pTreeView->pSelectedNode ) 
+   else   
+      return this.pTreeView->Remove( @this ) 
+   end if
+END function
+
+function wfxTreeNode.Expand() as long
+   if this.pTreeView then
+      TreeView_Expand( this.pTreeView->hWindow, this.hNode, TVE_EXPAND)
+   end if
+   function = 0
+end function
+
+function wfxTreeNode.ExpandAll() as long
+   if this.pTreeView then
+      this.pTreeView->BeginUpdate
+      TreeView_ExpandAllChildItems( this.pTreeView->hWindow, this.hNode )
+      this.pTreeView->EndUpdate
+   end if
+   function = 0
+end function
+
+function wfxTreeNode.Collapse() as long
+   if this.pTreeView then
+      TreeView_Expand( this.pTreeView->hWindow, this.hNode, TVE_COLLAPSE)
+   end if
+   function = 0
+end function
+
+function wfxTreeNode.EnsureVisible() as long
+   if this.pTreeView then
+      TreeView_EnsureVisible( this.pTreeView->hWindow, this.hNode )
+   end if
+   function = 0
+end function
+
+function wfxTreeNode.SortChildren() as long
+   if this.pTreeView then
+      TreeView_SortChildren( this.pTreeView->hWindow, this.hNode, false )
+   end if
+   function = 0
+end function
+
 
 
 '' NODESCOLLECTION
@@ -530,12 +680,12 @@ destructor wfxTreeNodeCollection
    '
 end destructor
 
-property wfxTreeNodeCollection.hWindow() as hwnd
-   property = _hWindow
+Property wfxTreeNodeCollection.pTreeView() as wfxTreeView ptr
+   property = _pTreeView 
 end property
 
-property wfxTreeNodeCollection.hWindow( byVal nValue as hwnd)
-   _hWindow = nValue
+Property wfxTreeNodeCollection.pTreeView( ByVal ptv as wfxTreeView ptr)
+   _pTreeView = ptv
 end property
 
 function wfxTreeNodeCollection.Count() as Long
@@ -543,30 +693,38 @@ function wfxTreeNodeCollection.Count() as Long
 end function
 
 Function wfxTreeNodeCollection.Add( ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
-   Dim pData As wfxTreeNode Ptr = New wfxTreeNode
-   pData->hWindow = this.hWindow
-   pData->Nodes.hWindow = this.hWindow
-   pData->Index = (this.Count - 1) + 1
-   pData->Text = wszValue
-   pData->Data32 = nValue
-   _Collection.Add( ControlType.TreeView, pData ) 
-   If this.hWindow Then 
-      ' Save the pointer to the TreeViewNode in the lParam of the node.
-      pData->hNode = TreeView_AddRootItem( this.hWindow, wszValue, cast(LPARAM, pData) )
-      pData->Nodes.hParentNode = pData->hNode
-      ' Redraw to ensure that +/- shows
-      AfxRedrawWindow( this.hWindow )
-   end if      
-   function = pData->Index
+   function = this.Insert( -1, wszValue, nValue )
 end function
 
 Function wfxTreeNodeCollection.Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
+   ' Test the pTreeView pointer. If it is Null then this action is
+   ' originating from the fake SelectNode node.
+   if this.pTreeview = 0 then exit function
+
+   ' If the TreeView has the Sorted property set to True then we will always
+   ' append the node and allow the control to do the sorting. The collection 
+   ' is not maintained in sorted order. 
+   if this.pTreeView->Sorted then nIndex = -1
+   if (nIndex < 0) or (nIndex > this.Count - 1) then nIndex = (this.Count - 1) + 1
+   
    Dim pData As wfxTreeNode Ptr = New wfxTreeNode
-   pData->hWindow = this.hWindow
-   pData->Index = nIndex
-   pData->Text = wszValue
-   pData->Data32 = nValue
+   pData->pTreeView = this.pTreeview
+   pData->Text      = wszValue
+   pData->Data32    = nValue
+   pData->Index     = nIndex
+
+   If this.pTreeview->hWindow Then 
+      ' Get the HTREEITEM of the node immediately before the one to insert
+      dim as HTREEITEM hInsertAfter = iif( this.Count, this.ByIndex(nIndex - 1).hNode, TVI_LAST) 
+      if this.pTreeView->Sorted then hInsertAfter = TVI_SORT
+      pData->hNode = TreeView_AddRootItem( this.pTreeview->hWindow, wszValue, cast(LPARAM, pData) )
+      pData->Nodes.hParentNode = pData->hNode    
+      pData->Nodes.pTreeView = this.pTreeview
+      ' Redraw to ensure that +/- shows
+      AfxRedrawWindow( this.pTreeview->hWindow )
+   end if
    _Collection.Insert( nIndex, ControlType.TreeView, pData ) 
+   
    function = pData->Index
 end function
 
@@ -574,8 +732,9 @@ function wfxTreeNodeCollection.DeallocateNodes( byref ParentNode as wfxTreeNode 
    for i as long = 0 to ParentNode.Nodes.count - 1
       this.DeallocateNodes( ParentNode.Node(i) )
    next      
-   delete cast(wfxTreeNode ptr, @ParentNode)
-   _Collection.Clear
+   dim pTreeNode as wfxTreeNode ptr = cast(wfxTreeNode ptr, @ParentNode)
+   delete pTreeNode
+   _Collection.remove_bydata(pTreeNode)
    function = 0
 end function
 
@@ -583,56 +742,59 @@ function wfxTreeNodeCollection.Remove( byval nIndex as long ) as long
    dim pNode as wfxLListNode ptr = _Collection.get_index(nIndex)
    if pNode then
       dim pTreeNode as wfxTreeNode ptr = cast(wfxTreeNode ptr, pNode->pData)
-      if pTreeNode then
-         ' Delete any subnodes in any TreeNode collection (use recursion)
+      if pTreeNode then 
+         ' Delete any subnodes in TreeNode collection (use recursion)
          for i as long = 0 to pTreeNode->Nodes.Count - 1
             this.DeallocateNodes( pTreeNode->Node(i) )
          next
-         if this.hWindow then TreeView_DeleteItem( this.hWindow, pTreeNode->hNode )
+         if this.pTreeview->hWindow then TreeView_DeleteItem( this.pTreeview->hWindow, pTreeNode->hNode )
          Delete pTreeNode
          _Collection.Remove(pNode)
-         ' Renumber the Index property for each node in the collection.
-         for i as long = 0 to _Collection.Size - 1
-            pNode = _Collection.get_index(i)
-            pTreeNode = cast(wfxTreeNode ptr, pNode->pData)
-            if pTreeNode then pTreeNode->Index = i
-         next
       end if
+      ' Renumber the Index property for each node in the collection.
+      for i as long = 0 to _Collection.Size - 1
+         pNode = _Collection.get_index(i)
+         pTreeNode = cast(wfxTreeNode ptr, pNode->pData)
+         if pTreeNode then pTreeNode->Index = i
+      next
    end if   
    function = _Collection.Size
 end function
 
-function wfxTreeNodeCollection.ByIndex( byval nIndex as long ) byref as wfxTreeNode 
-   dim pItem as wfxTreeNode ptr
-   dim pNode as wfxLListNode ptr
-   if _Collection.Size then
-      if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) then
-         pNode = _Collection.get_index(nIndex)
-         if pNode then
-            pItem = cast(wfxTreeNode ptr, pNode->pData)
-            return *pItem
-         end if
-      end if      
-   end if   
-end function
-
 function wfxTreeNodeCollection.Clear() as long
-   ' Deallocate elements in the nodes collection.
+   ' Deallocate elements in the nodes and any sub-treenodes that have collections.
    dim pTreeNode as wfxTreeNode ptr
-   dim pNode as wfxLListNode ptr = _Collection.get_first
-   for i as long = 0 to _Collection.Size - 1
-      pNode = _Collection.get_index(i)
+   dim pNode as wfxLListNode ptr
+   do until _Collection.Size = 0
+      pNode = _Collection.get_index(0)
       pTreeNode = cast(wfxTreeNode ptr, pNode)
       if pTreeNode then
-         pTreeNode->Selected = false 
-         if this.hWindow then TreeView_DeleteItem( this.hWindow, pTreeNode->hNode )
-         ' Delete TreeViewItem fires destructor that clears any subitems
-         Delete pTreeNode
+         ' Calling Remove will recursively delete all subnodes and remove from the collection.
+         this.Remove(0)
       end if
-   next
+   loop
    _Collection.Clear
    function = 0
 END FUNCTION
+
+function wfxTreeNodeCollection.ByIndex( byval nIndex as long ) byref as wfxTreeNode 
+   dim pItem as wfxTreeNode ptr
+   dim pNode as wfxLListNode ptr
+   if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) and (_Collection.Size > 0) then
+      pNode = _Collection.get_index(nIndex)
+      if pNode then
+         pItem = cast(wfxTreeNode ptr, pNode->pData)
+         return *pItem
+      end if
+   else
+      ' Need to return a reference otherwise crash if trying to access the return reference.
+      static tvNode as wfxTreeNode
+      tvNode.pTreeView = this.pTreeView
+      pItem = @tvNode
+      return *pItem
+   end if      
+end function
+
 
 
 '' SUBNODESCOLLECTION
@@ -652,12 +814,12 @@ property wfxTreeSubNodeCollection.hParentNode( byVal nValue as HTREEITEM)
    _hParentNode = nValue
 end property
 
-property wfxTreeSubNodeCollection.hWindow() as hwnd
-   property = _hWindow
+Property wfxTreeSubNodeCollection.pTreeView() as wfxTreeView ptr
+   property = _pTreeView 
 end property
 
-property wfxTreeSubNodeCollection.hWindow( byVal nValue as hwnd)
-   _hWindow = nValue
+Property wfxTreeSubNodeCollection.pTreeView( ByVal ptv as wfxTreeView ptr)
+   _pTreeView = ptv
 end property
 
 function wfxTreeSubNodeCollection.Count() as Long
@@ -669,21 +831,31 @@ Function wfxTreeSubNodeCollection.Add( ByRef wszValue As WString = "", ByVal nVa
 end function
 
 Function wfxTreeSubNodeCollection.Insert( ByVal nIndex As Long, ByRef wszValue As WString = "", ByVal nValue As Long = 0) As Long
+   ' Test the pTreeView pointer. If it is Null then this action is
+   ' originating from the fake SelectNode node.
+   if this.pTreeview = 0 then exit function
+   
+   ' If the TreeView has the Sorted property set to True then we will always
+   ' append the node and allow the control to do the sorting. The collection 
+   ' is not maintained in sorted order. 
+   if this.pTreeView->Sorted then nIndex = -1
    if (nIndex < 0) or (nIndex > this.Count - 1) then nIndex = (this.Count - 1) + 1
    
    Dim pData As wfxTreeNode Ptr = New wfxTreeNode
-   pData->hWindow = this.hWindow
-   pData->Text    = wszValue
-   pData->Data32  = nValue
-   pData->Index   = nIndex
-   
-   If this.hWindow Then 
+   pData->pTreeView = this.pTreeview
+   pData->Text      = wszValue
+   pData->Data32    = nValue
+   pData->Index     = nIndex
+
+   If this.pTreeview->hWindow Then 
       ' Get the HTREEITEM of the node immediately before the one to insert
-      dim as HTREEITEM hInsertAfter = iif( this.Count, this.ByIndex(nIndex - 1).hNode, TVI_LAST) 
-      pData->hNode = TreeView_AddItem( this.hWindow, this.hParentNode, hInsertAfter, wszValue, cast(LPARAM, pData) )
+      dim as HTREEITEM hInsertAfter = iif( this.Count, this.ByIndex(nIndex - 1).hNode, TVI_LAST)
+      if this.pTreeView->Sorted then hInsertAfter = TVI_SORT
+      pData->hNode = TreeView_AddItem( this.pTreeview->hWindow, this.hParentNode, hInsertAfter, wszValue, cast(LPARAM, pData) )
       pData->Nodes.hParentNode = pData->hNode    
+      pData->Nodes.pTreeView = this.pTreeview
       ' Redraw to ensure that +/- shows
-      AfxRedrawWindow( this.hWindow )
+      AfxRedrawWindow( this.pTreeview->hWindow )
    end if
    _Collection.Insert( nIndex, ControlType.TreeView, pData ) 
    
@@ -694,8 +866,9 @@ function wfxTreeSubNodeCollection.DeallocateNodes( byref ParentNode as wfxTreeNo
    for i as long = 0 to ParentNode.Nodes.count - 1
       this.DeallocateNodes( ParentNode.Node(i) )
    next      
-   delete cast(wfxTreeNode ptr, @ParentNode)
-   _Collection.Clear
+   dim pTreeNode as wfxTreeNode ptr = cast(wfxTreeNode ptr, @ParentNode)
+   delete pTreeNode
+   _Collection.remove_bydata(pTreeNode)
    function = 0
 end function
 
@@ -703,54 +876,56 @@ function wfxTreeSubNodeCollection.Remove( byval nIndex as long ) as long
    dim pNode as wfxLListNode ptr = _Collection.get_index(nIndex)
    if pNode then
       dim pTreeNode as wfxTreeNode ptr = cast(wfxTreeNode ptr, pNode->pData)
-      if pTreeNode then
+      if pTreeNode then 
          ' Delete any subnodes in any TreeNode collection (use recursion)
          for i as long = 0 to pTreeNode->Nodes.Count - 1
             this.DeallocateNodes( pTreeNode->Node(i) )
          next
-         if this.hWindow then TreeView_DeleteItem( this.hWindow, pTreeNode->hNode )
+         if this.pTreeview->hWindow then TreeView_DeleteItem( this.pTreeview->hWindow, pTreeNode->hNode )
          Delete pTreeNode
          _Collection.Remove(pNode)
-         ' Renumber the Index property for each node in the collection.
-         for i as long = 0 to _Collection.Size - 1
-            pNode = _Collection.get_index(i)
-            pTreeNode = cast(wfxTreeNode ptr, pNode->pData)
-            if pTreeNode then pTreeNode->Index = i
-         next
       end if
+      ' Renumber the Index property for each node in the collection.
+      for i as long = 0 to _Collection.Size - 1
+         pNode = _Collection.get_index(i)
+         pTreeNode = cast(wfxTreeNode ptr, pNode->pData)
+         if pTreeNode then pTreeNode->Index = i
+      next
    end if   
    function = _Collection.Size
 end function
 
-function wfxTreeSubNodeCollection.ByIndex( byval nIndex as long ) byref as wfxTreeNode 
-   dim pItem as wfxTreeNode ptr
-   dim pNode as wfxLListNode ptr
-   if _Collection.Size then
-      if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) then
-         pNode = _Collection.get_index(nIndex)
-         if pNode then
-            pItem = cast(wfxTreeNode ptr, pNode->pData)
-            return *pItem
-         end if
-      end if      
-   end if   
-end function
-
 function wfxTreeSubNodeCollection.Clear() as long
-   ' Deallocate elements in the nodes collection.
+   ' Deallocate elements in the nodes and any sub-treenodes that have collections.
    dim pTreeNode as wfxTreeNode ptr
-   dim pNode as wfxLListNode ptr = _Collection.get_first
-   for i as long = 0 to _Collection.Size - 1
-      pNode = _Collection.get_index(i)
+   dim pNode as wfxLListNode ptr
+   do until _Collection.Size = 0
+      pNode = _Collection.get_index(0)
       pTreeNode = cast(wfxTreeNode ptr, pNode)
       if pTreeNode then
-         pTreeNode->Selected = false 
-         if this.hWindow then TreeView_DeleteItem( this.hWindow, pTreeNode->hNode )
-         Delete pTreeNode
+         ' Calling Remove will recursively delete all subnodes and remove from the collection.
+         this.Remove(0)
       end if
-   next
+   loop
    _Collection.Clear
    function = 0
 END FUNCTION
 
+function wfxTreeSubNodeCollection.ByIndex( byval nIndex as long ) byref as wfxTreeNode 
+   dim pItem as wfxTreeNode ptr
+   dim pNode as wfxLListNode ptr
+   if (nIndex >= 0) and (nIndex <= _Collection.Size - 1) and (_Collection.Size > 0) then
+      pNode = _Collection.get_index(nIndex)
+      if pNode then
+         pItem = cast(wfxTreeNode ptr, pNode->pData)
+         return *pItem
+      end if
+   else
+      ' Need to return a reference otherwise crash if trying to access the return reference.
+      static tvNode as wfxTreeNode
+      tvNode.pTreeView = this.pTreeView
+      pItem = @tvNode
+      return *pItem
+   end if      
+end function
 
