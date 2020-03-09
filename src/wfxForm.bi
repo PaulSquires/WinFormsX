@@ -54,6 +54,8 @@ Type wfxForm Extends wfxControl
       
       pWindow As CWindow Ptr
       declare function CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS HWND = NULL ) as POINT  'internal
+      declare property Text() as CWSTR
+      declare property Text( byref nValue as wstring )
       Declare Property WindowState() As FormWindowState
       Declare Property WindowState( ByVal nValue As FormWindowState )
       Declare Property StartPosition() As FormStartPosition

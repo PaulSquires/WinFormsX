@@ -56,6 +56,7 @@ namespace WinFormsX
 #Include Once "wfxFont.bi"
 #Include Once "wfxSize.bi"
 #Include Once "wfxPoint.bi"
+#Include Once "wfxPopupMenu.bi"
 #Include once "wfxLList.bi"
 #include once "wfxControl.bi"
 
@@ -154,6 +155,7 @@ namespace WinFormsX
 
 #Include Once "wfxSize.inc"
 #Include Once "wfxPoint.inc"
+#Include Once "wfxPopupMenu.inc"
 #include once "wfxLList.inc"
 #Include Once "wfxApplication.inc"
 #Include Once "wfxControl.inc"

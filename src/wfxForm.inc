@@ -32,6 +32,22 @@ destructor wfxForm
    If this.pWindow Then Delete this.pWindow
 End Destructor 
          
+' Let Form have its own Text property handlers because the base wfxControl
+' version calls AfxRedrawWindow and that tends to hide existing Frame controls.
+property wfxForm.Text() as CWSTR
+   if this.hWindow then 
+      _Text = AfxGetWindowText(this.hWindow)
+   end if   
+   property = _Text
+end property
+
+property wfxForm.Text( byref nValue as wstring )
+   if this.hWindow then 
+      AfxSetWindowText(this.hWindow, nValue)
+   End If   
+   _Text = nValue
+end property
+
 property wfxForm.WindowState() as FormWindowState
    if this.pWindow andalso this.pWindow->hWindow THEN
       if IsIconic(this.pWindow->hWindow) THEN

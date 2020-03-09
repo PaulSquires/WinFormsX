@@ -312,7 +312,7 @@ function wfxTreeView.PopulateTree( byref ParentNode as wfxTreeNode ) as Long
       ParentNode.Node(i).pTreeView = ParentNode.pTreeView
       ParentNode.Node(i).hNode = _
          TreeView_AppendItem( this.hWindow, ParentNode.hNode, _
-                              ParentNode.Node(i).Text, ParentNode.Node(i).Data32 )
+                              LPSTR_TEXTCALLBACK, ParentNode.Node(i).Data32 )
       this.PopulateTree( ParentNode.Node(i) )
    next      
    function = 0
@@ -437,7 +437,7 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    if hWndParent = 0 THEN exit function
       
    Dim As Long dwExStyle = 0
-   dim as long dwStyle = WS_CLIPCHILDREN or TVS_INFOTIP or TVS_DISABLEDRAGDROP
+   dim as long dwStyle = WS_CLIPCHILDREN or TVS_INFOTIP or TVS_DISABLEDRAGDROP 
    ' TreeView will eat the WM_LBUTTONUP message if TVS_DISABLEDRAGDROP is not specified
    
    if _TabStop       then dwStyle = dwStyle OR WS_TABSTOP 
@@ -515,7 +515,7 @@ function wfxTreeView.Show(byval hWndParent as hwnd = 0) as long
    for i as long = 0 to this.Nodes.count - 1
       this.Node(i).pTreeView = @this
       this.Node(i).hNode = _
-         TreeView_AddRootItem( this.hWindow, this.Node(i).Text, this.Node(i).Data32 )
+         TreeView_AddRootItem( this.hWindow, LPSTR_TEXTCALLBACK, this.Node(i).Data32 )
       this.PopulateTree( this.Node(i) )
    next
    this.EndUpdate      
@@ -585,19 +585,19 @@ property wfxTreeNode.Index( ByVal nValue As long)
 END PROPERTY
 
 property wfxTreeNode.Text() as CWSTR
-   if this.pTreeview->hWindow then 
-      DIM wszText AS WSTRING * 260
-      TreeView_GetItemText( this.pTreeview->hWindow, this.hNode, @wszText, 260)
-      _Text = wszText
-   end if   
    property = _Text 
 end property
 
 property wfxTreeNode.Text( byref wszValue as wstring )
-   if this.pTreeview->hWindow then 
-      TreeView_SetItemText( this.pTreeview->hWindow, this.hNode, wszValue )
-   end if
    _Text = wszValue
+end property
+
+property wfxTreeNode.ToolTipText() as CWSTR
+   property = _ToolTipText 
+end property
+
+property wfxTreeNode.ToolTipText( byref wszValue as wstring )
+   _ToolTipText = wszValue
 end property
 
 property wfxTreeNode.Data32() as long
@@ -717,7 +717,7 @@ Function wfxTreeNodeCollection.Insert( ByVal nIndex As Long, ByRef wszValue As W
       ' Get the HTREEITEM of the node immediately before the one to insert
       dim as HTREEITEM hInsertAfter = iif( this.Count, this.ByIndex(nIndex - 1).hNode, TVI_LAST) 
       if this.pTreeView->Sorted then hInsertAfter = TVI_SORT
-      pData->hNode = TreeView_AddRootItem( this.pTreeview->hWindow, wszValue, cast(LPARAM, pData) )
+      pData->hNode = TreeView_AddRootItem( this.pTreeview->hWindow, LPSTR_TEXTCALLBACK, cast(LPARAM, pData) )
       pData->Nodes.hParentNode = pData->hNode    
       pData->Nodes.pTreeView = this.pTreeview
       ' Redraw to ensure that +/- shows
@@ -851,7 +851,7 @@ Function wfxTreeSubNodeCollection.Insert( ByVal nIndex As Long, ByRef wszValue A
       ' Get the HTREEITEM of the node immediately before the one to insert
       dim as HTREEITEM hInsertAfter = iif( this.Count, this.ByIndex(nIndex - 1).hNode, TVI_LAST)
       if this.pTreeView->Sorted then hInsertAfter = TVI_SORT
-      pData->hNode = TreeView_AddItem( this.pTreeview->hWindow, this.hParentNode, hInsertAfter, wszValue, cast(LPARAM, pData) )
+      pData->hNode = TreeView_AddItem( this.pTreeview->hWindow, this.hParentNode, hInsertAfter, LPSTR_TEXTCALLBACK, cast(LPARAM, pData) )
       pData->Nodes.hParentNode = pData->hNode    
       pData->Nodes.pTreeView = this.pTreeview
       ' Redraw to ensure that +/- shows

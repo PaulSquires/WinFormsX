@@ -49,6 +49,7 @@ type wfxTreeNode
       _Checked         as boolean
       _Selected        as boolean
       _Text            as CWSTR
+      _ToolTipText     as CWSTR
       _Data32          as long
       _NodesCollection as wfxTreeSubNodeCollection
        
@@ -65,6 +66,8 @@ type wfxTreeNode
       Declare Property Selected( ByVal nValue As boolean)
       declare property Text() as CWSTR
       declare property Text( byref wszValue as wstring )
+      declare property ToolTipText() as CWSTR
+      declare property ToolTipText( byref wszValue as wstring )
       Declare Property Data32() As long
       Declare Property Data32( ByVal nValue As long)
       declare function Remove() as boolean

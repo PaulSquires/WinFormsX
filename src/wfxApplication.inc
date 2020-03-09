@@ -441,7 +441,7 @@ Function wfxApplication.PreprocessMessage( ByVal hWndForm As HWnd, _
 
    Dim pActiveForm As wfxForm Ptr
    WINFORMSX_DIM_POINTERS    
-   
+      
    ' If a button has been set for ACCEPTBUTTON or CANCELBUTTON then send Click
    ' message to that button. We need to get the activewindow because this could
    ' a popup window.
@@ -1351,45 +1351,28 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   Dim pnmtv As NMTREEVIEW Ptr = Cast(NMTREEVIEW Ptr, pNMHDR)
                   dim pTreeViewNode as wfxTreeNode ptr
                   
-                  select case lNotification
-                     case TVN_SELCHANGED, TVN_SELCHANGING, TVN_ITEMEXPANDED, TVN_ITEMEXPANDING
-                        ' Get the TreeView class node related to the hItem handle. The pointer
-                        ' to the TreeViewNode is stored in the lParam of the node.
-                        pTreeViewNode = cast(wfxTreeNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, pnmtv->itemNew.hItem))
-                        if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
-                  end select
-                  
-                  if lNotification = TVN_SELCHANGING then
-                     if pTreeView->OnBeforeSelect Then 
-                        if pTreeView->OnBeforeSelect(*pTreeView, e) then return true
-                        if e.Cancel then return true
+                  IF lNotification = TVN_GETDISPINFO then
+                     dim as NMTVDISPINFO ptr lptvdi = cast(NMTVDISPINFO ptr, pNMHDR) 
+                     if (lptvdi->item.mask and TVIF_TEXT) then
+                        pTreeViewNode = cast(wfxTreeNode ptr, lptvdi->item.lParam)
+                        if pTreeViewNode then 
+                           lptvdi->item.pszText = pTreeViewNode->Text.sptr
+                           lptvdi->item.cchTextMax = len(pTreeViewNode->Text)
+                        end if
                      end if
-                  end if
-                  if lNotification = TVN_SELCHANGED then
-                     if pTreeView->OnAfterSelect Then pTreeView->OnAfterSelect(*pTreeView, e)
-                     if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
+                     exit function
                   end if
 
-                  if lNotification = TVN_ITEMEXPANDING then
-                     if pnmtv->action = TVE_EXPAND then
-                        if pTreeView->OnBeforeExpand Then 
-                           if pTreeView->OnBeforeExpand(*pTreeView, e) then return true
-                        end if
+                  IF lNotification = TVN_GETINFOTIP then
+                     dim as NMTVGETINFOTIP ptr lpGetInfoTip = cast(NMTVGETINFOTIP ptr, pNMHDR) 
+                     pTreeViewNode = cast(wfxTreeNode ptr, lpGetInfoTip->lParam)
+                     if pTreeViewNode then 
+                        if len(pTreeViewNode->ToolTipText) then
+                           lpGetInfoTip->pszText = pTreeViewNode->ToolTipText.sptr
+                           lpGetInfoTip->cchTextMax = len(pTreeViewNode->ToolTipText)
+                        end if   
                      end if
-                     if pnmtv->action = TVE_COLLAPSE then
-                        if pTreeView->OnBeforeCollapse Then 
-                           if pTreeView->OnBeforeCollapse(*pTreeView, e) then return true
-                        end if
-                     end if
-                     if e.Cancel then return true
-                  end if
-                  if lNotification = TVN_ITEMEXPANDED then
-                     if pnmtv->action = TVE_EXPAND then
-                        if pTreeView->OnAfterExpand Then pTreeView->OnAfterExpand(*pTreeView, e)
-                     end if
-                     if pnmtv->action = TVE_COLLAPSE then
-                        if pTreeView->OnAfterCollapse Then pTreeView->OnAfterCollapse(*pTreeView, e)
-                     end if
+                     exit function
                   end if
 
                   select case lNotification 
@@ -1401,8 +1384,11 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                                         TreeView_GetlParam( pNMHDR->hwndFrom, pTreeView->GetSelectedNode.hNode))
                         if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
                         if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
-                     
+                        exit function
+                        
                      case NM_CLICK, NM_RCLICK
+                        ' Process these click notifications prior to the change/expand notifications
+                        ' because we want the OnMouseUp message to fire before the Click.
                         ' Test to see if the checkbox was clicked.
                         dim hitinfo as TVHITTESTINFO
                         dim as POINT pt
@@ -1438,12 +1424,56 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                         end if
                         if (hitinfo.flags and TVHT_ONITEMLABEL) = TVHT_ONITEMLABEL then bHit = true                        
                         if bHit then  ' Invoke the Click event
-                           if lNotification = NM_RCLICK then e.RButton = true
+                           if lNotification = NM_RCLICK then 
+                              ' Treeview dows not send WM_RBUTTONUP so send the event during NM_RCLICK
+                              e.RButton = true
+                              if pTreeView->OnMouseUp Then pTreeView->OnMouseUp(*pTreeView, e)
+                           end if
                            if pTreeView->OnClick Then pTreeView->OnClick(*pTreeView, e)
                         end if   
-
+                        exit function
                   end select
 
+                  select case lNotification
+                     case TVN_SELCHANGED, TVN_SELCHANGING, TVN_ITEMEXPANDED, TVN_ITEMEXPANDING
+                        ' Get the TreeView class node related to the hItem handle. The pointer
+                        ' to the TreeViewNode is stored in the lParam of the node.
+                        pTreeViewNode = cast(wfxTreeNode ptr, TreeView_GetlParam( pNMHDR->hwndFrom, pnmtv->itemNew.hItem))
+                        if pTreeViewNode then pTreeView->TreeNode = *pTreeViewNode
+                  end select
+                  
+                  if lNotification = TVN_SELCHANGING then
+                     if pTreeView->OnBeforeSelect Then 
+                        if pTreeView->OnBeforeSelect(*pTreeView, e) then return true
+                        if e.Cancel then return true
+                     end if
+                  end if
+                  if lNotification = TVN_SELCHANGED then
+                     if pTreeView->OnAfterSelect Then pTreeView->OnAfterSelect(*pTreeView, e)
+                  end if
+
+                  if lNotification = TVN_ITEMEXPANDING then
+                     if pnmtv->action = TVE_EXPAND then
+                        if pTreeView->OnBeforeExpand Then 
+                           if pTreeView->OnBeforeExpand(*pTreeView, e) then return true
+                        end if
+                     end if
+                     if pnmtv->action = TVE_COLLAPSE then
+                        if pTreeView->OnBeforeCollapse Then 
+                           if pTreeView->OnBeforeCollapse(*pTreeView, e) then return true
+                        end if
+                     end if
+                     if e.Cancel then return true
+                  end if
+                  if lNotification = TVN_ITEMEXPANDED then
+                     if pnmtv->action = TVE_EXPAND then
+                        if pTreeView->OnAfterExpand Then pTreeView->OnAfterExpand(*pTreeView, e)
+                     end if
+                     if pnmtv->action = TVE_COLLAPSE then
+                        if pTreeView->OnAfterCollapse Then pTreeView->OnAfterCollapse(*pTreeView, e)
+                     end if
+                  end if
+                  exit function
 #endif
 
 
@@ -1733,8 +1763,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      rcText.left = rcText.left + pLabel->Parent->ScaleX(4) 
                      rcText.right = rcText.right - pLabel->Parent->ScaleX(4) 
                      
-                     wszText = AfxGetWindowText( lpdis->hwndItem )
-                     DrawText( memDC, wszText, -1, Cast(lpRect, @rcText), lFormat )
+                     dim as CWSTR wszCaption = AfxGetWindowText( lpdis->hwndItem )
+                     DrawText( memDC, wszCaption.sptr, -1, Cast(lpRect, @rcText), lFormat )
 
                      BitBlt lpdis->hDC, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY 
 
@@ -1862,7 +1892,8 @@ static Function wfxApplication.SubclassProc ( _
            WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_RBUTTONDOWN, _
            WM_LBUTTONUP, WM_MBUTTONUP, WM_RBUTTONUP, _
            WM_SETFOCUS, WM_KILLFOCUS, _
-           WM_MOUSELEAVE, WM_MOUSEHOVER
+           WM_MOUSELEAVE, WM_MOUSEHOVER, _
+           WM_DROPFILES
          If Application.HandleCommonMessages(hWin, uMsg, _wParam, _lParam) Then Return 0
 
       
