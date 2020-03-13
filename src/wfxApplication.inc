@@ -1113,6 +1113,17 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
             Select Case pNode->CtrlType 
 
+#ifdef CODEGEN_RICHEDIT
+               case ControlType.RichEdit
+                  if lNotification = EN_SELCHANGE then
+                     pRichEdit = Cast(wfxRichEdit Ptr, pNode->pData)
+                     if pRichEdit then
+                        if pRichEdit->OnSelectionChanged Then pRichEdit->OnSelectionChanged(*pRichEdit, e)
+                     end if
+                  end if
+
+#endif
+
 #ifdef CODEGEN_UPDOWN
                case ControlType.UpDown
                   pUpDown = Cast(wfxUpDown Ptr, pNode->pData)

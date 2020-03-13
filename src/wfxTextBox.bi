@@ -25,7 +25,8 @@ Type wfxTextBox Extends wfxControl
       _ReadOnly        As boolean = False
       _PasswordChar    As wstring * 10
       _CueBannerText   As wstring * MAX_PATH
-      _MaxLength       As Long = 32767
+      _LinePosition    as long = 0
+      _ColumnPosition  as long = 0
        
    Public:
       Declare Property TextAlign() As TextAlignment
@@ -40,8 +41,6 @@ Type wfxTextBox Extends wfxControl
       Declare Property PasswordChar( ByRef nValue As WString )
       Declare Property Multiline() As boolean
       Declare Property Multiline( ByVal nValue As boolean )
-      Declare Property MaxLength() As Long
-      Declare Property MaxLength( ByVal nValue As Long )
       Declare Property CharacterCasing() As CharacterCase
       Declare Property CharacterCasing( ByVal nValue As CharacterCase )
       Declare Property ReadOnly() As boolean
@@ -58,6 +57,10 @@ Type wfxTextBox Extends wfxControl
       Declare Property SelectionStart( ByVal nValue As Long )
       Declare Property SelectionLength() As Long
       Declare Property SelectionLength( ByVal nValue As Long )
+      Declare Property LinePosition() As Long
+      Declare Property LinePosition( ByVal nValue As Long )
+      Declare Property ColumnPosition() As Long
+      Declare Property ColumnPosition( ByVal nValue As Long )
 
       Declare Function Show(ByVal hWndParent As HWnd = 0) As Long Override
       Declare Constructor( byref wszName as wstring = "" )

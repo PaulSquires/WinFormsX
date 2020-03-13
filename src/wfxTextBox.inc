@@ -184,17 +184,15 @@ Property wfxTextBox.WordWrap() As boolean
 end property
 
 property wfxTextBox.WordWrap( byval nValue as boolean )
-   if this.hWindow then 
-      If nValue Then 
-         ' ES_AUTOHSCROLL must not exist if you want to have word wrapping.
-         AfxRemoveWindowStyle(this.hWindow, ES_AUTOHSCROLL)
-      else
-         AfxAddWindowStyle(this.hWindow, ES_AUTOHSCROLL)
+   ' Recreate textbox if wordwrap style changed
+   If nValue <> _WordWrap Then 
+      _WordWrap = nValue
+      if this.hWindow then 
+         dim as HWND hParent = GetParent(this.hWindow)
+         DestroyWindow( this.hWindow )
+         this.Show( hParent )
       End If
-      ' TODO: Recreate textbox if wordwrap style changed?
-      this.Refresh  
    end if
-   _WordWrap = nValue
 end property
 
 Property wfxTextBox.CueBannerText() As CWSTR
@@ -224,20 +222,6 @@ Property wfxTextBox.PasswordChar( ByRef nValue As WString )
       SendMessage(this.hWindow, EM_SETPASSWORDCHAR, iChr, 0)
    End If
    _PasswordChar = WChr(iChr)      
-End Property
-
-Property wfxTextBox.MaxLength() As Long
-   If this.hWindow Then 
-      _MaxLength = SendMessage(this.hWindow, EM_GETLIMITTEXT, 0, 0)
-   End If
-   Property = _MaxLength       
-End Property
-
-Property wfxTextBox.MaxLength( ByVal nValue As Long )
-   If this.hWindow Then 
-      SendMessage(this.hWindow, EM_SETLIMITTEXT, nValue, 0)
-   End If
-   _MaxLength = nValue       
 End Property
 
 Property wfxTextBox.TextScrollBars() As ScrollBars
@@ -289,6 +273,42 @@ Property wfxTextBox.SelectionLength( ByVal nValue As Long )
    SendMessage( this.hWindow, EM_SETSEL, this.SelectionStart, this.SelectionStart + nValue)
 End Property
 
+Property wfxTextBox.LinePosition() As Long
+   if this.hWindow then
+      ' Find out what line we are on, based on the current selection's end
+      dim as long nEnd   = Edit_GetSelEnd(this.hWindow) 
+      _LinePosition = SendMessage( this.hWindow, EM_EXLINEFROMCHAR, 0, cast(LPARAM, nEnd) )
+   end if
+   Property = _LinePosition
+End Property
+
+Property wfxTextBox.LinePosition( ByVal nValue As Long )
+   if this.hWindow then
+      dim as long nLineStartPos = SendMessage( this.hWindow, EM_LINEINDEX, nValue, 0 )
+      SendMessage( this.hWindow, EM_SETSEL, nLineStartPos, nLineStartPos )
+   end if
+   _LinePosition = nValue
+End Property
+
+Property wfxTextBox.ColumnPosition() As Long
+   if this.hWindow then
+      ' Find out what line we are on, based on the current selection's end
+      dim as long nEnd   = Edit_GetSelEnd(this.hWindow) 
+      ' Find the column, from the selection end, minus the char we are on  
+      '_ColumnPosition = nEnd - SendMessage( this.hWindow, EM_LINEINDEX, -1, 0 )
+      dim as long nLine = SendMessage( this.hWindow, EM_EXLINEFROMCHAR, 0, cast(LPARAM, nEnd) )
+      _ColumnPosition = nEnd - SendMessage( this.hWindow, EM_LINEINDEX, nLine, 0 )
+   end if
+   Property = _ColumnPosition
+End Property
+
+Property wfxTextBox.ColumnPosition( ByVal nValue As Long )
+   if this.hWindow then
+      dim as long nLineStartPos = SendMessage( this.hWindow, EM_LINEINDEX, this.LinePosition, 0 )
+      SendMessage( this.hWindow, EM_SETSEL, nLineStartPos + nValue, nLineStartPos + nValue)
+   end if
+   _ColumnPosition = nValue
+End Property
 
 
 Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
@@ -344,6 +364,11 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
          Cast(DWORD_PTR, 0) _              ' // Pointer to reference data
          )
  
+   if this.CtrlType = ControlType.RichEdit then
+      SendMessage( this.hWindow, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE) )
+      SendMessage( this.hWindow, EM_EXLIMITTEXT, 0, cast(LPARAM, 1024000) )  ' 1GB
+   end if
+
    ' Should we enable drag and drop files
    If this.AllowDrop Then DragAcceptFiles(this.hWindow, CTRUE)
 
@@ -356,9 +381,10 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
    this.BorderStyle     = _BorderStyle
    this.PasswordChar    = _PasswordChar
    this.CueBannerText   = _CueBannerText
-   this.MaxLength       = _MaxLength
    this.ToolTip         = _ToolTip
-
+   this.LinePosition    = _LinePosition
+   this.ColumnPosition  = _ColumnPosition
+   
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
    ' complete before any Activate message.
