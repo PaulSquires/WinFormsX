@@ -1108,7 +1108,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 #endif
 
          pNode = Application.GetControlByHandle( pNMHDR->hwndFrom )
-         
+
          If pNode Then
 
             Select Case pNode->CtrlType 
