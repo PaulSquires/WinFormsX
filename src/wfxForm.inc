@@ -395,7 +395,8 @@ function wfxForm.GetNextCtrlID() as Long
    function = _NextCtrlID 
 End Function
 
-function wfxForm.Close() as Long
+function wfxForm.Close( byval ReturnValue as long = 0 ) as Long
+   _ReturnValue = ReturnValue
    ' Call WM_CLOSE for the form. This allows the user to respond to
    ' OnFormClosing and re-enable parent form in IsModal situations.
    SendMessage(this.hWindow, WM_CLOSE, 0, 0)
@@ -835,6 +836,13 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
          If (this.pWindow->AccelHandle = 0) Or _
             (TranslateAccelerator(this.hWindow, this.pWindow->AccelHandle, @uMsg)) = 0 Then
    
+            ' Insert any potential Message Pump Hook here in order to act on any user defined code logic.
+            dim pForm as wfxForm ptr = Application.GetpFormObject(this.hWindow)
+            if pForm andalso pForm->OnMessagePumpHook then
+               if pForm->OnMessagePumpHook( @uMsg ) then continue do
+            end if
+            
+            
             ' Preprocess the message to handle keyboard input and route it to the correct event
             ' handlers. If the message was not handled then continue to process the keystroke
             ' further via IsDialogMessage and TranslateMessage.
@@ -878,7 +886,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
       
    End If
    
-   Function = 0
+   Function = _ReturnValue
 
 END FUNCTION
 

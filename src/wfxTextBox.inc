@@ -366,6 +366,7 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
  
    if this.CtrlType = ControlType.RichEdit then
       SendMessage( this.hWindow, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_SELCHANGE) )
+      SendMessage( this.hWindow, EM_SETEVENTMASK, 0, cast(LPARAM, ENM_CHANGE) )
       SendMessage( this.hWindow, EM_EXLIMITTEXT, 0, cast(LPARAM, 1024000) )  ' 1GB
    end if
 

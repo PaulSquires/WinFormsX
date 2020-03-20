@@ -1122,6 +1122,13 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      end if
                   end if
 
+                  if lNotification = EN_CHANGE then
+                     pRichEdit = Cast(wfxRichEdit Ptr, pNode->pData)
+                     if pRichEdit then
+                        if pRichEdit->OnTextChanged Then pRichEdit->OnTextChanged(*pRichEdit, e)
+                     end if
+                  end if
+
 #endif
 
 #ifdef CODEGEN_UPDOWN

@@ -39,6 +39,7 @@ Type wfxForm Extends wfxControl
       _wfxMainMenuPtr  as wfxMainMenu ptr
 #endif
       _Icon            as wstring * MAX_PATH
+      _ReturnValue     as Long
       
    Public:           
       Controls         As wfxLList
@@ -104,7 +105,7 @@ Type wfxForm Extends wfxControl
       declare property Icon( byref cwzValue as wstring )
 
       declare function GetNextCtrlID() as Long     
-      declare function Close() as Long
+      declare function Close( byval ReturnValue as long = 0 ) as Long
       declare function Show(byval hWndParent as hwnd = 0) as Long override
       declare function Show(byref frmParent as wfxForm) as Long 
       declare function Show(byval frmParent as wfxForm ptr) as Long
@@ -142,7 +143,8 @@ Type wfxForm Extends wfxControl
       OnKeyPress         as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnKeyUp            as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnDropFiles        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
-
+      OnMessagePumpHook  as function( byval lpMSG as MSG ptr ) as boolean
+      
       Declare Constructor( byref wszName as wstring = "" )
       Declare Destructor
       
