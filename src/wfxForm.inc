@@ -611,7 +611,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
    END IF
 
    dim e as wfxEventArgs 
-
+   
    ' If this form is being shown modal then save the current control focus 
    ' so that it can be restored when the modal form closes.
    Dim As HWnd hWndParentFocus 
