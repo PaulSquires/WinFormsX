@@ -266,7 +266,7 @@ Property wfxTextBox.SelectionStart( ByVal nValue As Long )
 End Property
 
 Property wfxTextBox.SelectionLength() As Long
-   Property = Edit_GetSelStart(this.hWindow) - Edit_GetSelEnd(this.hWindow)
+   Property = Edit_GetSelEnd(this.hWindow) - Edit_GetSelStart(this.hWindow)
 End Property
 
 Property wfxTextBox.SelectionLength( ByVal nValue As Long )
