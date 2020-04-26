@@ -21,11 +21,12 @@
 
 constructor wfxForm( byref wszName as wstring = "" )
    ' Create new CWindow class for this Form
-   this.pWindow = New CWindow()
+   this.pWindow  = New CWindow()
    this.CtrlType = ControlType.Form
    this.Width    = CW_USEDEFAULT
    this.Height   = CW_USEDEFAULT
    this.Name     = wszName
+   _NextCtrlID   = 9000     ' start at high number so not to interfere with user defined IDC_* numbers
 End Constructor
 
 destructor wfxForm
@@ -822,6 +823,10 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
       SetFocus(pCtrlFocus->hWindow)
    End If
    
+   ' The Form is now ready for user interaction. PostMessage a user defined message
+   ' in order to check for any user defined FormReady event handler.
+   PostMessage( this.hWindow, Application.MSG_WINFORMS_FORMREADY, 0, 0 )
+
    
    ' If this is a modal popup window so disable the parent window. The
    ' parent window will be re-enabled when this form is closed.

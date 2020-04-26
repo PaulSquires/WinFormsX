@@ -129,6 +129,7 @@ Type wfxForm Extends wfxControl
       OnShown            as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnFormClosing      as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnFormClosed       as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
+      OnFormReady        as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnMove             as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnClick            as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT
       OnResize           as function( byref sender as wfxForm, byref e as EventArgs ) as LRESULT

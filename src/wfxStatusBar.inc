@@ -80,7 +80,7 @@ function wfxStatusBar.Show(byval hWndParent as hwnd = 0) as long
          this.Parent->pWindow->AddControl ( _
          "STATUSBAR", _                    ' Class name
          hWndParent, _                     ' Parent window handle
-         100, _                            ' Control identifier (this gets modified when added to controls collection)
+         _CtrlID, _                        ' Control identifier 
          this.Text, _                      ' Control caption
          this.Left, _                      ' Horizontal position
          this.Top, _                       ' Vertical position

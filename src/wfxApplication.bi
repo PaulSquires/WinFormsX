@@ -44,6 +44,16 @@ Type wfxApplication
       
       ' Gets a collection of open forms owned by the wfxApplication
       Forms As wfxLList
+      
+      ' User defined message that is fired via PostMessage in order to
+      ' simulate the DoAfterCheck notification for when a user clciks
+      ' on a TreeView checkbox. RegisterMessage.
+      MSG_WINFORMS_AFTERCHECK as UInteger
+
+      ' User defined message that is fired via PostMessage in order to
+      ' simulate the FormReady event handler. RegisterMessage.
+      MSG_WINFORMS_FORMREADY as UInteger
+      
 End Type
 
 ''

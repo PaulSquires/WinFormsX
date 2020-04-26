@@ -25,7 +25,8 @@
 ''
 
 Constructor wfxApplication()
-   'print "app constructor"
+   this.MSG_WINFORMS_FORMREADY = RegisterWindowMessage( wstr("MSG_WINFORMS_FORMREADY") )
+   this.MSG_WINFORMS_AFTERCHECK = RegisterWindowMessage( wstr("MSG_WINFORMS_AFTERCHECK") )
 end constructor
 
 Destructor wfxApplication()
@@ -812,7 +813,16 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
    ' Attempt to process the message using any defined functions
    Select Case uMsg
 
-      case MSG_WINFORMS_AFTERCHECK
+      case Application.MSG_WINFORMS_FORMREADY
+         ' Handle any user defined FormReady event handler. This message is send via
+         ' PostMessage from the Form's creation function.
+         pForm = Application.GetpFormObject(hWin)
+         If pForm Then 
+            if pForm->OnFormReady THEN pForm->OnFormReady(*pForm, e)
+         end if
+         
+         
+      case Application.MSG_WINFORMS_AFTERCHECK
 #ifdef CODEGEN_TREEVIEW
          ' Custom message fired via PostMessage to simulate AfterCheck when a user
          ' clicks on a TreeView checkbox.
@@ -838,6 +848,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             pMinMaxInfo->ptMaxTrackSize.y = iif(pForm->MaximumHeight, pForm->MaximumHeight, pMinMaxInfo->ptMaxTrackSize.y)
             return 0
          End If	 
+      
       
       case WM_ACTIVATE
          pForm = Application.GetpFormObject(hWin)
@@ -1428,7 +1439,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                                  if pTreeView->OnBeforeCheck(*pTreeView, e) then return true
                                  if e.Cancel then return true
                                  ' Post a message to handle the OnAfterCheck
-                                 PostMessage(hWin, MSG_WINFORMS_AFTERCHECK, _
+                                 PostMessage(hWin, Application.MSG_WINFORMS_AFTERCHECK, _
                                                    cast(UINT_PTR, hitinfo.hItem), cast(LONG_PTR, pTreeView))
                               end if
                            end if

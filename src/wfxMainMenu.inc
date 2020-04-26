@@ -196,7 +196,8 @@ function wfxMainMenu.CreateMenuStructure_Internal( byval hSubMenu as HMENU, _
                end select
             Next                                           
          End If
-         Select Case ucase(**wszKey)
+         Select Case ucase(wszKey)
+            Case "ENTER": nKey = VK_RETURN
             Case "PLUS":  nKey = VK_OEM_PLUS
             Case "MINUS": nKey = VK_OEM_MINUS
             case "INS":   nKey = VK_INSERT
