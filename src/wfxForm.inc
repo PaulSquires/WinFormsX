@@ -71,7 +71,7 @@ property wfxForm.WindowState( byval nValue as FormWindowState )
          case FormWindowState.Maximized: nState = SW_SHOWMAXIMIZED
          case FormWindowState.Normal:    nState = SW_SHOWNORMAL
       end select      
-      ShowWindow(this.pWindow->hWindow, nValue)
+      ShowWindow(this.pWindow->hWindow, nState)
    else
       _WindowState = nValue
    end if   

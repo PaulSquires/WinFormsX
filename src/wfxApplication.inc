@@ -1772,11 +1772,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      dim as HFONT _hFont = AfxGetWindowFont( lpdis->hwndItem )
                      SelectObject( memDC, _hFont )
                      
-                     dim as POINT pt
-                     GetCursorPos( @pt )
-                     MapWindowPoints( 0, lpdis->hwndItem, cast( POINT ptr, @pt ), 1 )
-                     dim as Boolean IsHot = PtInRect( @rc, pt )
-                     
+                     dim as Boolean IsHot = pCtrl->IsTracking
+
                      ' Paint the entire background
                      FillRect( memDC, @rc, iif( IsHot, pLabel->hBackBrushHot, pLabel->hBackBrush) )
 

@@ -156,29 +156,17 @@ Property wfxDateTimePicker.DateFormat() As DateTimePickerFormat
 end property   
 
 Property wfxDateTimePicker.DateFormat( ByVal nValue As DateTimePickerFormat )
-   if this.hWindow then 
-      ' Remove any existing format styles
-      AfxRemoveWindowStyle(this.hWindow, DTS_LONGDATEFORMAT)
-      AfxRemoveWindowStyle(this.hWindow, DTS_SHORTDATEFORMAT)
-      AfxRemoveWindowStyle(this.hWindow, DTS_SHORTDATECENTURYFORMAT)
-      AfxRemoveWindowStyle(this.hWindow, DTS_TIMEFORMAT)
-      dim wszCustomFormat as wstring * MAX_PATH = ""
-      DateTime_SetFormat(this.hWindow, @wszCustomFormat )      
-      select case nValue
-         case DateTimePickerFormat.LongDate
-            AfxAddWindowStyle(this.hWindow, DTS_LONGDATEFORMAT)
-         case DateTimePickerFormat.ShortDate
-            AfxAddWindowStyle(this.hWindow, DTS_SHORTDATEFORMAT)
-         case DateTimePickerFormat.ShortDateCentury
-            AfxAddWindowStyle(this.hWindow, DTS_SHORTDATECENTURYFORMAT)
-         case DateTimePickerFormat.TimeFormat
-            AfxAddWindowStyle(this.hWindow, DTS_TIMEFORMAT)
-         case DateTimePickerFormat.CustomFormat
-            this.FormatCustom = _FormatCustom
-      end select
-      this.Refresh  
-   end if
    _DateFormat = nValue
+   if this.hWindow then
+      ' Need to rebuild the control
+      dim as long nCtrlID = this.CtrlID
+      dim as boolean bVisible = this.Visible
+      dim as hwnd hParent = GetParent(this.hWindow)
+      DestroyWindow( this.hWindow )
+      this.Show(hParent)
+      this.CtrlID = nCtrlID
+      this.Visible = bVisible
+   end if
 end property
 
 
