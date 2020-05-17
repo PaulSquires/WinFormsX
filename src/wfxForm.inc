@@ -756,11 +756,13 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
    ' Ensure that window gets correctly placed into the taskbar (if applicable) by
    ' calling ShowWindow with SW_SHOWDEFAULT initially specified.
    if this.IsMainForm then
-      if this.WindowState = FormWindowState.Maximized then
-         ShowWindow(this.hWindow, SW_MAXIMIZE)
-      else
-         ShowWindow(this.hWindow, SW_SHOWDEFAULT)
-      end if   
+      if _Visible then
+         if this.WindowState = FormWindowState.Maximized then
+            ShowWindow(this.hWindow, SW_MAXIMIZE)
+         else
+            ShowWindow(this.hWindow, SW_SHOWDEFAULT)
+         end if   
+      end if
    end if
     
    
