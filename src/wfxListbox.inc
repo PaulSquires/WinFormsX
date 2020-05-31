@@ -595,6 +595,7 @@ Function wfxListBoxItemsCollection.Add( ByRef wszValue As WString = "", ByVal nV
    If this.hWindow Then
       Dim As Long idx = SendMessage( this.hWindow, LB_ADDSTRING, 0, Cast(LPARAM, @wszValue) )
       SendMessage( this.hWindow, LB_SETITEMDATA, idx, CAST(LPARAM, nValue))
+      AfxRedrawWindow(this.hWindow)
       Function = idx
    Else
       Dim pData As wfxListBoxItem Ptr = New wfxListBoxItem
@@ -611,6 +612,7 @@ Function wfxListBoxItemsCollection.Insert( ByVal nIndex As Long, ByRef wszValue 
    If this.hWindow Then
       Dim As Long idx = SendMessage( this.hWindow, LB_INSERTSTRING, nIndex, Cast(LPARAM, @wszValue) )
       SendMessage( this.hWindow, LB_SETITEMDATA, idx, CAST(LPARAM, nValue))
+      AfxRedrawWindow(this.hWindow)
       Function = idx
    Else
       Dim pData As wfxListBoxItem Ptr = New wfxListBoxItem
@@ -635,6 +637,7 @@ end function
 function wfxListBoxItemsCollection.Remove( byval nIndex as long ) as long
    if this.hWindow then
       function = SendMessage( this.hWindow, LB_DELETESTRING, nIndex, 0)
+      AfxRedrawWindow(this.hWindow)
    else
       dim pNode as wfxLListNode ptr = _Collection.get_index(nIndex)
       if pNode then
@@ -666,6 +669,7 @@ end function
 function wfxListBoxItemsCollection.Clear() as long
    if this.hWindow then
       SendMessage( this.hWindow, LB_RESETCONTENT, 0, 0)
+      AfxRedrawWindow(this.hWindow)
    else
       ' Deallocate elements in the Items collection.
       dim pNode as wfxLListNode ptr = _Collection.get_first
