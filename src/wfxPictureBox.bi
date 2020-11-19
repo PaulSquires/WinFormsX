@@ -29,7 +29,7 @@ Type wfxPictureBox Extends wfxControl
    
    Public:
       declare property Image() as CWSTR
-      declare property Image( byref cwzValue as wstring )
+      declare property Image( byref wszValue as wstring )
       declare property ImageWidth( byval nValue as Long )
       declare property ImageWidth() as Long
       declare property ImageHeight( byval nValue as Long )
@@ -41,7 +41,8 @@ Type wfxPictureBox Extends wfxControl
       declare Property BackColorHot( ByVal nValue As COLORREF )
       declare Property BackColorHot() as COLORREF
 
-
+      declare property ImageFromFile( byref wszValue as wstring )
+      
       declare function Show(byval hWndParent as hwnd = 0) as long override
       Declare Constructor( byref wszName as wstring = "" )
       Declare destructor

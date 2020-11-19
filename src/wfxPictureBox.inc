@@ -63,6 +63,17 @@ property wfxPictureBox.Image( byref cwzValue as wstring )
    _Image = cwzValue
 end property
 
+property wfxPictureBox.ImageFromFile( byref wszValue as wstring )
+   If _ImageCtxPtr Then 
+      If AfxFileExists(wszValue) Then
+         if this.Parent->pWindow then
+            _ImageCtxPtr->LoadImageFromFile( wszValue ) 
+         end if
+      end if
+   end if      
+   _Image = wszValue
+end property
+
 property wfxPictureBox.ImageWidth( byval nValue as Long )
    ' Only invoke size change if value is not zero
    if nValue = 0 then exit property

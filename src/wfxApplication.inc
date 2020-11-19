@@ -1802,6 +1802,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   Case ControlType.ListBox   '' LISTBOX CONTROL
 #ifdef CODEGEN_LISTBOX
                      If lpdis->itemID = -1 Then Exit Function
+
                      pListBox = cast(wfxListBox ptr, pNode->pData)
                      if pListBox = 0 then exit function
                      
@@ -1813,6 +1814,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      rc = lpdis->rcItem
                      dim as long nWidth  = rc.right-rc.left
                      dim as long nHeight = rc.bottom-rc.top 
+
 
                      memDC = CreateCompatibleDC( lpdis->hDC )
                      hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
@@ -1935,6 +1937,19 @@ static Function wfxApplication.SubclassProc ( _
          end if
 #endif         
 
+      case WM_PAINT   
+#ifdef CODEGEN_LISTBOX
+         dim pNode as wfxLListNode ptr = Application.GetControlByHandle( hWin )
+         If pNode Then
+            if pNode->CtrlType = ControlType.ListBox then
+               dim pListBox as wfxListBox Ptr = Cast(wfxListBox Ptr, pNode->pData)
+               if pListBox then
+                  if pListBox->Items.Count = 0 then return 0   
+               end if   
+            end if
+         end if
+#endif
+
       case WM_ERASEBKGND   
 #ifdef CODEGEN_LISTBOX
          dim pNode as wfxLListNode ptr = Application.GetControlByHandle( hWin )
@@ -1968,9 +1983,9 @@ static Function wfxApplication.SubclassProc ( _
                            bottom_index = (nTopIndex + ItemsPerPage) 
                            if bottom_index >= NumItems then bottom_index = NumItems - 1
                            visible_rows = (bottom_index - nTopIndex) + 1
+                           rc.top = visible_rows * itemHeight 
                         end if
 
-                        rc.top = visible_rows * itemHeight 
                         if rc.top < rc.bottom then
                            dim as HDC _hDC = cast(HDC, _wParam)
                            FillRect( _hDC, @rc, pListBox->hBackBrush  )
