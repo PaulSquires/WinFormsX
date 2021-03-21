@@ -58,6 +58,10 @@ property wfxPictureBox.Image( byref cwzValue as wstring )
                AfxDeleteFile( wszTempFilename )
             end if
          end if
+      else
+         ' Clear any existing image
+         _ImageCtxPtr->Clear      
+         _Image = ""
       End If    
    End If
    _Image = cwzValue
@@ -69,6 +73,9 @@ property wfxPictureBox.ImageFromFile( byref wszValue as wstring )
          if this.Parent->pWindow then
             _ImageCtxPtr->LoadImageFromFile( wszValue ) 
          end if
+      else
+         ' clear any existing image
+         _ImageCtxPtr->Clear      
       end if
    end if      
    _Image = wszValue

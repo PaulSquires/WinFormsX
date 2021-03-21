@@ -264,7 +264,7 @@ end function
          If pLabel AndAlso pLabel->##msg Then pLabel->##msg(*pLabel, e)
 #endif
       #EndIf
-#ifdef CODEGEN_TOOLBAR
+#ifdef CODEGEN_STATUSBAR
       If pStatusBar AndAlso pStatusBar->##msg Then pStatusBar->##msg(*pStatusBar, e)
 #endif
 #ifdef CODEGEN_PICTUREBOX
@@ -1650,12 +1650,12 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
 
          dim lpdis As DRAWITEMSTRUCT Ptr = cast( DRAWITEMSTRUCT Ptr, lParam )
          if lpdis = 0 then exit function
+
          
          pNode = Application.GetControlByHandle( lpdis->hwndItem )
          If pNode Then
             pCtrl = cast(wfxControl ptr, pNode->pData)
             if pCtrl = 0 then exit function
-            SaveDC(lpdis->hDC)
              
 #ifdef CODEGEN_STATUSBAR
             if pNode->CtrlType = ControlType.StatusBar then
@@ -1706,6 +1706,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      rc1.left  = rc1.right - nTotalWidth
                end select
                
+               SaveDC(lpdis->hDC)
+   
                memDC = CreateCompatibleDC( lpdis->hDC )
                hbit  = CreateCompatibleBitmap( lpdis->hDC, rc.right, rc.bottom )
                If hbit Then hbit = SelectObject( memDC, hbit )
@@ -1749,22 +1751,25 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                ' Cleanup
                If hbit  Then DeleteObject SelectObject(memDC, hbit)
                If memDC Then DeleteDC memDC
+               RestoreDC(lpdis->hDC, -1)
             end if
 #endif
 
-            if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
-               ( lpdis->itemAction = ODA_SELECT ) orelse _
-               ( lpdis->itemAction = ODA_FOCUS ) then
-
-               select case pNode->CtrlType 
+            select case pNode->CtrlType 
 #ifdef CODEGEN_LABEL
-                  Case ControlType.Label   '' LABEL CONTROL
+               Case ControlType.Label   '' LABEL CONTROL
+                  if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
+                     ( lpdis->itemAction = ODA_SELECT ) orelse _
+                     ( lpdis->itemAction = ODA_FOCUS ) then
+
                      pLabel = cast(wfxLabel ptr, pNode->pData)
                      if pLabel = 0 then exit function
                      if lpdis->itemAction = ODA_FOCUS then return true
 
                      GetClientRect( lpdis->hwndItem, @rc )
                      
+                     SaveDC(lpdis->hDC)
+      
                      memDC = CreateCompatibleDC( lpdis->hDC )
                      hbit  = CreateCompatibleBitmap( lpdis->hDC, rc.right, rc.bottom )
                      If hbit Then hbit = SelectObject( memDC, hbit )
@@ -1797,16 +1802,24 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      ' Cleanup
                      If hbit  Then DeleteObject SelectObject(memDC, hbit)
                      If memDC Then DeleteDC memDC
+                     RestoreDC(lpdis->hDC, -1)
+                     return true
+                  end if   
 #endif
 
-                  Case ControlType.ListBox   '' LISTBOX CONTROL
+               Case ControlType.ListBox   '' LISTBOX CONTROL
 #ifdef CODEGEN_LISTBOX
-                     If lpdis->itemID = -1 Then Exit Function
+                  if ( lpdis->itemAction = ODA_DRAWENTIRE ) orelse _
+                     ( lpdis->itemAction = ODA_SELECT ) orelse _
+                     ( lpdis->itemAction = ODA_FOCUS ) then
+                     
+                     If lpdis->itemID = -1 Then return true
 
                      pListBox = cast(wfxListBox ptr, pNode->pData)
                      if pListBox = 0 then exit function
                      
                      if lpdis->itemAction = ODA_FOCUS then return true
+
 
                      dim as COLORREF clrBack, clrFore
                      dim as HBRUSH hBrushBack
@@ -1815,6 +1828,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      dim as long nWidth  = rc.right-rc.left
                      dim as long nHeight = rc.bottom-rc.top 
 
+                     SaveDC(lpdis->hDC)
 
                      memDC = CreateCompatibleDC( lpdis->hDC )
                      hbit  = CreateCompatibleBitmap( lpdis->hDC, nWidth, nHeight )
@@ -1876,12 +1890,13 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      ' Cleanup
                      If hbit  Then DeleteObject SelectObject(memDC, hbit)
                      If memDC Then DeleteDC memDC
+                     RestoreDC(lpdis->hDC, -1)
+                     return true
+                  end if   
 #endif
-               end select
 
-            end if
-            RestoreDC(lpdis->hDC, -1)
-            return true
+            end select
+
          end if
          
       
@@ -1937,26 +1952,32 @@ static Function wfxApplication.SubclassProc ( _
          end if
 #endif         
 
-      case WM_PAINT   
-#ifdef CODEGEN_LISTBOX
-         dim pNode as wfxLListNode ptr = Application.GetControlByHandle( hWin )
-         If pNode Then
-            if pNode->CtrlType = ControlType.ListBox then
-               dim pListBox as wfxListBox Ptr = Cast(wfxListBox Ptr, pNode->pData)
-               if pListBox then
-                  if pListBox->Items.Count = 0 then return 0   
-               end if   
-            end if
-         end if
-#endif
 
-      case WM_ERASEBKGND   
+case WM_PAINT
+#ifdef CODEGEN_LISTBOX
+   dim pNode as wfxLListNode ptr = Application.GetControlByHandle( hWin )
+   If pNode Then
+      if pNode->CtrlType = ControlType.ListBox then
+         dim pListBox as wfxListBox Ptr = Cast(wfxListBox Ptr, pNode->pData)
+         if pListBox then
+            if pListBox->Items.Count = 0 then
+               ' already painted so prevent flicker by not painting again
+               return 0
+            end if
+         end if      
+      end if
+   end if
+#endif
+                  
+
+      case WM_ERASEBKGND
 #ifdef CODEGEN_LISTBOX
          dim pNode as wfxLListNode ptr = Application.GetControlByHandle( hWin )
          
          If pNode Then
             Select Case pNode->CtrlType 
                case ControlType.ListBox
+
                   dim pListBox as wfxListBox Ptr = Cast(wfxListBox Ptr, pNode->pData)
 
                   ' Only erase the bottom portion of the listbox that extends from the last item
@@ -1964,6 +1985,7 @@ static Function wfxApplication.SubclassProc ( _
                   ' reduce screen flicker.
                   if pListBox then
                      dim as RECT rc: GetClientRect( hWin, @rc )
+
                      ' If the number of lines in the listbox is less than the number per page then 
                      ' calculate from last item to bottom of listbox, otherwise calculate based on
                      ' the mod of the lineheight to listbox height so we can color the partial line
@@ -2029,15 +2051,15 @@ static Function wfxApplication.SubclassProc ( _
                         FillRect( _hDC, @rc, pListBox->hBackBrush  )
                      end if
                      
-                     return TRUE
+                     ValidateRect( hWin, @rc )
+                     return true
                   end if
             end select
          end if   
-#endif      
+#endif
 
 
       case WM_NOTIFY
-
 #ifdef CODEGEN_LISTVIEW
  
          Dim pNMHDR As NMHDR Ptr = Cast(NMHDR Ptr, _lParam)

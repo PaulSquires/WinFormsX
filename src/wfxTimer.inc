@@ -36,6 +36,13 @@ property wfxTimer.Interval() as Long
 end property
 
 property wfxTimer.Interval( byval nValue as long ) 
+   ' If a running timer already exists and the interval is changed, then
+   ' kill the existing timer and start running the new timer.
+   if nValue <> _Interval then
+      this.StopTimer
+      _Interval = nValue
+      this.StartTimer
+   end if   
    _Interval = nValue
 end property
 
@@ -61,7 +68,7 @@ property wfxTimer.Enabled( byval nValue as Boolean )
 end property
 
 function wfxTimer.StartTimer() as Long
-   ' Create a timer that fires every second (1000 ms).
+   ' Create a timer that fires every Interval period.
    SetTimer( this.Parent->hWindow, _         ' window handle to form
              this.TimerID, _                 ' timer identifier 
              this.Interval, _                ' millisecond interval 

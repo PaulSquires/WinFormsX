@@ -454,7 +454,8 @@ END PROPERTY
 property wfxMenuItem.Text() as CWSTR
    if this.Handle then
       if this.MenuParent->IsLoading = false then
-         dim as CWSTR wszTemp = AfxGetMenuItemText( this.Handle, this.MenuID, false )
+         dim wszTemp as wstring * 260
+         AfxGetMenuItemText( this.Handle, this.MenuID, false, @wszTemp, 260 )
          ' Filter out any keyboard accelerator
          _Text = AfxStrParse(wszTemp, 1, wchr(9))
       end if   
