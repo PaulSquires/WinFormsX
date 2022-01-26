@@ -54,6 +54,7 @@ Type wfxControl Extends Object
       Declare Property Name( ByRef cwzValue As wstring )
       Declare Property Tag() As CWSTR 
       Declare Property Tag( ByRef cwzValue As wstring )
+      Declare Property hWindowToolTip() As hwnd
       Declare Property ToolTip() As CWSTR 
       Declare Property ToolTip( ByRef cwzValue As wstring )
       Declare Property ToolTipBalloon() As boolean

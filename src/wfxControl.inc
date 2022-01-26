@@ -53,6 +53,10 @@ property wfxControl.Tag( byref cwzValue as wstring )
    _Tag = cwzValue
 end property
 
+property wfxControl.hWindowToolTip() as hwnd
+   property = _hWndToolTip
+end property
+
 property wfxControl.ToolTip() as CWSTR
    property = _ToolTip
 end property
