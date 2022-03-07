@@ -41,7 +41,7 @@ Property wfxMonthCalendar.SelectedDate( Byref wszValue As wstring )
    if this.hWindow then 
       ' The incoming date string should be in the format YYYYMMDD
       Dim As SYSTEMTIME pst
-      pst.wYear  = val(left(wszValue, 4))
+      pst.wYear  = val(mid(wszValue, 1, 4))
       pst.wMonth = val(mid(wszValue, 5, 2))
       pst.wDay   = val(right(wszValue, 2))
       MonthCal_SetCurSel( this.hWindow, @pst )

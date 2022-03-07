@@ -40,13 +40,13 @@ end property
 
 Property wfxDateTimePicker.SelectedDate() As CWSTR
    if this.hWindow then 
-      Dim As SYSTEMTIME pst
-      DateTime_GetSystemTime( this.hWindow, @pst )
+      Dim As SYSTEMTIME st
+      DateTime_GetSystemTime( this.hWindow, @st )
       ' make sure that the string being returned is 8 length
       _SelectedDate = _
-         AfxStrRSet( wstr(pst.wYear),  4, "0" ) & _
-         AfxStrRSet( wstr(pst.wMonth), 2, "0" ) & _
-         AfxStrRSet( wstr(pst.wDay),   2, "0" )
+         AfxStrRSet( wstr(st.wYear),  4, "0" ) & _
+         AfxStrRSet( wstr(st.wMonth), 2, "0" ) & _
+         AfxStrRSet( wstr(st.wDay),   2, "0" )
    End If
    Property = _SelectedDate
 end property
@@ -54,44 +54,44 @@ end property
 Property wfxDateTimePicker.SelectedDate( Byref wszValue As wstring )
    if this.hWindow then 
       ' The incoming date string should be in the format YYYYMMDD
-      Dim As SYSTEMTIME pst
-      pst.wYear  = val(left(wszValue, 4))
-      pst.wMonth = val(mid(wszValue, 5, 2))
-      pst.wDay   = val(right(wszValue, 2))
+      Dim As SYSTEMTIME st
+      st.wYear  = val(mid(wszValue, 1, 4))
+      st.wMonth = val(mid(wszValue, 5, 2))
+      st.wDay   = val(right(wszValue, 2))
       dim as CWSTR wszTime = this.SelectedTime
-      pst.wHour   = val(left(wszTime, 2))
-      pst.wSecond = val(mid(wszTime, 3, 2))
-      pst.wMinute = val(right(wszTime, 2))
-      DateTime_SetSystemTime( this.hWindow, GDT_VALID, @pst )
+      st.wHour   = val(mid(wszTime, 1, 2))
+      st.wSecond = val(mid(wszTime, 3, 2))
+      st.wMinute = val(right(wszTime, 2))
+      DateTime_SetSystemTime( this.hWindow, GDT_VALID, @st )
    end if
    _SelectedDate = wszValue
 end property
 
 Property wfxDateTimePicker.SelectedTime() As CWSTR
    if this.hWindow then 
-      Dim As SYSTEMTIME pst
-      DateTime_GetSystemTime( this.hWindow, @pst )
+      Dim As SYSTEMTIME st
+      DateTime_GetSystemTime( this.hWindow, @st )
       ' make sure that the string being returned is 6 length
       _SelectedTime = _
-         AfxStrRSet( wstr(pst.wHour),   2, "0" ) & _
-         AfxStrRSet( wstr(pst.wMinute), 2, "0" ) & _
-         AfxStrRSet( wstr(pst.wSecond), 2, "0" )
+         AfxStrRSet( wstr(st.wHour),   2, "0" ) & _
+         AfxStrRSet( wstr(st.wMinute), 2, "0" ) & _
+         AfxStrRSet( wstr(st.wSecond), 2, "0" )
    End If
    Property = _SelectedTime
 end property
 
 Property wfxDateTimePicker.SelectedTime( Byref wszValue As wstring )
    if this.hWindow then 
-      Dim As SYSTEMTIME pst
+      Dim As SYSTEMTIME st
       dim as CWSTR wszDate = this.SelectedDate
-      pst.wYear  = val(left(wszDate, 4))
-      pst.wMonth = val(mid(wszDate, 5, 2))
-      pst.wDay   = val(right(wszDate, 2))
+      st.wYear  = val(mid(wszDate, 1, 4))
+      st.wMonth = val(mid(wszDate, 5, 2))
+      st.wDay   = val(right(wszDate, 2))
       ' The incoming date string should be in the format HHMMSS
-      pst.wHour   = val(left(wszValue, 2))
-      pst.wMinute = val(mid(wszValue, 3, 2))
-      pst.wSecond = val(right(wszValue, 2))
-      DateTime_SetSystemTime( this.hWindow, GDT_VALID, @pst )
+      st.wHour   = val(mid(wszValue, 1, 2))
+      st.wMinute = val(mid(wszValue, 3, 2))
+      st.wSecond = val(right(wszValue, 2))
+      DateTime_SetSystemTime( this.hWindow, GDT_VALID, @st )
    end if
    _SelectedTime = wszValue
 end property
