@@ -887,17 +887,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             ' each time the form is shown we need to re-initialize any of the default 
             ' control/form properties.
             pForm->Controls.clear
-            'dim pNode as wfxLListNode ptr = pForm->Controls.get_first
-            'do until pNode = 0
-            '   ' Remove returns the next control in the list and deletes the node passed to it.
-            '   pNode = pForm->Controls.remove( pNode )
-            'loop 
-               
-            ' Add the form to the Application Form collection if it does not already exist.
-            'if Application.Forms.search_data( pForm ) = 0 then
-            '   Application.Forms.Add(ControlType.Form, pForm)
-            'end if
-            
+
             ' Set any necessary Window handles to zero to ensure that they get re-created.
             pForm->hWindow = 0
             
@@ -1791,8 +1781,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      
                      ' pad the drawing rectangle to allow left and right margins
                      dim as RECT rcText = lpdis->rcItem
-                     rcText.left = rcText.left + pLabel->Parent->ScaleX(4) 
-                     rcText.right = rcText.right - pLabel->Parent->ScaleX(4) 
+                     'rcText.left = rcText.left + pLabel->Parent->ScaleX(4) 
+                     'rcText.right = rcText.right - pLabel->Parent->ScaleX(4) 
                      
                      dim as CWSTR wszCaption = AfxGetWindowText( lpdis->hwndItem )
                      DrawText( memDC, wszCaption.sptr, -1, Cast(lpRect, @rcText), lFormat )
@@ -2077,85 +2067,87 @@ case WM_PAINT
 
                case ControlType.ListView
                   dim pListView as wfxListView Ptr = Cast(wfxListView Ptr, pNode->pData)
-                  if lNotification = NM_CUSTOMDRAW then
-                
-                     dim plvcd as NMLVCUSTOMDRAW ptr = cast(NMLVCUSTOMDRAW ptr, pNMHDR)
-                     Select Case plvcd->nmcd.dwDrawStage
+                  if (lNotification = NM_CUSTOMDRAW) andalso (pListView <> 0) then
                      
-                        Case CDDS_PREPAINT
-                           return CDRF_NOTIFYITEMDRAW
+                     if pListView->HeaderThemed = false then
+                        dim plvcd as NMLVCUSTOMDRAW ptr = cast(NMLVCUSTOMDRAW ptr, pNMHDR)
+                        Select Case plvcd->nmcd.dwDrawStage
+                        
+                           Case CDDS_PREPAINT
+                              return CDRF_NOTIFYITEMDRAW
+                                 
+                           Case CDDS_ITEMPREPAINT 
+                              dim hLvHeader AS hwnd
+                              dim nIndex AS long
+                              dim nState AS long
+                              dim wszText as WString * MAX_PATH
                               
-                        Case CDDS_ITEMPREPAINT 
-                           dim hLvHeader AS hwnd
-                           dim nIndex AS long
-                           dim nState AS long
-                           dim wszText as WString * MAX_PATH
-                           
-                           nIndex = plvcd->nmcd.dwItemSpec
-                           nState = plvcd->nmcd.uItemState
+                              nIndex = plvcd->nmcd.dwItemSpec
+                              nState = plvcd->nmcd.uItemState
 
-                           ' Get the header item text...
-                           dim hdi AS HDITEM
-                           hdi.mask = HDI_TEXT
-                           hdi.pszText = @wszText
-                           hdi.cchtextmax = SIZEOF(wszText)
-                           hLvHeader = ListView_GetHeader(hWin)
-                           Header_GetItem(hLvHeader, nIndex, @hdi)
-   
-                           ' Draw the button state...
-                           IF (nState AND CDIS_SELECTED) THEN
-                              DrawFrameControl plvcd->nmcd.hdc, @plvcd->nmcd.rc, DFC_BUTTON, DFCS_BUTTONPUSH OR DFCS_PUSHED
-                           ELSE
-                              DrawFrameControl plvcd->nmcd.hdc, @plvcd->nmcd.rc, DFC_BUTTON, DFCS_BUTTONPUSH
-                           END IF
+                              ' Get the header item text...
+                              dim hdi AS HDITEM
+                              hdi.mask = HDI_TEXT
+                              hdi.pszText = @wszText
+                              hdi.cchtextmax = SIZEOF(wszText)
+                              hLvHeader = ListView_GetHeader(hWin)
+                              Header_GetItem(hLvHeader, nIndex, @hdi)
+      
+                              ' Draw the button state...
+                              IF (nState AND CDIS_SELECTED) THEN
+                                 DrawFrameControl plvcd->nmcd.hdc, @plvcd->nmcd.rc, DFC_BUTTON, DFCS_BUTTONPUSH OR DFCS_PUSHED
+                              ELSE
+                                 DrawFrameControl plvcd->nmcd.hdc, @plvcd->nmcd.rc, DFC_BUTTON, DFCS_BUTTONPUSH
+                              END IF
 
-                           ' Paint the background
-                           dim hBrush AS HBRUSH
-                           InflateRect @plvcd->nmcd.rc, -2, -2
-                           
-                           if pListView then
-                              hBrush = CreateSolidBrush(pListView->HeaderBackColor)
-                              FillRect plvcd->nmcd.hdc, @plvcd->nmcd.rc, hBrush
-                           end if
-                           
-                           SetBkMode plvcd->nmcd.hdc, TRANSPARENT
-                           ' Change your text color here...
-                           SetTextColor plvcd->nmcd.hdc, pListView->HeaderForeColor
-
-                           ' Get the text alignment
-                           dim as long nAlign 
-                           if pListView then
-                              ' Do array bounds check in case columns are deleted and
-                              ' this drawing routine attempts to access column due to
-                              ' horizontal scrollbar being moved too far right.
-                              if nIndex <= pListView->Columns.Count - 1 then
-                                 select case pListView->Column(nIndex).TextAlign
-                                    case TextAlignment.Left:   nAlign = DT_LEFT
-                                    case TextAlignment.Right:  nAlign = DT_RIGHT
-                                    case TextAlignment.Center: nAlign = DT_CENTER
-                                 end select
+                              ' Paint the background
+                              dim hBrush AS HBRUSH
+                              InflateRect @plvcd->nmcd.rc, -2, -2
+                              
+                              if pListView then
+                                 hBrush = CreateSolidBrush(pListView->HeaderBackColor)
+                                 FillRect plvcd->nmcd.hdc, @plvcd->nmcd.rc, hBrush
                               end if
-                           end if
-                           if instr(wszText, chr(13)) then
-                              nAlign = nAlign OR DT_WORDBREAK
-                           else
-                              nAlign = nAlign OR DT_VCENTER or DT_SINGLELINE
-                           end if
-                           
-                           ' Offset the text slightly if depressed...
-                           IF (nState AND CDIS_SELECTED) THEN InflateRect @plvcd->nmcd.rc, -2, -2
-                           
-                           ' Draw multiline, using CRLF (i.e. wszText = "Customer" & $CRLF & "number")
-                           DrawText plvcd->nmcd.hdc, wszText, LEN(wszText), @plvcd->nmcd.rc, nAlign
+                              
+                              SetBkMode plvcd->nmcd.hdc, TRANSPARENT
+                              ' Change your text color here...
+                              SetTextColor plvcd->nmcd.hdc, pListView->HeaderForeColor
 
-                           ' Cleanup
-                           IF hBrush THEN DeleteObject hBrush
+                              ' Get the text alignment
+                              dim as long nAlign 
+                              if pListView then
+                                 ' Do array bounds check in case columns are deleted and
+                                 ' this drawing routine attempts to access column due to
+                                 ' horizontal scrollbar being moved too far right.
+                                 if nIndex <= pListView->Columns.Count - 1 then
+                                    select case pListView->Column(nIndex).TextAlign
+                                       case TextAlignment.Left:   nAlign = DT_LEFT
+                                       case TextAlignment.Right:  nAlign = DT_RIGHT
+                                       case TextAlignment.Center: nAlign = DT_CENTER
+                                    end select
+                                 end if
+                              end if
+                              if instr(wszText, chr(13)) then
+                                 nAlign = nAlign OR DT_WORDBREAK
+                              else
+                                 nAlign = nAlign OR DT_VCENTER or DT_SINGLELINE
+                              end if
+                              
+                              ' Offset the text slightly if depressed...
+                              IF (nState AND CDIS_SELECTED) THEN InflateRect @plvcd->nmcd.rc, -2, -2
+                              
+                              ' Draw multiline, using CRLF (i.e. wszText = "Customer" & $CRLF & "number")
+                              DrawText plvcd->nmcd.hdc, wszText, LEN(wszText), @plvcd->nmcd.rc, nAlign
 
-                           ' Tell Windows the item has already been drawn
-                           FUNCTION = CDRF_SKIPDEFAULT
-                           EXIT FUNCTION
-                                                        
-                     End Select
+                              ' Cleanup
+                              IF hBrush THEN DeleteObject hBrush
+
+                              ' Tell Windows the item has already been drawn
+                              FUNCTION = CDRF_SKIPDEFAULT
+                              exit function
+                                                           
+                        End Select
+                     end if
                   End if
             
             end select

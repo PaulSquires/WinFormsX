@@ -27,6 +27,7 @@ constructor wfxListView( byref wszName as wstring = "" )
 end constructor
 
 destructor wfxListView
+   this.Columns.Clear
    this.Items.Clear
 end destructor
 
@@ -248,6 +249,14 @@ property wfxListView.HideSelection( byval nValue as boolean )
    _HideSelection = nValue
 end property
 
+Property wfxListView.HeaderThemed() As boolean
+   Property = _HeaderThemed
+End Property
+
+property wfxListView.HeaderThemed( byval nValue as boolean )
+   _HeaderThemed = nValue
+   If this.hWindow Then this.Refresh
+end property
 
 Property wfxListView.HeaderStyle() As ColumnHeaderStyle
    If this.hWindow Then 
@@ -447,6 +456,9 @@ function wfxListView.Show(byval hWndParent as hwnd = 0) as long
    ' create this control when the form is created.
    if hWndParent = 0 THEN exit function
       
+   this.Columns.Clear
+   this.Items.Clear
+
    Dim As Long dwExStyle = 0
    dim as long dwStyle = WS_CLIPCHILDREN OR LVS_REPORT or LVS_OWNERDATA
 
@@ -517,10 +529,9 @@ function wfxListView.Show(byval hWndParent as hwnd = 0) as long
       ' Get the handle of the ListView header control and subclass it
       dim hLvHeader AS hwnd = ListView_GetHeader(this.hWindow)
       IF hLvHeader THEN 
-         ' Store the ListView Header hWindow in the linked list in order to allow
-         ' for fast lookups via GetControlByHandle.
-         'this.Parent->Controls.Add( ControlType.ListView, pNode->pData )->hWindow = hLvHeader
-         SetWindowSubclass( hLvHeader, Cast(SUBCLASSPROC, @wfxListView.HeaderSubclassProc), _CtrlID, Cast(DWORD_PTR, @this) )
+         if this.HeaderThemed = false then
+            SetWindowSubclass( hLvHeader, Cast(SUBCLASSPROC, @wfxListView.HeaderSubclassProc), _CtrlID, Cast(DWORD_PTR, @this) )
+         end if   
       end if
    end if
 

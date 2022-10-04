@@ -170,6 +170,7 @@ Type wfxListView Extends wfxControl
       _HeaderHeight as Long =  20
       _HeaderForeColor as COLORREF = Colors.SystemWindowText
       _HeaderBackColor as COLORREF = Colors.SystemWindow
+      _HeaderThemed as boolean = false
       _LabelEdit As boolean = false
       _MultiSelect As boolean = false
       _SelectedItem as wfxListViewItem
@@ -216,6 +217,8 @@ Type wfxListView Extends wfxControl
       Declare Property OddRowColor( ByVal nValue As COLORREF )
       Declare Property OddRowColorEnabled() As boolean
       Declare Property OddRowColorEnabled( ByVal nValue As boolean)
+      Declare Property HeaderThemed() As boolean
+      Declare Property HeaderThemed( ByVal nValue As boolean)
       Declare Property HeaderForeColor() As COLORREF
       Declare Property HeaderForeColor( ByVal nValue As COLORREF )
       Declare Property HeaderBackColor() As COLORREF
