@@ -28,6 +28,20 @@ Destructor wfxButton()
    _XpButtonPtr = 0
 End Destructor
 
+Property wfxButton.AllowFocusRect() As boolean 
+   If _XpButtonPtr Then 
+      _AllowFocusRect = _XpButtonPtr->GetAllowFocusRect
+   End If
+   Property = _AllowFocusRect
+End Property
+
+Property wfxButton.AllowFocusRect( ByVal nValue As boolean )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetAllowFocusRect(nValue)
+   End If
+   _AllowFocusRect = nValue
+End Property
+
 Property wfxButton.ToggleMode() As boolean 
    If _XpButtonPtr Then 
       _ToggleMode = cbool(_XpButtonPtr->GetToggle)
@@ -86,6 +100,20 @@ Property wfxButton.TextForeColor() As COLORREF
       _TextForeColor = _XpButtonPtr->GetTextForeColor
    End If
    Property = _TextForeColor 
+End Property
+
+Property wfxButton.TextForeColorHot( ByVal nValue As COLORREF )
+   If _XpButtonPtr Then 
+      _XpButtonPtr->SetTextForeColorHot(nValue, True)
+   End If
+   _TextForeColorHot = nValue
+End Property
+
+Property wfxButton.TextForeColorHot() As COLORREF
+   If _XpButtonPtr Then 
+      _TextForeColorHot = _XpButtonPtr->GetTextForeColorHot
+   End If
+   Property = _TextForeColorHot 
 End Property
 
 Property wfxButton.TextForeColorDown( ByVal nValue As COLORREF )
@@ -331,11 +359,13 @@ Function wfxButton.Show(ByVal hWndParent As HWnd = 0) As Long
 
    ' Apply the properties
    this.ThemeSupport      = _ThemeSupport
+   this.AllowFocusRect    = _AllowFocusRect
    this.TextAlign         = _TextAlign
    this.BackColor         = _BackColor
    this.BackColorDown     = _BackColorDown
    this.BackColorHot      = _BackColorHot
    this.TextForeColor     = _TextForeColor
+   this.TextForeColorHot  = _TextForeColorHot
    this.TextForeColorDown = _TextForeColorDown
    this.TextBackColor     = _TextBackColor
    this.TextBackColorDown = _TextBackColorDown

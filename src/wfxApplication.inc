@@ -1325,13 +1325,13 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                      dim plvcd as NMLVCUSTOMDRAW ptr = cast(NMLVCUSTOMDRAW ptr, pNMHDR)
                      Select Case plvcd->nmcd.dwDrawStage
                      
-                        Case CDDS_PREPAINT
+                        case CDDS_PREPAINT
                            return CDRF_NOTIFYITEMDRAW 
                             
                         case CDDS_ITEMPREPAINT
                            return CDRF_NOTIFYSUBITEMDRAW or CDRF_NOTIFYPOSTPAINT
                               
-                        Case (CDDS_ITEMPREPAINT or CDDS_SUBITEM)
+                        case (CDDS_ITEMPREPAINT or CDDS_SUBITEM)
                            ' to retrieve the line and column number of the cell
                            dim as long nItem = plvcd->nmcd.dwItemSpec 
                            dim as long nSubItem = plvcd->iSubItem     
@@ -1341,10 +1341,6 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                            if nSubItem <= pListView->Item(nItem).SubItems.Count - 1 then
                               plvcd->clrText   = pListView->Item(nItem).SubItem(nSubItem).ForeColor
                               plvcd->clrTextBk = pListView->Item(nItem).SubItem(nSubItem).BackColor
-                              if pListView->SelectedIndex = nItem then
-                                 plvcd->clrText   = colors.Yellow
-                                 plvcd->clrTextBk = colors.Red
-                              end if   
                            end if
                               
                            if pListView->OddRowColorEnabled then
@@ -1355,8 +1351,8 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                               end if
                            end if
                               
-                           return CDRF_DODEFAULT 
-                                                        
+                           return CDRF_DODEFAULT
+
                      End Select
                   End if
 #endif
