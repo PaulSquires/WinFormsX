@@ -54,7 +54,10 @@ Type wfxForm Extends wfxControl
 #endif      
       
       pWindow As CWindow Ptr
+      pLayout AS CLayout Ptr
+      
       declare function CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS HWND = NULL ) as POINT  'internal
+      declare function GetAnchorEquate( byval pCtrl as wfxControl ptr ) as long
       declare property Text() as CWSTR
       declare property Text( byref nValue as wstring )
       Declare Property WindowState() As FormWindowState

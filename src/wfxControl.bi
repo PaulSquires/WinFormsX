@@ -36,6 +36,7 @@ Type wfxControl Extends Object
       _bIsTracking   As Boolean = False    ' mouse tracking for Enter/Leave
       _AllowDrop     As Boolean = False
       _Tag           As CWSTR
+      _Anchor        As CWSTR
       _hFont         As HFONT
       _FontString    As CWSTR
       _wfxFontPtr    As wfxFont Ptr
@@ -54,6 +55,8 @@ Type wfxControl Extends Object
       Declare Property Name( ByRef cwzValue As wstring )
       Declare Property Tag() As CWSTR 
       Declare Property Tag( ByRef cwzValue As wstring )
+      Declare Property Anchor() As CWSTR 
+      Declare Property Anchor( ByRef cwzValue As wstring )
       Declare Property hWindowToolTip() As hwnd
       Declare Property ToolTip() As CWSTR 
       Declare Property ToolTip( ByRef cwzValue As wstring )

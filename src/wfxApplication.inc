@@ -1564,6 +1564,14 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
             pForm->SizeToolBar()
 #endif
 
+            ' Size/move any controls that had their Anchor property set. We are using
+            ' the WinFBX CLayout class to handle this.
+            if pForm->pLayout then
+               pForm->pLayout->AdjustControls
+               ' Need to refresh the Form because any Frame controls will disappear during the movements
+               pForm->Refresh      
+            end if   
+            
             ' Allow the user to respond to the size message
             If pForm->OnResize Then pForm->OnResize(*pForm, e)
          END IF

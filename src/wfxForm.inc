@@ -598,6 +598,30 @@ End Function
 
 ''
 ''
+function wfxForm.GetAnchorEquate( byval pCtrl as wfxControl ptr ) as long
+   if pCtrl = 0 then exit function
+   
+   dim as CWSTR wszValue = pCtrl->Anchor
+   dim as long nEquate = AFX_ANCHOR_NONE
+
+   select case ucase(wszValue)
+      case "LEFT,RIGHT":            nEquate = AFX_ANCHOR_WIDTH
+      case "RIGHT":                 nEquate = AFX_ANCHOR_RIGHT
+      case "TOP,BOTTOM":            nEquate = AFX_ANCHOR_HEIGHT
+      case "LEFT,TOP,RIGHT,BOTTOM": nEquate = AFX_ANCHOR_HEIGHT_WIDTH
+      case "TOP,RIGHT,BOTTOM":      nEquate = AFX_ANCHOR_HEIGHT_RIGHT
+      case "BOTTOM":                nEquate = AFX_ANCHOR_BOTTOM
+      case "LEFT,RIGHT,BOTTOM":     nEquate = AFX_ANCHOR_BOTTOM_WIDTH
+      case "RIGHT,BOTTOM":          nEquate = AFX_ANCHOR_BOTTOM_RIGHT
+   end select
+
+   function = nEquate
+
+end function
+
+
+''
+''
 function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
                                      byval IsFormModal as boolean, _
                                      byval IsChild as boolean _
@@ -728,6 +752,9 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
    if pNode then pNode->hWindow = this.hWindow
    
    
+   ' // Anchor the controls
+   this.pLayout = new CLayout(this.hWindow)
+   
    ' Create and show all of the child controls. Also track what control is being
    ' set as initially selected/focus
    dim idx as Long = 0
@@ -736,6 +763,11 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
       pCtrl = cast(wfxControl ptr, pNode->pData)
       If pCtrl Then
          pCtrl->Show(this.hWindow)
+         if pCtrl->hWindow then
+            ' Add the control to the Form's CLayout
+            dim as long nEquate = this.GetAnchorEquate(pCtrl)
+            this.pLayout->AnchorControl( pCtrl->CtrlID, nEquate )
+         end if
          If pCtrl->TabStop Then
             ' By default, set the first control to have keyboard focus. If a focus 
             ' is specifically set in a later control then the pCtrl->Focused property
