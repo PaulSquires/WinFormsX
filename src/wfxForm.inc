@@ -30,6 +30,7 @@ constructor wfxForm( byref wszName as wstring = "" )
 End Constructor
 
 destructor wfxForm
+   if this.pLayout then Delete this.pLayout
    If this.pWindow Then Delete this.pWindow
 End Destructor 
          
@@ -604,15 +605,25 @@ function wfxForm.GetAnchorEquate( byval pCtrl as wfxControl ptr ) as long
    dim as CWSTR wszValue = pCtrl->Anchor
    dim as long nEquate = AFX_ANCHOR_NONE
 
+   ' Controls are automatically anchored to TOP and LEFT by Windows itself
    select case ucase(wszValue)
-      case "LEFT,RIGHT":            nEquate = AFX_ANCHOR_WIDTH
-      case "RIGHT":                 nEquate = AFX_ANCHOR_RIGHT
-      case "TOP,BOTTOM":            nEquate = AFX_ANCHOR_HEIGHT
+      case "LEFT":                  nEquate = AFX_ANCHOR_NONE   
+      case "LEFT,TOP":              nEquate = AFX_ANCHOR_NONE   
+      case "LEFT,TOP,RIGHT":        nEquate = AFX_ANCHOR_WIDTH
       case "LEFT,TOP,RIGHT,BOTTOM": nEquate = AFX_ANCHOR_HEIGHT_WIDTH
-      case "TOP,RIGHT,BOTTOM":      nEquate = AFX_ANCHOR_HEIGHT_RIGHT
-      case "BOTTOM":                nEquate = AFX_ANCHOR_BOTTOM
+      case "LEFT,RIGHT":            nEquate = AFX_ANCHOR_WIDTH
       case "LEFT,RIGHT,BOTTOM":     nEquate = AFX_ANCHOR_BOTTOM_WIDTH
+      case "LEFT,BOTTOM":           nEquate = AFX_ANCHOR_BOTTOM
+         
+      case "TOP":                   nEquate = AFX_ANCHOR_NONE   
+      case "TOP,RIGHT":             nEquate = AFX_ANCHOR_RIGHT
+      case "TOP,RIGHT,BOTTOM":      nEquate = AFX_ANCHOR_HEIGHT_RIGHT
+      case "TOP,BOTTOM":            nEquate = AFX_ANCHOR_HEIGHT
+         
+      case "RIGHT":                 nEquate = AFX_ANCHOR_RIGHT
       case "RIGHT,BOTTOM":          nEquate = AFX_ANCHOR_BOTTOM_RIGHT
+         
+      case "BOTTOM":                nEquate = AFX_ANCHOR_BOTTOM
    end select
 
    function = nEquate
