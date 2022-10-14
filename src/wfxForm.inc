@@ -666,10 +666,11 @@ end function
 
 ''
 ''
-function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
-                                     byval IsFormModal as boolean, _
-                                     byval IsChild as boolean _
-                                     ) as long   
+function wfxForm.CreateFormInternal( _
+            byval hWndParent as hwnd, _
+            byval IsFormModal as boolean, _
+            byval IsChild as boolean _
+            ) as long   
    ' Internal function. Do not call from code.
    ' Get Window creation values before the hWindow actually exists
 
@@ -776,12 +777,18 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
       END SELECT
 
    end if
+
    '  Create the main window based on properties set
    this.hWindow = this.pWindow->Create( hWndParent, _
                         this.Text, _
                         @wfxApplication.WndProc, _
                         pt.x, pt.y, nWidth, nHeight, _
                         dwStyle, dwExStyle ) 
+
+   if IsChild then 
+      ' Set the control ID for this child form
+      SetWindowLongPtr( this.hWindow, GWLP_ID, _InitialCtrlID )
+   end if   
 
    ' Set the Form icons. hWindow must be valid.
    this.Icon = _Icon
