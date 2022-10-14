@@ -21,12 +21,13 @@
 
 constructor wfxForm( byref wszName as wstring = "" )
    ' Create new CWindow class for this Form
-   this.pWindow  = New CWindow()
-   this.CtrlType = ControlType.Form
-   this.Width    = CW_USEDEFAULT
-   this.Height   = CW_USEDEFAULT
-   this.Name     = wszName
-   _NextCtrlID   = 9000     ' start at high number so not to interfere with user defined IDC_* numbers
+   this.pWindow   = New CWindow()
+   this.CtrlType  = ControlType.Form
+   this.Width     = CW_USEDEFAULT
+   this.Height    = CW_USEDEFAULT
+   this.Name      = wszName
+   _InitialCtrlID = 9000     ' start at high number so not to interfere with user defined IDC_* numbers
+   _NextCtrlID    = _InitialCtrlID
 End Constructor
 
 destructor wfxForm
@@ -156,6 +157,14 @@ end property
 
 property wfxForm.ChildForm( byval nValue as boolean )
    _ChildForm = nValue
+end property
+
+property wfxForm.ChildFormParent() as CWSTR
+   property = _ChildFormParent
+end property
+
+property wfxForm.ChildFormParent( byref nValue as wstring )
+   _ChildFormParent = nValue
 end property
 
 property wfxForm.MinimizeBox() as boolean
@@ -390,6 +399,13 @@ function wfxForm.UnScaleY( byval nValue as long ) as Long
 end function       
 
 
+function wfxForm.SetInitialCtrlID( byval nValue as long ) as Long     
+   ' This function is internal to the class.
+   ' Return the next available control id. Used when creating controls.
+   _InitialCtrlID = nValue
+   function = 0 
+End Function
+
 function wfxForm.GetNextCtrlID() as Long     
    ' This function is internal to the class.
    ' Return the next available control id. Used when creating controls.
@@ -599,12 +615,10 @@ End Function
 
 ''
 ''
-function wfxForm.GetAnchorEquate( byval pCtrl as wfxControl ptr ) as long
-   if pCtrl = 0 then exit function
-   
-   dim as CWSTR wszValue = pCtrl->Anchor
-   dim as long nEquate = AFX_ANCHOR_NONE
+function wfxForm.GetAnchorEquateValue( byref wszValue as wstring ) as long
 
+   dim as long nEquate = AFX_ANCHOR_NONE
+   
    ' Controls are automatically anchored to TOP and LEFT by Windows itself
    select case ucase(wszValue)
       case "LEFT":                  nEquate = AFX_ANCHOR_NONE   
@@ -626,7 +640,26 @@ function wfxForm.GetAnchorEquate( byval pCtrl as wfxControl ptr ) as long
       case "BOTTOM":                nEquate = AFX_ANCHOR_BOTTOM
    end select
 
-   function = nEquate
+   return nEquate
+end function
+
+''
+''
+function wfxForm.GetAnchorEquateByForm( byval pForm as wfxForm ptr ) as long
+   if pForm = 0 then exit function
+   
+   dim as CWSTR wszValue = pForm->Anchor
+   function = this.GetAnchorEquateValue( wszValue )
+
+end function
+
+''
+''
+function wfxForm.GetAnchorEquateByCtrl( byval pCtrl as wfxControl ptr ) as long
+   if pCtrl = 0 then exit function
+   
+   dim as CWSTR wszValue = pCtrl->Anchor
+   function = this.GetAnchorEquateValue( wszValue )
 
 end function
 
@@ -776,7 +809,7 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
          pCtrl->Show(this.hWindow)
          if pCtrl->hWindow then
             ' Add the control to the Form's CLayout
-            dim as long nEquate = this.GetAnchorEquate(pCtrl)
+            dim as long nEquate = this.GetAnchorEquateByCtrl(pCtrl)
             this.pLayout->AnchorControl( pCtrl->CtrlID, nEquate )
          end if
          If pCtrl->TabStop Then
@@ -788,13 +821,39 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
       End If
       idx = idx + 1
       pNode = this.Controls.get_next(idx)
-   LOOP
+   loop
 
    ' Setting the ClientSize property will override the width/height of the form
-   if this.ClientSize.IsEmpty = false THEN
+   if this.ClientSize.IsEmpty = false then
       this.pWindow->SetClientSize( this.ClientSize.Width, this.ClientSize.Height )
-   END IF
+   end if
 
+   ' Check for any Forms that are a child of this form and show them.
+   dim pForm as wfxForm ptr
+   idx = 0
+   
+   dim as CWSTR wszFormNameUCASE = ucase(this.Name)
+   
+   pNode = Application.Forms.get_first
+   do until pNode = 0
+      If pNode->CtrlType = ControlType.Form Then
+         pForm = Cast(wfxForm Ptr, pNode->pData)
+         if pForm then
+            ' skip this form
+            if ucase(pForm->Name) <> wszFormNameUCASE then
+               if (pForm->ChildForm = true) andalso (ucase(pForm->ChildFormParent) = wszFormNameUCASE) then
+                  pForm->ShowChild( this.hWindow )
+                  dim as long nEquate = this.GetAnchorEquateByForm(pForm)
+                  this.pLayout->AnchorControl( pForm->_InitialCtrlID, nEquate )
+               end if   
+            end if   
+         end if
+      end If
+      ' Get the next form in the application 
+      idx = idx + 1  
+      pNode = Application.Forms.get_next(idx)
+   loop
+   
 
    ' Ensure that window gets correctly placed into the taskbar (if applicable) by
    ' calling ShowWindow with SW_SHOWDEFAULT initially specified.
@@ -808,7 +867,6 @@ function wfxForm.CreateFormInternal( byval hWndParent as hwnd, _
       end if
    end if
     
-   
    ' Form has been created but not yet shown. Fire the Load event now if 
    ' it has been defined. Need to do it here rather than in WM_CREATE because
    ' the Window handle is only assigned to the form object AFTER the WM_CREATE 

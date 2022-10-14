@@ -427,7 +427,7 @@ function wfxApplication.GetpFormObjectByName( byref wszFormName as wstring ) as 
       ' Get the next form in the application 
       idx = idx + 1  
       pNode = this.Forms.get_next(idx)
-   LOOP
+   loop
    function = 0
 end function
 

@@ -22,9 +22,11 @@ Type wfxForm Extends wfxControl
       _ControlBox      as boolean = true
       '_ShowInTaskBar   as Boolean = true
       _ClientSize      as wfxSize 
-      _NextCtrlID      as long    = 100
-      _IsMainForm      as boolean = false 
+      _InitialCtrlID   as long
+      _NextCtrlID      as long
       _ChildForm       as boolean = false 
+      _ChildFormParent as CWSTR
+      _IsMainForm      as boolean = false 
       _IsModal         as Boolean = false
       _KeyPreview      As Boolean = False
       _MinimumHeight   as Long = 0
@@ -56,8 +58,11 @@ Type wfxForm Extends wfxControl
       pWindow As CWindow Ptr
       pLayout AS CLayout Ptr
       
+      declare function SetInitialCtrlID( byval nValue as long ) as Long     
       declare function CalculateStartPosition( BYVAL rc as RECT, BYVAL hwndParent AS HWND = NULL ) as POINT  'internal
-      declare function GetAnchorEquate( byval pCtrl as wfxControl ptr ) as long
+      declare function GetAnchorEquateValue( byref wszValue as wstring ) as long
+      declare function GetAnchorEquateByCtrl( byval pCtrl as wfxControl ptr ) as long
+      declare function GetAnchorEquateByForm( byval pForm as wfxForm ptr ) as long
       declare property Text() as CWSTR
       declare property Text( byref nValue as wstring )
       Declare Property WindowState() As FormWindowState
@@ -76,6 +81,8 @@ Type wfxForm Extends wfxControl
       declare property ClientSize( byval nWidth as long, byval nHeight as long )
       Declare Property ChildForm() As boolean
       Declare Property ChildForm( ByVal nValue As boolean )
+      declare property ChildFormParent() as CWSTR
+      declare property ChildFormParent( byref nValue as wstring )
       Declare Property IsMainForm() As boolean
       Declare Property IsMainForm( ByVal nValue As boolean )
       Declare Property IsModal() As boolean
