@@ -1577,11 +1577,7 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          END IF
       
       
-      Case WM_CTLCOLORSTATIC, WM_CTLCOLORLISTBOX 
-         ' WinFormsX Label and ListBox controls handle color using OwnerDraw via WM_DRAWITEM
-         
-     
-      case WM_CTLCOLOREDIT, WM_CTLCOLORBTN
+      case WM_CTLCOLOREDIT, WM_CTLCOLORBTN, WM_CTLCOLORLISTBOX, WM_CTLCOLORSTATIC
          ' wParam: HDC of the control. 
          ' lParam: Handle to the control.
          ' Need to determine the child control handle that is sending the request to be painted.
@@ -1589,9 +1585,14 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          if pNode then 
             pCtrl = cast(wfxControl ptr, pNode->pData)
             if pCtrl THEN 
-               SetTextColor(cast(HDC, wParam), pCtrl->ForeColor)
-               SetBkColor(cast(HDC, wParam), pCtrl->BackColor)
-               Return Cast(LRESULT, pCtrl->hBackBrush)
+               select case pCtrl->CtrlType
+                  case ControlType.Label , ControlType.ListBox 
+                     ' WinFormsX Label and ListBox controls handle color using OwnerDraw via WM_DRAWITEM
+                  case else
+                     SetTextColor(cast(HDC, wParam), pCtrl->ForeColor)
+                     SetBkColor(cast(HDC, wParam), pCtrl->BackColor)
+                     Return Cast(LRESULT, pCtrl->hBackBrush)
+               end select
             end if   
          end if
          

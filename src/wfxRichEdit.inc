@@ -27,6 +27,7 @@ constructor wfxRichEdit( byref wszName as wstring = "" )
    this.Multiline      = true
    this.WordWrap       = true
    this.AcceptsReturn  = true
+   this.MaxLength      = 64000
 end constructor
 
 

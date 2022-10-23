@@ -27,8 +27,11 @@ Type wfxTextBox Extends wfxControl
       _CueBannerText   As wstring * MAX_PATH
       _LinePosition    as long = 0
       _ColumnPosition  as long = 0
+      _MaxLength       as long = 32767
        
    Public:
+      Declare Property MaxLength() As long
+      Declare Property MaxLength( ByVal nValue As long )
       Declare Property TextAlign() As TextAlignment
       Declare Property TextAlign( ByVal nValue As TextAlignment)
       Declare Property BorderStyle() As ControlBorderStyle

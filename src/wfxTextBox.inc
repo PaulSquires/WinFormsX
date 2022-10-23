@@ -25,6 +25,7 @@ constructor wfxTextBox( byref wszName as wstring = "" )
    this.Name = wszName
    this.BackColor = Colors.SystemWindow
    this.ForeColor = Colors.SystemWindowText
+   this.MaxLength = 32767
 end constructor
 
 Property wfxTextBox.TextAlign() As TextAlignment
@@ -136,6 +137,20 @@ Property wfxTextBox.ReadOnly( ByVal nValue As boolean )
       SendMessage( this.hWindow, EM_SETREADONLY, nValue, 0 )
    End If
    _ReadOnly = nValue
+End Property
+
+Property wfxTextBox.MaxLength() As long
+   If this.hWindow Then 
+      _MaxLength = SendMessage( this.hWindow, EM_GETLIMITTEXT, 0, 0 )
+   End If
+   Property = _MaxLength
+End Property
+
+Property wfxTextBox.MaxLength( ByVal nValue As long )
+   If this.hWindow Then 
+      SendMessage( this.hWindow, EM_SETLIMITTEXT, nValue, 0 )
+   End If
+   _MaxLength = nValue
 End Property
 
 Property wfxTextBox.AcceptsReturn() As boolean
@@ -384,6 +399,7 @@ Function wfxTextBox.Show(ByVal hWndParent As HWnd = 0) As Long
    this.ToolTip         = _ToolTip
    this.LinePosition    = _LinePosition
    this.ColumnPosition  = _ColumnPosition
+   this.MaxLength       = _MaxLength
    
    ' Do not set the focus/selected here because doing so will also Activate the form and
    ' cause an Activated message to be fired. We want the Form's Load event to
