@@ -33,6 +33,7 @@ Type wfxButton Extends wfxControl
       _ImageHighDPI      as boolean = true
       _ImageMargin       as Long = 4
       _TextMargin        as Long = 4
+      _MultiLine         as boolean = false
       
    Public:
       Declare Property AllowFocusRect() As boolean
@@ -43,6 +44,8 @@ Type wfxButton Extends wfxControl
       Declare Property BackColorDown() As COLORREF 
       Declare Property BackColorHot( ByVal nValue As COLORREF )
       Declare Property BackColorHot() As COLORREF 
+      Declare Property MultiLine() As boolean
+      Declare Property MultiLine( ByVal nValue As boolean )
       Declare Property TextForeColor() As COLORREF
       Declare Property TextForeColor( ByVal nValue As COLORREF)
       Declare Property TextForeColorHot() As COLORREF

@@ -42,6 +42,18 @@ Property wfxButton.AllowFocusRect( ByVal nValue As boolean )
    _AllowFocusRect = nValue
 End Property
 
+Property wfxButton.MultiLine() As boolean 
+   Property = _MultiLine
+End Property
+
+Property wfxButton.MultiLine( ByVal nValue As boolean )
+   _MultiLine = nValue
+   If _XpButtonPtr Then 
+      ' Force the button to redraw with new multiline or singleline setting
+      this.TextAlign = this.TextAlign
+   end if
+End Property
+
 Property wfxButton.ToggleMode() As boolean 
    If _XpButtonPtr Then 
       _ToggleMode = cbool(_XpButtonPtr->GetToggle)
@@ -214,7 +226,15 @@ Property wfxButton.TextAlign( ByVal nValue As ButtonAlignment )
          Case ButtonAlignment.TopLeft:      wsStyle = DT_LEFT   Or DT_TOP
          Case ButtonAlignment.TopRight:     wsStyle = DT_RIGHT  Or DT_TOP
       End Select
-      _XpButtonPtr->SetTextFormat(wsStyle Or DT_SINGLELINE, True)
+
+      if _MultiLine then
+         _XpButtonPtr->SetTextFormat(wsStyle Or DT_WORDBREAK, True)
+         ' Convert any embedded {br} identifiers to chr(10) LF.
+         dim as CWSTR wszText = this.Text
+         this.Text = AfxStrReplace( wszText, "{br}", chr(10) )
+      else
+         _XpButtonPtr->SetTextFormat(wsStyle Or DT_SINGLELINE, True)
+      end if   
    End If
    _TextAlign = nValue
 end property
