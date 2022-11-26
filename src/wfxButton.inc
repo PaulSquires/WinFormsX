@@ -215,16 +215,16 @@ End Property
 Property wfxButton.TextAlign( ByVal nValue As ButtonAlignment )
    If _XpButtonPtr Then 
       Dim As Long wsStyle
-      Select Case nValue
-         Case ButtonAlignment.BottomCenter: wsStyle = DT_CENTER Or DT_BOTTOM
-         Case ButtonAlignment.BottomLeft:   wsStyle = DT_LEFT   Or DT_BOTTOM
-         Case ButtonAlignment.BottomRight:  wsStyle = DT_RIGHT  Or DT_BOTTOM
-         Case ButtonAlignment.MiddleCenter: wsStyle = DT_CENTER Or DT_VCENTER
-         Case ButtonAlignment.MiddleLeft:   wsStyle = DT_LEFT   Or DT_VCENTER
-         Case ButtonAlignment.MiddleRight:  wsStyle = DT_RIGHT  Or DT_VCENTER
-         Case ButtonAlignment.TopCenter:    wsStyle = DT_CENTER Or DT_TOP
-         Case ButtonAlignment.TopLeft:      wsStyle = DT_LEFT   Or DT_TOP
-         Case ButtonAlignment.TopRight:     wsStyle = DT_RIGHT  Or DT_TOP
+      Select case nValue
+         case ButtonAlignment.BottomCenter: wsStyle = DT_CENTER Or DT_BOTTOM
+         case ButtonAlignment.BottomLeft:   wsStyle = DT_LEFT   Or DT_BOTTOM
+         case ButtonAlignment.BottomRight:  wsStyle = DT_RIGHT  Or DT_BOTTOM
+         case ButtonAlignment.MiddleCenter: wsStyle = DT_CENTER Or DT_VCENTER
+         case ButtonAlignment.MiddleLeft:   wsStyle = DT_LEFT   Or DT_VCENTER
+         case ButtonAlignment.MiddleRight:  wsStyle = DT_RIGHT  Or DT_VCENTER
+         case ButtonAlignment.TopCenter:    wsStyle = DT_CENTER Or DT_TOP
+         case ButtonAlignment.TopLeft:      wsStyle = DT_LEFT   Or DT_TOP
+         case ButtonAlignment.TopRight:     wsStyle = DT_RIGHT  Or DT_TOP
       End Select
 
       if _MultiLine then
@@ -273,6 +273,44 @@ property wfxButton.Image( byref cwzValue as wstring )
    End If
    _Image = cwzValue
 end property
+
+Property wfxButton.ImageAlign( ByVal nValue As ImageAlignment )
+   If _XpButtonPtr Then 
+      Dim As Long wsStyle
+      Select Case nValue
+         case ImageAlignment.BottomCenter: wsStyle = &H20 OR &H4
+         case ImageAlignment.BottomLeft:   wsStyle = &H20 OR &H1
+         case ImageAlignment.BottomRight:  wsStyle = &H20 OR &H2
+         case ImageAlignment.MiddleCenter: wsStyle = &H8  OR &H4    ' no text 
+         case ImageAlignment.MiddleLeft:   wsStyle = &H8  OR &H1
+         case ImageAlignment.MiddleRight:  wsStyle = &H8  OR &H2
+         case ImageAlignment.TopCenter:    wsStyle = &H10 OR &H4
+         case ImageAlignment.TopLeft:      wsStyle = &H10 OR &H1
+         case ImageAlignment.TopRight:     wsStyle = &H10 OR &H2
+      End Select
+
+      _XpButtonPtr->SetImagePos(wsStyle, True)
+   End If
+   _ImageAlign = nValue
+end property
+
+Property wfxButton.ImageAlign() As ImageAlignment 
+   If _XpButtonPtr Then 
+      Dim As Long wsStyle
+      wsStyle = _XpButtonPtr->GetImagePos
+      if wsStyle = &H20 OR &H4 then return ImageAlignment.BottomCenter
+      if wsStyle = &H20 OR &H1 then return ImageAlignment.BottomLeft
+      if wsStyle = &H20 OR &H2 then return ImageAlignment.BottomRight
+      if wsStyle = &H8  OR &H4 then return ImageAlignment.MiddleCenter     ' no text 
+      if wsStyle = &H8  OR &H1 then return ImageAlignment.MiddleLeft   
+      if wsStyle = &H8  OR &H2 then return ImageAlignment.MiddleRight  
+      if wsStyle = &H10 OR &H4 then return ImageAlignment.TopCenter    
+      if wsStyle = &H10 OR &H1 then return ImageAlignment.TopLeft      
+      if wsStyle = &H10 OR &H2 then return ImageAlignment.TopRight     
+   Else
+      Return _ImageAlign
+   End If
+End Property
 
 property wfxButton.ImageHighDPI( byval nValue as boolean )
    If _XpButtonPtr Then 
@@ -380,6 +418,7 @@ Function wfxButton.Show(ByVal hWndParent As HWnd = 0) As Long
    ' Apply the properties
    this.ThemeSupport      = _ThemeSupport
    this.AllowFocusRect    = _AllowFocusRect
+   this.ImageAlign         = _ImageAlign
    this.TextAlign         = _TextAlign
    this.BackColor         = _BackColor
    this.BackColorDown     = _BackColorDown

@@ -15,7 +15,8 @@
 Type wfxButton Extends wfxControl
    private:
       _XpButtonPtr As CXpButton Ptr
-      _TextAlign As ButtonAlignment = ButtonAlignment.MiddleCenter
+      _TextAlign         As ButtonAlignment = ButtonAlignment.MiddleCenter
+      _ImageAlign        As ImageAlignment = ImageAlignment.TopLeft
       _ThemeSupport      As boolean = True
       _AllowFocusRect    as boolean = true
       _BackColorDown     As COLORREF = Colors.SystemControl
@@ -68,6 +69,8 @@ Type wfxButton Extends wfxControl
       declare property TextMargin() as Long
       declare property Image() as CWSTR
       declare property Image( byref cwzValue as wstring )
+      Declare Property ImageAlign() As ImageAlignment
+      Declare Property ImageAlign( ByVal nValue As ImageAlignment )
       declare property ImageHighDPI( byval nValue as boolean )
       declare property ImageHighDPI() as boolean
       declare property ImageWidth( byval nValue as Long )

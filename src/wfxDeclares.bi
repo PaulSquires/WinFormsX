@@ -130,6 +130,18 @@ enum ButtonAlignment
    TopRight     
 end enum
 
+enum ImageAlignment
+   BottomCenter = 1
+   BottomLeft   
+   BottomRight  
+   MiddleCenter 
+   MiddleLeft   
+   MiddleRight  
+   TopCenter    
+   TopLeft      
+   TopRight     
+end enum
+
 enum LabelAlignment
    MiddleCenter = 1
    MiddleLeft   
