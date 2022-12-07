@@ -1108,6 +1108,27 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
          end if
 #endif
 
+#ifdef CODEGEN_MONTHCALENDAR
+         ' Need to handle the MCN_GETDAYSTATE notification here prior to the pNode lookup because
+         ' the calendar handle is not added to that list until after this notifcation had already
+         ' been sent.
+         ' Correct value for MCN_GETDAYSTATE (pre-Vista value is defined in FB's commctrl.bi file)
+         if lNotification = (MCN_FIRST - 1) then   
+            ' We set all of the displayed days to normal (rather than bold) and then allow the
+            ' user to change the values via their WM_NOTIFY. A more elegant solution would be
+            ' to call an WinFBE event that captures the user's intentions.
+            if AfxGetWindowClassName(pNMHDR->hwndFrom) = "SysMonthCal32" then
+               ' We set all of the displayed days to normal (rather than bold) and then allow the
+               ' user to change the values via their WM_NOTIFY. A more elegant solution would be
+               ' to call an WinFBE event that captures the user's intentions.
+               dim as NMDAYSTATE ptr pNMDayState = cast(NMDAYSTATE ptr, pNMHDR)
+               dim as MONTHDAYSTATE rgMonths(12)
+               pNMDayState->prgDayState = @rgMonths(0)
+            end if
+         end if
+#endif
+
+
          pNode = Application.GetControlByHandle( pNMHDR->hwndFrom )
 
          If pNode Then
@@ -1183,7 +1204,6 @@ static Function wfxApplication.WndProc( ByVal hWin   As HWnd, _
                   pMonthCal = Cast(wfxMonthCalendar Ptr, pNode->pData)
 
                   if lNotification = MCN_SELECT then
-                     'dim pNMSelChange as NMSELCHANGE ptr = cast(NMSELCHANGE ptr, pNMHDR)
                      if pMonthCal->OnClick Then pMonthCal->OnClick(*pMonthCal, e)
                   end if
 

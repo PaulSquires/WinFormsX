@@ -178,6 +178,8 @@ Function wfxMonthCalendar.Show(ByVal hWndParent As HWnd = 0) As Long
    if _TabStop then dwStyle = dwStyle OR WS_TABSTOP 
    If _Visible Then dwStyle = dwStyle Or WS_VISIBLE
    
+   dwStyle = dwStyle or MCS_DAYSTATE    ' always allow the MCN_GETDAYSTATE notification to fire
+   
    If _WeekNumbers   Then dwStyle = dwStyle Or MCS_WEEKNUMBERS
    If _ShortDayNames Then dwStyle = dwStyle Or MCS_SHORTDAYSOFWEEK
    If _TodayCircle   = false Then dwStyle = dwStyle Or MCS_NOTODAYCIRCLE
